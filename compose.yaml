@@ -1,0 +1,66 @@
+# Zalozene na Laravel Sail (https://github.com/laravel/sail).
+# Runtime je skopirovany do ./docker, aby sa projekt dal spustit aj bez
+# priecinka vendor.
+# Predvolene hodnoty premennych zodpovedaju .env.example.
+services:
+    laravel.test:
+        build:
+            context: ./docker/8.5
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: ${WWWGROUP:-1000}
+        image: sail-8.5/app
+
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        ports:
+            - "${APP_PORT:-80}:80"
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+        environment:
+            WWWUSER: ${WWWUSER:-1000}
+            WWWGROUP: ${WWWGROUP:-1000}
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: ${SAIL_XDEBUG_MODE:-off}
+            XDEBUG_CONFIG: ${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}
+            IGNITION_LOCAL_SITES_PATH: ${PWD}
+            HOME: /home/sail
+            COMPOSER_HOME: /home/sail/.composer
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - sail
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    mysql:
+        image: mysql:8.4
+        ports:
+            - "${FORWARD_DB_PORT:-3306}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: ${DB_DATABASE:-eshop}
+            MYSQL_USER: ${DB_USERNAME:-sail}
+            MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_EXTRA_OPTIONS: ${MYSQL_EXTRA_OPTIONS:-}
+        volumes:
+            - sail-mysql:/var/lib/mysql
+            - ./docker/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${DB_USERNAME:-sail}", "-p${DB_PASSWORD:-password}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+
+networks:
+    sail:
+        driver: bridge
+
+volumes:
+    sail-mysql:
+        driver: local
