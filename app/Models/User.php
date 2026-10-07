@@ -20,7 +20,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
         'password',
     ];
 
@@ -45,5 +48,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Vrati cele meno (krstne + priezvisko alebo username).
+     */
+    public function getFullNameAttribute(): string
+    {
+        if (!empty($this->first_name) || !empty($this->last_name)) {
+            return trim("{$this->first_name} {$this->last_name}");
+        }
+
+        return (string) $this->name;
     }
 }
