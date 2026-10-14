@@ -1,13 +1,22 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
-
 require __DIR__ . '/auth.php';
 
+// WEB
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('category.show');
+Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
+
+// Prihlásený používateľ
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
