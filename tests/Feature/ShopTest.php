@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testy hlavnych tokov eshopu: katalog.
+ * Testy hlavnych tokov eshopu: katalog, kosik.
  */
 class ShopTest extends TestCase
 {
@@ -49,5 +49,11 @@ class ShopTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('Hidden category');
         $this->get('/products')->assertOk()->assertDontSee('Hidden category');
         $this->get(route('category.show', 'hidden'))->assertNotFound();
+    }
+
+    public function test_updating_product_not_in_cart_returns_404(): void
+    {
+        $this->postJson('/api/cart/update', ['product_id' => 999, 'quantity' => 1])
+            ->assertNotFound();
     }
 }
