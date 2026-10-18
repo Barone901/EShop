@@ -34,6 +34,17 @@
 
         <div class="mt-4 flex items-center justify-between">
             <span class="font-bold">{{ $product->formatted_price }}</span>
+            @if($product->is_in_stock)
+                <button
+                    type="button"
+                    data-add-to-cart="{{ $product->id }}"
+                    class="rounded-lg bg-black text-white px-3 py-2 text-sm hover:opacity-90 transition-opacity"
+                >
+                    Add to Cart
+                </button>
+            @else
+                <span class="text-sm text-gray-400">Unavailable</span>
+            @endif
         </div>
     </div>
 </div>

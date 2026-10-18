@@ -38,6 +38,31 @@
                 </div>
 
                 <div class="mt-8 flex flex-wrap gap-3">
+                    @if($product->is_in_stock)
+                        <div class="flex items-center gap-2">
+                            <label for="quantity" class="text-sm text-gray-600">Quantity:</label>
+                            <input
+                                type="number"
+                                id="quantity"
+                                value="1"
+                                min="1"
+                                max="{{ $product->stock }}"
+                                class="w-16 rounded-lg border px-2 py-1 text-center text-sm"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            data-add-to-cart="{{ $product->id }}"
+                            data-quantity-input="#quantity"
+                            class="rounded-lg bg-black px-5 py-3 text-sm text-white hover:opacity-90 transition-opacity"
+                        >
+                            Add to Cart
+                        </button>
+                    @else
+                        <button type="button" disabled class="rounded-lg bg-gray-300 px-5 py-3 text-sm text-gray-500 cursor-not-allowed">
+                            Out of Stock
+                        </button>
+                    @endif
                     <a href="{{ route('products.index') }}" class="rounded-lg border px-5 py-3 text-sm hover:bg-gray-50">
                         Back
                     </a>
