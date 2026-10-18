@@ -3,7 +3,7 @@
  * - mobilne menu
  * - account dropdown (desktop)
  * - mobile profile dropdown
- * - zatvaranie ostatnych menu pri otvoreni jedneho
+ * - koordinacia s cart dropdown (otvorenie jedneho zatvori ostatne)
  */
 const TRANSITION_MS = 200;
 
@@ -93,6 +93,7 @@ const Menu = {
         });
 
         this.initMobileMenu();
+        this.initCartOutsideClose();
     },
 
     initMobileMenu() {
@@ -118,10 +119,20 @@ const Menu = {
         });
     },
 
+    initCartOutsideClose() {
+        const cartWrapper = document.getElementById('cart-wrapper');
+        if (!cartWrapper) return;
+
+        document.addEventListener('click', (e) => {
+            if (!cartWrapper.contains(e.target)) this.closeCartDropdown();
+        });
+    },
+
     /**
      * Zavrie vsetky ostatne menu/dropdowny okrem prave otvaraneho.
      */
     closeOthers(except) {
+        this.closeCartDropdown();
         if (except !== 'account') this.closeAccount?.();
         if (except !== 'mobile-profile') this.closeMobileProfile?.();
         if (except !== 'mobile-nav') this.closeMobileNav();
@@ -133,6 +144,14 @@ const Menu = {
 
         nav.classList.add('hidden');
         document.getElementById('mobile-menu-btn')?.setAttribute('aria-expanded', 'false');
+    },
+
+    closeCartDropdown() {
+        const dropdown = document.getElementById('cart-dropdown');
+        if (!dropdown) return;
+
+        hideAnimated(dropdown);
+        document.getElementById('cart-btn')?.setAttribute('aria-expanded', 'false');
     },
 };
 

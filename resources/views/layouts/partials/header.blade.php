@@ -27,7 +27,7 @@
 
         </div>
 
-        {{-- ROW 2: menu links + mobile profile --}}
+        {{-- ROW 2: menu links + cart + mobile profile --}}
         <div class="header-bottom text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="h-12 flex items-center justify-between">
@@ -38,8 +38,46 @@
                         @endforeach
                     </nav>
 
-                    {{-- Left side: menu only mobile --}}
+                    {{-- Left side: cart always visible + menu only mobile --}}
                     <div class="flex items-center gap-2">
+                        {{-- Cart (desktop + mobile) --}}
+                        <div id="cart-wrapper" class="relative static sm:relative z-[60] md:z-10"
+                             data-cart-url="{{ route('cart.index') }}"
+                             data-home-url="{{ route('home') }}">
+                            <a
+                                href="{{ route('cart.index') }}"
+                                id="cart-btn"
+                                class="relative inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10"
+                                aria-expanded="false"
+                                aria-controls="cart-dropdown"
+                            >
+                                <svg class="w-5 h-5" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+
+                                <span class="hidden sm:inline">Cart</span>
+
+                                <span id="cart-count"
+                                      class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
+                            </a>
+
+                            <div
+                                id="cart-dropdown"
+                                class="hidden opacity-0 translate-y-2 transition-all duration-200 absolute sm:absolute top-full mt-2 z-50 overflow-hidden bg-[#141414] text-white border border-white/10 shadow-xl rounded-xl right-2 left-2 w-auto max-w-none sm:right-0 sm:left-auto sm:w-80"
+                            >
+                                <div class="p-3 border-b border-white/10">
+                                    <h3 class="font-semibold text-sm">Cart</h3>
+                                </div>
+
+                                <div id="cart-dropdown-content">
+                                    <div class="p-6 text-center text-white/60">
+                                        <div class="animate-pulse">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Mobile menu button --}}
                         <button
                             id="mobile-menu-btn"

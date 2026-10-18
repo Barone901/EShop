@@ -17,6 +17,8 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('category.show');
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
 
+Route::view('/cart', 'pages.cart.index')->name('cart.index');
+
 // API pre JS (web middleware kvôli session/CSRF pre košík)
 Route::prefix('api')->name('api.')->group(function () {
 
