@@ -9,10 +9,11 @@ use App\Support\Price;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Model produktu v eshope.
- * Relacie: Category (N:1)
+ * Relacie: Category (N:1), OrderItem (1:N)
  */
 class Product extends Model
 {
@@ -62,6 +63,15 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Produkt ma viacero poloziek objednavok (historicke referencie).
+     * Relacia: 1:N (Jeden produkt je referencovany v mnohych polozkach objednavok)
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     // =========================================================================

@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -51,6 +52,22 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
+
+    // =========================================================================
+    // RELACIE
+    // =========================================================================
+
+    /**
+     * Pouzivatel ma viacero objednavok.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    // =========================================================================
+    // ACCESSORY
+    // =========================================================================
 
     /**
      * Vrati cele meno (krstne + priezvisko alebo username).
