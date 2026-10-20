@@ -27,8 +27,11 @@ class AdminPanelTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        foreach (['categories', 'products'] as $resource) {
+        foreach (['categories', 'orders', 'products'] as $resource) {
             $this->get("/admin/{$resource}")->assertOk();
+        }
+
+        foreach (['categories', 'products'] as $resource) {
             $this->get("/admin/{$resource}/create")->assertOk();
         }
     }
