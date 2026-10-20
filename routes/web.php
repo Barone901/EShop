@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,13 @@ Route::prefix('api')->name('api.')->group(function () {
         Route::post('/remove', 'remove')->name('remove');
         Route::post('/clear', 'clear')->name('clear');
     });
+});
+
+// Guest checkout (available for both guests and authenticated users)
+Route::controller(OrderController::class)->group(function () {
+    Route::get('/checkout', 'checkout')->name('checkout');
+    Route::post('/orders', 'store')->name('orders.store');
+    Route::get('/orders/confirmation/{orderNumber}', 'confirmation')->name('orders.confirmation');
 });
 
 // Prihlásený používateľ

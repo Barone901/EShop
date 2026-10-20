@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exceptions\CartException;
+use App\Models\Order;
 use App\Models\Product;
 use App\Support\MediaUrl;
 use App\Support\Price;
@@ -39,11 +40,16 @@ class CartService
         })->values();
 
         $total = $items->sum('subtotal');
+        $grandTotal = $total + Order::SHIPPING_COST;
 
         return [
             'items' => $items,
             'total' => $total,
             'formatted_total' => Price::format($total),
+            'shipping_cost' => Order::SHIPPING_COST,
+            'formatted_shipping_cost' => Price::format(Order::SHIPPING_COST),
+            'grand_total' => $grandTotal,
+            'formatted_grand_total' => Price::format($grandTotal),
             'count' => $items->sum('quantity'),
         ];
     }
