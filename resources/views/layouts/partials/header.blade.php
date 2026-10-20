@@ -43,6 +43,7 @@
                         {{-- Cart (desktop + mobile) --}}
                         <div id="cart-wrapper" class="relative static sm:relative z-[60] md:z-10"
                              data-cart-url="{{ route('cart.index') }}"
+                             data-checkout-url="{{ route('checkout') }}"
                              data-home-url="{{ route('home') }}">
                             <a
                                 href="{{ route('cart.index') }}"

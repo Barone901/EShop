@@ -23,7 +23,7 @@ const Cart = {
     countElement: null,
     dropdownElement: null,
     dropdownContent: null,
-    urls: { cart: '', home: '' },
+    urls: { cart: '', checkout: '', home: '' },
 
     init() {
         this.countElement = document.getElementById('cart-count');
@@ -31,8 +31,8 @@ const Cart = {
         this.dropdownContent = document.getElementById('cart-dropdown-content');
 
         // URL adresy generuje Blade cez route() (data atributy na #cart-wrapper v headeri)
-        const { cartUrl, homeUrl } = document.getElementById('cart-wrapper')?.dataset ?? {};
-        this.urls = { cart: cartUrl, home: homeUrl };
+        const { cartUrl, checkoutUrl, homeUrl } = document.getElementById('cart-wrapper')?.dataset ?? {};
+        this.urls = { cart: cartUrl, checkout: checkoutUrl, home: homeUrl };
 
         this.bindEvents();
         this.refresh();
@@ -222,6 +222,9 @@ const Cart = {
                     <a href="${this.urls.cart}" class="flex-1 text-center py-2 px-3 border rounded-lg text-sm hover:bg-white transition-colors">
                         View Cart
                     </a>
+                    <a href="${this.urls.checkout}" class="flex-1 text-center py-2 px-3 bg-black text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
+                        Checkout
+                    </a>
                 </div>
             </div>
         `;
@@ -321,7 +324,18 @@ const Cart = {
                                 <span class="text-gray-600">Subtotal</span>
                                 <span>${escapeHtml(cart.formatted_total)}</span>
                             </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping</span>
+                                <span>${escapeHtml(cart.formatted_shipping_cost)}</span>
+                            </div>
+                            <div class="border-t pt-3 flex justify-between text-lg font-bold">
+                                <span>Total</span>
+                                <span>${escapeHtml(cart.formatted_grand_total)}</span>
+                            </div>
                         </div>
+                        <a href="${this.urls.checkout}" class="mt-6 w-full block text-center bg-black text-white py-3 px-4 rounded-lg hover:opacity-90 transition-opacity">
+                            Proceed to Checkout
+                        </a>
                         <a href="${this.urls.home}" class="mt-3 w-full block text-center border py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
                             Continue Shopping
                         </a>

@@ -2,12 +2,14 @@
  * Eshop - inicializácia modulov
  */
 import Cart from './modules/cart';
+import Checkout from './modules/checkout';
 import PageActions from './modules/page-actions';
 import Services from './services';
 
 const Eshop = {
     init() {
         Cart.init();
+        Checkout.init();
         PageActions.init();
     },
 };
