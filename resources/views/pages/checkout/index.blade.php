@@ -21,7 +21,8 @@
         {{-- Flash Messages --}}
         <x-ui.flash-messages :types="['error']" />
 
-        <form action="{{ route('orders.store') }}" method="POST" id="checkout-form">
+        <form action="{{ route('orders.store') }}" method="POST" id="checkout-form"
+              data-default-country="{{ \App\Models\OrderAddress::DEFAULT_COUNTRY }}">
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -38,24 +39,52 @@
                             Shipping Address
                         </h2>
 
+                        {{-- Saved Shipping Addresses Selection (only for authenticated users) --}}
+                        @if(!$isGuest && $shippingAddresses->isNotEmpty())
+                            <div class="mb-6 pb-6 border-b border-gray-200">
+                                <label for="shipping-address-select" class="block text-sm font-medium text-gray-700 mb-2">Use saved shipping address</label>
+                                <select id="shipping-address-select"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
+                                    <option value="">-- Enter new address --</option>
+                                    @foreach($shippingAddresses as $address)
+                                        <option value="{{ $address->id }}"
+                                                data-name="{{ $address->full_name }}"
+                                                data-email="{{ $address->email }}"
+                                                data-phone="{{ $address->phone }}"
+                                                data-address="{{ $address->street }}"
+                                                data-city="{{ $address->city }}"
+                                                data-postal="{{ $address->postal_code }}"
+                                                data-country="{{ $address->country }}"
+                                                {{ $address->is_default ? 'selected' : '' }}>
+                                            {{ $address->full_name }} - {{ $address->street }}, {{ $address->city }}
+                                            @if($address->is_default) (Default) @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <x-form.input name="shipping_name" label="Full Name" required placeholder="John Doe" maxlength="255"
-                                          :value="$user?->full_name" />
+                                          :value="$defaultShippingAddress?->full_name ?? $user?->full_name" />
 
                             <x-form.input name="shipping_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
-                                          :value="$user?->email" />
+                                          :value="$defaultShippingAddress?->email ?? $user?->email" />
 
-                            <x-form.input name="shipping_phone" type="tel" label="Phone" required placeholder="+421 XXX XXX XXX" maxlength="20" />
+                            <x-form.input name="shipping_phone" type="tel" label="Phone" required placeholder="+421 XXX XXX XXX" maxlength="20"
+                                          :value="$defaultShippingAddress?->phone" />
 
-                            <x-form.input name="shipping_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10" />
+                            <x-form.input name="shipping_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                          :value="$defaultShippingAddress?->postal_code" />
 
-                            <x-form.input name="shipping_city" label="City" required placeholder="Bratislava" maxlength="100" />
+                            <x-form.input name="shipping_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                          :value="$defaultShippingAddress?->city" />
 
                             <x-form.input name="shipping_country" label="Country" maxlength="100"
-                                          :value="\App\Models\OrderAddress::DEFAULT_COUNTRY" />
+                                          :value="$defaultShippingAddress?->country ?? \App\Models\OrderAddress::DEFAULT_COUNTRY" />
 
                             <x-form.input name="shipping_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
-                                          class="md:col-span-2" />
+                                          class="md:col-span-2" :value="$defaultShippingAddress?->street" />
                         </div>
                     </div>
 
@@ -74,25 +103,57 @@
                             </label>
                         </div>
 
+                        {{-- Saved Billing Addresses Selection (only for authenticated users) --}}
+                        @if(!$isGuest && $billingAddresses->isNotEmpty())
+                            <div class="mb-6 pb-6 border-b border-gray-200" id="billing-address-selector">
+                                <label for="billing-address-select" class="block text-sm font-medium text-gray-700 mb-2">Use saved billing address</label>
+                                <select id="billing-address-select"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
+                                    <option value="">-- Enter new address --</option>
+                                    @foreach($billingAddresses as $address)
+                                        <option value="{{ $address->id }}"
+                                                data-name="{{ $address->full_name }}"
+                                                data-email="{{ $address->email }}"
+                                                data-phone="{{ $address->phone }}"
+                                                data-address="{{ $address->street }}"
+                                                data-city="{{ $address->city }}"
+                                                data-postal="{{ $address->postal_code }}"
+                                                data-country="{{ $address->country }}"
+                                                data-company="{{ $address->company_name }}"
+                                                data-ico="{{ $address->ico }}"
+                                                data-dic="{{ $address->dic }}"
+                                                data-icdph="{{ $address->ic_dph }}"
+                                                {{ $address->is_default ? 'selected' : '' }}>
+                                            {{ $address->full_name }}@if($address->company_name) ({{ $address->company_name }})@endif - {{ $address->street }}, {{ $address->city }}
+                                            @if($address->is_default) (Default) @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
                         <div id="billing-fields">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <x-form.input name="billing_name" label="Full Name" required placeholder="John Doe" maxlength="255"
-                                              :value="$user?->full_name" />
+                                              :value="$defaultBillingAddress?->full_name ?? $user?->full_name" />
 
                                 <x-form.input name="billing_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
-                                              :value="$user?->email" />
+                                              :value="$defaultBillingAddress?->email ?? $user?->email" />
 
-                                <x-form.input name="billing_phone" type="tel" label="Phone" placeholder="+421 XXX XXX XXX" maxlength="20" />
+                                <x-form.input name="billing_phone" type="tel" label="Phone" placeholder="+421 XXX XXX XXX" maxlength="20"
+                                              :value="$defaultBillingAddress?->phone" />
 
-                                <x-form.input name="billing_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10" />
+                                <x-form.input name="billing_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                              :value="$defaultBillingAddress?->postal_code" />
 
-                                <x-form.input name="billing_city" label="City" required placeholder="Bratislava" maxlength="100" />
+                                <x-form.input name="billing_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                              :value="$defaultBillingAddress?->city" />
 
                                 <x-form.input name="billing_country" label="Country" maxlength="100"
-                                              :value="\App\Models\OrderAddress::DEFAULT_COUNTRY" />
+                                              :value="$defaultBillingAddress?->country ?? \App\Models\OrderAddress::DEFAULT_COUNTRY" />
 
                                 <x-form.input name="billing_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
-                                              class="md:col-span-2" />
+                                              class="md:col-span-2" :value="$defaultBillingAddress?->street" />
                             </div>
 
                             {{-- Company Info (optional) --}}
@@ -100,13 +161,16 @@
                                 <h3 class="text-sm font-medium text-gray-700 mb-4">Company Information (optional)</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <x-form.input name="billing_company_name" label="Company Name" placeholder="Your Company Ltd." maxlength="255"
-                                                  class="md:col-span-2" />
+                                                  class="md:col-span-2" :value="$defaultBillingAddress?->company_name" />
 
-                                    <x-form.input name="billing_ico" label="Company ID (IČO)" placeholder="12345678" maxlength="20" />
+                                    <x-form.input name="billing_ico" label="Company ID (IČO)" placeholder="12345678" maxlength="20"
+                                                  :value="$defaultBillingAddress?->ico" />
 
-                                    <x-form.input name="billing_dic" label="Tax ID (DIČ)" placeholder="1234567890" maxlength="20" />
+                                    <x-form.input name="billing_dic" label="Tax ID (DIČ)" placeholder="1234567890" maxlength="20"
+                                                  :value="$defaultBillingAddress?->dic" />
 
-                                    <x-form.input name="billing_ic_dph" label="VAT ID (IČ DPH)" placeholder="SK1234567890" maxlength="20" />
+                                    <x-form.input name="billing_ic_dph" label="VAT ID (IČ DPH)" placeholder="SK1234567890" maxlength="20"
+                                                  :value="$defaultBillingAddress?->ic_dph" />
                                 </div>
                             </div>
                         </div>

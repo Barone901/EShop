@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\OrderException;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Order;
+use App\Models\UserAddress;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
@@ -40,10 +41,18 @@ class OrderController extends Controller
 
         $user = $request->user();
 
+        // Ulozene adresy (len pre prihlaseneho), predvolena je v kazdom zozname prva
+        $shippingAddresses = $user?->addressesOfType(UserAddress::TYPE_SHIPPING) ?? collect();
+        $billingAddresses = $user?->addressesOfType(UserAddress::TYPE_BILLING) ?? collect();
+
         return view('pages.checkout.index', [
             'cart' => $cart,
             'user' => $user,
             'isGuest' => !$user,
+            'defaultShippingAddress' => $shippingAddresses->first(),
+            'defaultBillingAddress' => $billingAddresses->first(),
+            'shippingAddresses' => $shippingAddresses,
+            'billingAddresses' => $billingAddresses,
         ]);
     }
 
