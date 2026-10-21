@@ -5,12 +5,17 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * Model pouzivatela aplikacie.
+ * Relacie: Order (1:N), UserAddress (1:N)
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
@@ -65,6 +70,14 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * Pouzivatel ma viacero ulozenych adries.
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
     // =========================================================================
     // ACCESSORY
     // =========================================================================
@@ -79,6 +92,34 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return (string) $this->name;
+    }
+
+    /**
+     * Vrati adresy daneho typu, predvolena je prva.
+     * Pouziva nacitanu relaciu $this->addresses, takze vsetky adresy sa nacitaju jednym dotazom.
+     */
+    public function addressesOfType(string $type): Collection
+    {
+        return $this->addresses
+            ->where('type', $type)
+            ->sortByDesc('is_default')
+            ->values();
+    }
+
+    /**
+     * Vrati predvolenu dorucovaciu adresu (alebo prvu dorucovaciu, ak ziadna nie je predvolena).
+     */
+    public function getDefaultShippingAddressAttribute(): ?UserAddress
+    {
+        return $this->addressesOfType(UserAddress::TYPE_SHIPPING)->first();
+    }
+
+    /**
+     * Vrati predvolenu fakturacnu adresu (alebo prvu fakturacnu, ak ziadna nie je predvolena).
+     */
+    public function getDefaultBillingAddressAttribute(): ?UserAddress
+    {
+        return $this->addressesOfType(UserAddress::TYPE_BILLING)->first();
     }
 
     /**

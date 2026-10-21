@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserAddressController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/auth.php';
@@ -57,4 +58,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{orderNumber}', 'destroy')->name('destroy');
         });
     });
+
+    Route::resource('addresses', UserAddressController::class)
+        ->except(['show'])
+        ->names('addresses');
+
+    Route::post('/addresses/{address}/default', [UserAddressController::class, 'setDefault'])
+        ->name('addresses.setDefault');
 });
