@@ -8,11 +8,13 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\UserAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 /**
- * Testy hlavnych tokov eshopu: katalog, kosik, checkout.
+ * Testy hlavnych tokov eshopu: katalog, kosik, checkout, objednavky, adresy.
  */
 class ShopTest extends TestCase
 {
@@ -47,6 +49,19 @@ class ShopTest extends TestCase
             'billing_address' => 'Main Street 1',
             'billing_city' => 'Martin',
             'billing_postal_code' => '03601',
+        ];
+    }
+
+    private function addressData(array $attributes = []): array
+    {
+        return [
+            'type' => 'shipping',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'street' => 'Main Street 1',
+            'city' => 'Martin',
+            'postal_code' => '03601',
+            ...$attributes,
         ];
     }
 
@@ -122,6 +137,29 @@ class ShopTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
+    public function test_user_can_view_and_cancel_order(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->createProduct();
+
+        $this->actingAs($user)->postJson('/api/cart/add', ['product_id' => $product->id, 'quantity' => 1]);
+        $this->post('/orders', $this->checkoutData());
+        $order = Order::firstOrFail();
+
+        $this->get('/orders')->assertOk()->assertSee($order->order_number)->assertSee('1 item');
+        $this->get('/dashboard')->assertOk()->assertSee($order->order_number);
+        $this->get(route('orders.show', $order->order_number))
+            ->assertOk()
+            ->assertSee('Main Street 1')
+            ->assertSee('Cancel Order');
+
+        $this->post(route('orders.cancel', $order->order_number))
+            ->assertSessionHas('success');
+
+        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(5, $product->fresh()->stock);
+    }
+
     public function test_guest_cannot_view_confirmation_of_foreign_order(): void
     {
         $order = Order::create([
@@ -135,5 +173,129 @@ class ShopTest extends TestCase
         $this->get(route('orders.confirmation', $order->order_number))
             ->assertRedirect(route('home'))
             ->assertSessionHas('error', 'Order not found.');
+    }
+
+    public function test_processing_order_cannot_be_cancelled(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::create([
+            'order_number' => 'ORD-TEST-0001',
+            'user_id' => $user->id,
+            'status' => Order::STATUS_PROCESSING,
+            'subtotal' => 10,
+            'shipping_cost' => 3,
+            'total' => 13,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('orders.show', $order->order_number))
+            ->assertOk()
+            ->assertDontSee('Cancel Order');
+
+        $this->post(route('orders.cancel', $order->order_number))
+            ->assertSessionHas('error');
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+    }
+
+    public function test_user_can_delete_only_own_cancelled_order(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->createProduct();
+
+        $this->actingAs($user)->postJson('/api/cart/add', ['product_id' => $product->id, 'quantity' => 1]);
+        $this->post('/orders', $this->checkoutData());
+        $order = Order::firstOrFail();
+
+        // Aktivnu objednavku zmazat nejde
+        $this->get(route('orders.show', $order->order_number))->assertDontSee('Delete Order');
+        $this->delete(route('orders.destroy', $order->order_number))->assertSessionHas('error');
+        $this->assertModelExists($order);
+
+        $this->post(route('orders.cancel', $order->order_number));
+        $this->get(route('orders.show', $order->order_number))->assertSee('Delete Order');
+
+        // Cudzi pouzivatel zrusenu objednavku nezmaze
+        $this->actingAs(User::factory()->create())
+            ->delete(route('orders.destroy', $order->order_number))
+            ->assertRedirect(route('orders.index'))
+            ->assertSessionHas('error', 'Order not found.');
+        $this->assertModelExists($order);
+
+        // Vlastnik ju zmaze aj s polozkami a adresami
+        $this->actingAs($user)
+            ->delete(route('orders.destroy', $order->order_number))
+            ->assertRedirect(route('orders.index'))
+            ->assertSessionHas('success');
+
+        $this->assertModelMissing($order);
+        $this->assertDatabaseCount('order_items', 0);
+        $this->assertDatabaseCount('order_addresses', 0);
+        $this->assertSame(5, $product->fresh()->stock);
+    }
+
+    public function test_user_can_manage_addresses(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/addresses')->assertOk();
+        $this->get('/addresses/create?type=billing')->assertOk()->assertSee('Company Details');
+
+        $this->post('/addresses', $this->addressData(['is_default' => '1']))
+            ->assertRedirect('/addresses');
+
+        $address = UserAddress::firstOrFail();
+        $this->assertSame('Slovakia', $address->country);
+        $this->assertTrue($address->is_default);
+
+        $this->get(route('addresses.edit', $address))->assertOk();
+        // Formular na upravu neposiela "type" - typ adresy sa nemeni
+        $this->put(route('addresses.update', $address), Arr::except($this->addressData(['city' => 'Zilina']), 'type'))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/addresses');
+        $this->assertSame('Zilina', $address->fresh()->city);
+
+        $second = UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Second 2']));
+        $this->post(route('addresses.setDefault', $second))->assertRedirect('/addresses');
+        $this->assertTrue($second->fresh()->is_default);
+
+        $this->get('/checkout')->assertRedirect('/cart');
+
+        $this->delete(route('addresses.destroy', $address))->assertRedirect('/addresses');
+        $this->assertModelMissing($address);
+    }
+
+    public function test_default_addresses_are_prefilled_on_checkout_and_dashboard(): void
+    {
+        $user = User::factory()->create();
+        UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Other Street 9']));
+        UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Default Street 5', 'is_default' => true]));
+        UserAddress::create($this->addressData(['user_id' => $user->id, 'type' => 'billing', 'company_name' => 'ACME s.r.o.']));
+
+        $product = $this->createProduct();
+        $this->actingAs($user)->postJson('/api/cart/add', ['product_id' => $product->id]);
+
+        $this->get('/checkout')
+            ->assertOk()
+            ->assertSee('value="Default Street 5"', false)
+            ->assertSee('ACME s.r.o.');
+
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Default Street 5')
+            ->assertSee('ACME s.r.o.');
+    }
+
+    public function test_user_cannot_touch_foreign_address(): void
+    {
+        $owner = User::factory()->create();
+        $address = UserAddress::create($this->addressData(['user_id' => $owner->id]));
+
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('addresses.edit', $address))->assertForbidden();
+        $this->put(route('addresses.update', $address), $this->addressData())->assertForbidden();
+        $this->post(route('addresses.setDefault', $address))->assertForbidden();
+        $this->delete(route('addresses.destroy', $address))->assertForbidden();
     }
 }
