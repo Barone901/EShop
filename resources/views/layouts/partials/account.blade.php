@@ -44,6 +44,8 @@
             <div class="py-2">
                 <a href="{{ route('dashboard') }}"
                    class="block px-4 py-2 text-sm text-white/90 hover:bg-white/10">My profile</a>
+                <a href="{{ route('orders.index') }}"
+                   class="block px-4 py-2 text-sm text-white/90 hover:bg-white/10">My Orders</a>
             </div>
 
             <div class="border-t border-white/10 py-2">

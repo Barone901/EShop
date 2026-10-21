@@ -72,6 +72,21 @@ class Order extends Model
         self::STATUS_CANCELLED => 'Cancelled',
     ];
 
+    // Kroky postupu objednavky zobrazene zakaznikovi (bez "cancelled")
+    public const PROGRESS_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_CONFIRMED,
+        self::STATUS_PROCESSING,
+        self::STATUS_SHIPPED,
+        self::STATUS_DELIVERED,
+    ];
+
+    // Statusy, v ktorych moze zakaznik objednavku zrusit
+    public const CANCELLABLE_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_CONFIRMED,
+    ];
+
     // Konstanty pre platobne statusy
     public const PAYMENT_PENDING = 'pending';
     public const PAYMENT_PAID = 'paid';
@@ -100,6 +115,41 @@ class Order extends Model
         $random = strtoupper(substr(uniqid('', true), -4));
 
         return "{$prefix}-{$date}-{$random}";
+    }
+
+    /**
+     * Skontroluje ci moze zakaznik objednavku zrusit.
+     */
+    public function isCancellable(): bool
+    {
+        return in_array($this->status, self::CANCELLABLE_STATUSES, true);
+    }
+
+    /**
+     * Skontroluje ci je objednavka zrusena.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    /**
+     * Skontroluje ci moze zakaznik objednavku zmazat zo svojho uctu.
+     * Len zrusenu - tovar uz bol vrateny na sklad a objednavka sa nebude vybavovat.
+     */
+    public function isDeletable(): bool
+    {
+        return $this->isCancelled();
+    }
+
+    /**
+     * Vrati index aktualneho kroku v PROGRESS_STATUSES (-1 pre zrusenu objednavku).
+     */
+    public function progressStep(): int
+    {
+        $index = array_search($this->status, self::PROGRESS_STATUSES, true);
+
+        return $index === false ? -1 : $index;
     }
 
     // =========================================================================

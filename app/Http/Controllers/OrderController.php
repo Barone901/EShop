@@ -81,6 +81,77 @@ class OrderController extends Controller
     }
 
     /**
+     * Zobrazi zoznam objednavok prihlaseneho pouzivatela.
+     */
+    public function index(Request $request): View
+    {
+        return view('pages.orders.index', [
+            'orders' => $this->orderService->getUserOrders($request->user()->id),
+        ]);
+    }
+
+    /**
+     * Zobrazi detail konkretnej objednavky.
+     */
+    public function show(Request $request, string $orderNumber): View|RedirectResponse
+    {
+        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
+
+        if (!$order) {
+            return redirect()->route('orders.index')
+                ->with('error', 'Order not found.');
+        }
+
+        return view('pages.orders.show', [
+            'order' => $order,
+        ]);
+    }
+
+    /**
+     * Zrusi objednavku a vrati produkty na sklad.
+     */
+    public function cancel(Request $request, string $orderNumber): RedirectResponse
+    {
+        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
+
+        if (!$order) {
+            return redirect()->route('orders.index')
+                ->with('error', 'Order not found.');
+        }
+
+        try {
+            $this->orderService->cancelOrder($order);
+        } catch (OrderException $e) {
+            return redirect()->route('orders.show', $orderNumber)->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('orders.show', $orderNumber)
+            ->with('success', 'Order has been cancelled.');
+    }
+
+    /**
+     * Zmaze zrusenu objednavku z uctu pouzivatela.
+     */
+    public function destroy(Request $request, string $orderNumber): RedirectResponse
+    {
+        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
+
+        if (!$order) {
+            return redirect()->route('orders.index')
+                ->with('error', 'Order not found.');
+        }
+
+        try {
+            $this->orderService->deleteOrder($order);
+        } catch (OrderException $e) {
+            return redirect()->route('orders.show', $orderNumber)->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('orders.index')
+            ->with('success', "Order {$orderNumber} has been deleted.");
+    }
+
+    /**
      * Overi, ze host ma v session token prave tejto objednavky.
      */
     private function isGuestOwner(Request $request, Order $order): bool

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAddressFormatting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderAddress extends Model
 {
+    use HasAddressFormatting;
+
     // Konstanty pre typy adries
     public const TYPE_SHIPPING = 'shipping';
     public const TYPE_BILLING  = 'billing';

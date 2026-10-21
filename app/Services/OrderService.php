@@ -8,6 +8,7 @@ use App\Exceptions\OrderException;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -130,6 +131,17 @@ class OrderService
     }
 
     /**
+     * Ziska vsetky objednavky pouzivatela (s poctom poloziek, bez nacitania poloziek samotnych).
+     */
+    public function getUserOrders(int $userId): Collection
+    {
+        return Order::where('user_id', $userId)
+            ->withCount('items')
+            ->latest()
+            ->get();
+    }
+
+    /**
      * Ziska objednavku podla cisla objednavky.
      */
     public function getOrderByNumber(string $orderNumber, ?int $userId = null): ?Order
@@ -142,5 +154,57 @@ class OrderService
         }
 
         return $query->first();
+    }
+
+    /**
+     * Zrusi objednavku a vrati produkty na sklad.
+     *
+     * @throws OrderException ak objednavku nie je mozne zrusit
+     */
+    public function cancelOrder(Order $order): void
+    {
+        if ($order->status === Order::STATUS_CANCELLED) {
+            throw new OrderException('Order is already cancelled.');
+        }
+
+        if (!$order->isCancellable()) {
+            throw new OrderException('This order can no longer be cancelled.');
+        }
+
+        try {
+            DB::transaction(function () use ($order) {
+                // Produkty zamkneme, aby sa sklad neprebil so suzbeznymi operaciami
+                $products = Product::query()
+                    ->whereKey($order->items->pluck('product_id')->filter())
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($order->items as $item) {
+                    $products->get($item->product_id)?->increment('stock', $item->quantity);
+                }
+
+                $order->update(['status' => Order::STATUS_CANCELLED]);
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
+            throw new OrderException('Failed to cancel the order. Please try again.', previous: $e);
+        }
+    }
+
+    /**
+     * Zmaze zrusenu objednavku. Polozky a adresy objednavky zmaze databaza
+     * (cudzie kluce order_items a order_addresses maju cascadeOnDelete).
+     *
+     * @throws OrderException ak objednavka nie je zrusena
+     */
+    public function deleteOrder(Order $order): void
+    {
+        if (!$order->isDeletable()) {
+            throw new OrderException('Only cancelled orders can be deleted.');
+        }
+
+        $order->delete();
     }
 }

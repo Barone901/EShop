@@ -48,4 +48,13 @@ Route::middleware('auth')->group(function () {
         Route::patch('/profile', 'update')->name('profile.update');
         Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
+
+    Route::controller(OrderController::class)->group(function () {
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{orderNumber}', 'show')->name('show');
+            Route::post('/{orderNumber}/cancel', 'cancel')->name('cancel');
+            Route::delete('/{orderNumber}', 'destroy')->name('destroy');
+        });
+    });
 });
