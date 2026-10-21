@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Vygenerovane s pomocou AI (Claude) - dotazy presunute zo sablony profile/dashboard.
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -8,14 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Controller pre prehlad uctu zakaznika.
+ * Controller pre prehlad uctu zakaznika (posledne objednavky, adresy, nastavenia profilu).
  */
 class DashboardController extends Controller
 {
+    private const RECENT_ORDERS_LIMIT = 5;
+
     public function __invoke(Request $request): View
     {
+        $user = $request->user();
+
         return view('profile.dashboard', [
-            'user' => $request->user(),
+            'user' => $user,
+            'recentOrders' => $user->orders()->latest()->take(self::RECENT_ORDERS_LIMIT)->get(),
+            'shippingAddress' => $user->default_shipping_address,
+            'billingAddress' => $user->default_billing_address,
         ]);
     }
 }
