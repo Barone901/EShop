@@ -184,7 +184,72 @@ main :where(.card, .bg-white) [class*="text-gray-600"] {
 ::-webkit-scrollbar-thumb { background: #444; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #555; }
 
-/* Desktop account dropdown musi byt nad ostatnym obsahom */
+/* =========================================================
+   BANNER SLIDER
+   ========================================================= */
+#banner-slider,
+#banner-slider .banner-slider-container {
+    background-color: #0f0f0f;
+}
+
+#banner-slider .banner-prev,
+#banner-slider .banner-next {
+    width: 74px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(15, 23, 42, .85);
+    transition: background-color .18s ease, transform .08s ease, color .18s ease;
+}
+
+#banner-slider .banner-prev { border-right: 1px solid rgba(148, 163, 184, .45); }
+
+#banner-slider .banner-prev:hover,
+#banner-slider .banner-next:hover {
+    background: rgba(241, 245, 249, .9);
+    color: rgba(15, 23, 42, 1);
+}
+
+#banner-slider .banner-prev:active,
+#banner-slider .banner-next:active {
+    transform: translateY(1px);
+    background: rgba(226, 232, 240, .95);
+}
+
+#banner-slider .banner-prev:focus-visible,
+#banner-slider .banner-next:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, .35);
+    outline-offset: 2px;
+}
+
+#banner-slider .banner-dot {
+    width: .5rem;
+    height: .5rem;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, .25);
+    transition: width .18s ease, background-color .18s ease, transform .12s ease;
+}
+
+#banner-slider .banner-dot[aria-current="true"] {
+    width: 1.5rem;
+    background: rgba(15, 23, 42, .85);
+}
+
+#banner-slider .banner-dot:hover { background: rgba(15, 23, 42, .55); }
+#banner-slider .banner-dot:active { transform: translateY(1px); }
+
+#banner-slider .banner-dot:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, .35);
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    #banner-slider .banner-prev,
+    #banner-slider .banner-next { width: 64px; height: 50px; }
+}
+
+/* Desktop account dropdown musi byt nad kosikom */
 #account-wrapper {
     position: relative;
     z-index: 120;

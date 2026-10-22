@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\BannerService;
 use App\Services\CategoryService;
 use Illuminate\View\View;
 
@@ -14,10 +15,11 @@ use Illuminate\View\View;
 class CategoryController extends Controller
 {
     /**
-     * Injektuje sluzbu pre kategorie.
+     * Injektuje sluzby pre kategorie a bannery.
      */
     public function __construct(
-        private CategoryService $categoryService
+        private CategoryService $categoryService,
+        private BannerService $bannerService
     ) {}
 
     /**
@@ -28,7 +30,8 @@ class CategoryController extends Controller
         abort_unless($category->is_active, 404);
 
         $categories = $this->categoryService->getParentCategories();
+        $banners = $this->bannerService->getActiveBanners();
 
-        return view('pages.home', compact('categories', 'category'));
+        return view('pages.home', compact('categories', 'banners', 'category'));
     }
 }

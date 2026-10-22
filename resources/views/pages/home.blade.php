@@ -1,5 +1,10 @@
 <x-layouts.default-layout title="Home">
 
+    {{-- FULL WIDTH BANNER (mimo kontajnera stranky) --}}
+    <x-slot name="fullWidth">
+        <x-shop.banner-slider :banners="$banners" />
+    </x-slot>
+
     {{-- KATALÓG KATEGÓRIÍ --}}
     <section>
         <div class="flex items-end justify-between gap-4">
