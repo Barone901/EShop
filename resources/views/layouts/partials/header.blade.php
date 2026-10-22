@@ -3,6 +3,7 @@
     $navLinks = [
         'home' => 'Home',
         'products.index' => 'Products',
+        'pages.index' => 'Articles',
     ];
 @endphp
 

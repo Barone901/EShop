@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserAddressController;
@@ -20,6 +21,11 @@ Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->na
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
 
 Route::view('/cart', 'pages.cart.index')->name('cart.index');
+
+Route::controller(PageController::class)->group(function () {
+    Route::get('/pages', 'index')->name('pages.index');
+    Route::get('/pages/{slug}', 'show')->name('pages.show');
+});
 
 // API pre JS (web middleware kvôli session/CSRF pre košík)
 Route::prefix('api')->name('api.')->group(function () {

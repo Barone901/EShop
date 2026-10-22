@@ -4,6 +4,7 @@
  * Deklaratívne akcie cez data atribúty (namiesto inline JS v šablónach):
  * - <form data-confirm="...">       potvrdenie pred odoslaním
  * - <select data-navigate-on-change> presmerovanie na URL vybranej option
+ * - <button data-copy-url="...">    skopírovanie URL do schránky
  */
 
 const PageActions = {
@@ -18,6 +19,14 @@ const PageActions = {
         document.addEventListener('change', (e) => {
             if (e.target.matches('select[data-navigate-on-change]')) {
                 window.location.href = e.target.value;
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const copyBtn = e.target.closest('[data-copy-url]');
+            if (copyBtn) {
+                navigator.clipboard.writeText(copyBtn.dataset.copyUrl);
+                window.alert('Link copied!');
             }
         });
     },
