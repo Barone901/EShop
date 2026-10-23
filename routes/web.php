@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
@@ -15,12 +16,18 @@ require __DIR__ . '/auth.php';
 
 // WEB
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::view('/about', 'pages.about.index')->name('about');
 
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('category.show');
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('product.show');
 
 Route::view('/cart', 'pages.cart.index')->name('cart.index');
+
+Route::controller(ContactController::class)->group(function () {
+    Route::get('/contact', 'index')->name('contact');
+    Route::post('/contact', 'send')->name('contact.send');
+});
 
 Route::controller(PageController::class)->group(function () {
     Route::get('/pages', 'index')->name('pages.index');

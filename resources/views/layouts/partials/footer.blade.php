@@ -10,6 +10,7 @@
                 <ul class="mt-2 space-y-2">
                     <li><a class="hover:text-white" href="{{ route('products.index') }}">Products</a></li>
                     <li><a class="hover:text-white" href="#">How it works</a></li>
+                    <li><a class="hover:text-white" href="{{ route('contact') }}">Contact</a></li>
                 </ul>
             </div>
 

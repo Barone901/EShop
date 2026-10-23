@@ -4,6 +4,8 @@
         'home' => 'Home',
         'products.index' => 'Products',
         'pages.index' => 'Articles',
+        'about' => 'About us',
+        'contact' => 'Contact',
     ];
 @endphp
 
