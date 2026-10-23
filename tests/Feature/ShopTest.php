@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\UserAddress;
@@ -14,7 +15,7 @@ use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 /**
- * Testy hlavnych tokov eshopu: katalog, kosik, checkout, objednavky, adresy.
+ * Testy hlavnych tokov eshopu: katalog, kosik, checkout, objednavky, adresy, clanky.
  */
 class ShopTest extends TestCase
 {
@@ -297,5 +298,21 @@ class ShopTest extends TestCase
         $this->put(route('addresses.update', $address), $this->addressData())->assertForbidden();
         $this->post(route('addresses.setDefault', $address))->assertForbidden();
         $this->delete(route('addresses.destroy', $address))->assertForbidden();
+    }
+
+    public function test_article_content_is_sanitized(): void
+    {
+        Page::create([
+            'title' => 'News',
+            'slug' => 'news',
+            'content' => '<h2>Heading</h2><script>alert("xss")</script>',
+            'status' => Page::STATUS_PUBLISHED,
+        ]);
+
+        $this->get('/pages')->assertOk()->assertSee('News');
+        $this->get('/pages/news')
+            ->assertOk()
+            ->assertSee('<h2>Heading</h2>', false)
+            ->assertDontSee('alert("xss")', false);
     }
 }

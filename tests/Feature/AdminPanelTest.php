@@ -4,9 +4,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Pages\Pages\CreatePage;
+use App\Models\Page;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -27,11 +30,11 @@ class AdminPanelTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        foreach (['categories', 'orders', 'products'] as $resource) {
+        foreach (['banners', 'categories', 'orders', 'pages', 'products'] as $resource) {
             $this->get("/admin/{$resource}")->assertOk();
         }
 
-        foreach (['categories', 'products'] as $resource) {
+        foreach (['banners', 'categories', 'pages', 'products'] as $resource) {
             $this->get("/admin/{$resource}/create")->assertOk();
         }
     }
@@ -42,5 +45,30 @@ class AdminPanelTest extends TestCase
         $customer = tap(User::factory()->create())->assignRole('customer');
 
         $this->actingAs($customer)->get('/admin/products')->assertForbidden();
+    }
+
+    public function test_designer_can_bulk_delete_pages(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $designer = tap(User::factory()->create())->assignRole('designer');
+
+        $this->assertTrue($designer->can('deleteAny', Page::class));
+        $this->assertTrue($designer->can('restoreAny', Page::class));
+    }
+
+    public function test_page_can_be_created_in_admin(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::test(CreatePage::class)
+            ->fillForm([
+                'title' => 'New article',
+                'slug' => 'new-article',
+                'status' => Page::STATUS_PUBLISHED,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('pages', ['slug' => 'new-article']);
     }
 }
