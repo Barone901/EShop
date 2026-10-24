@@ -8,7 +8,7 @@
         <p class="text-center text-gray-600 text-sm mt-1">Welcome back!</p>
     </div>
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" data-validate>
         @csrf
 
         {{-- Email Address --}}
@@ -20,6 +20,7 @@
                 type="email"
                 name="email"
                 :value="old('email')"
+                data-rules="required|email"
                 autofocus
                 autocomplete="username"
             />
@@ -34,6 +35,7 @@
                 class="block mt-1 w-full"
                 type="password"
                 name="password"
+                data-rules="required|minLength:8"
                 autocomplete="current-password"
             />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />

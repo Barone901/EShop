@@ -12,7 +12,7 @@
 
         <div class="max-w-2xl mx-auto">
             <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <form action="{{ route('addresses.store') }}" method="POST">
+                <form action="{{ route('addresses.store') }}" method="POST" data-validate>
                     @csrf
                     <input type="hidden" name="type" value="{{ $type }}">
 

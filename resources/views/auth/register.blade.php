@@ -5,7 +5,7 @@
         <p class="text-center text-gray-600 text-sm mt-1">Create your profile</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" data-validate>
         @csrf
 
         {{-- Name --}}
@@ -66,6 +66,7 @@
                 type="password"
                 name="password_confirmation"
                 required
+                data-rules="match:#password:The passwords do not match."
                 autocomplete="new-password"
             />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />

@@ -10,7 +10,7 @@
 
         <div class="max-w-2xl mx-auto">
             <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <form action="{{ route('addresses.update', $address) }}" method="POST">
+                <form action="{{ route('addresses.update', $address) }}" method="POST" data-validate>
                     @csrf
                     @method('PUT')
 

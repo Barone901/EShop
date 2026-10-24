@@ -21,7 +21,7 @@
         {{-- Flash Messages --}}
         <x-ui.flash-messages :types="['error']" />
 
-        <form action="{{ route('orders.store') }}" method="POST" id="checkout-form"
+        <form action="{{ route('orders.store') }}" method="POST" id="checkout-form" data-validate
               data-default-country="{{ \App\Models\OrderAddress::DEFAULT_COUNTRY }}">
             @csrf
 

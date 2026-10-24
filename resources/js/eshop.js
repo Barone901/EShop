@@ -2,10 +2,11 @@
  * Eshop - inicializácia modulov
  */
 import Cart from './modules/cart';
-import Checkout from './modules/checkout';
-import PageActions from './modules/page-actions';
 import Search from './modules/search';
 import QuickView from './modules/quickview';
+import FormValidator from './modules/form-validator';
+import Checkout from './modules/checkout';
+import PageActions from './modules/page-actions';
 import Toast from './modules/toast';
 import Services from './services';
 
@@ -14,6 +15,7 @@ const Eshop = {
         Cart.init();
         Search.init();
         QuickView.init();
+        FormValidator.init();
         Checkout.init();
         PageActions.init();
     },
@@ -29,6 +31,7 @@ window.Eshop = {
     Cart,
     Search,
     QuickView,
+    FormValidator,
     Services,
 };
 
