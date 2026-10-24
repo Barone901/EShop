@@ -10,7 +10,7 @@
 @endphp
 
 <header class="site-header sticky top-0 z-50">
-    {{-- ROW 1: logo + profile (account) --}}
+    {{-- ROW 1: logo + search + profile (account) --}}
     <div class="header-top bg-white border-b">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="h-16 flex items-center gap-4">
@@ -20,7 +20,27 @@
                 </a>
 
                 {{-- Right side --}}
-                <div class="ml-auto flex items-center gap-3 justify-end">
+                <div class="ml-auto flex items-center gap-3 w-full max-w-4xl justify-end">
+                    {{-- Search (desktop) --}}
+                    <div class="relative w-full max-w-xl hidden md:block">
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Search product..."
+                            aria-label="Search product"
+                            autocomplete="off"
+                            class="w-full rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm"
+                        />
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                             stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+
+                        <div id="search-results"
+                             class="absolute top-full left-0 right-0 mt-1 bg-white border rounded-xl shadow-lg overflow-hidden z-50 hidden"></div>
+                    </div>
+
                     {{-- Profile / account (desktop only, one place) --}}
                     <div class="hidden md:flex items-center">
                         @include('layouts.partials.account')
@@ -28,6 +48,20 @@
                 </div>
             </div>
 
+            {{-- Mobile search under row 1 --}}
+            <div class="md:hidden pb-3 relative">
+                <input
+                    type="text"
+                    id="search-input-mobile"
+                    placeholder="Search product..."
+                    aria-label="Search product"
+                    autocomplete="off"
+                    class="w-full rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm"
+                />
+
+                <div id="search-results-mobile"
+                     class="absolute top-full left-0 right-0 -mt-2 bg-white border rounded-xl shadow-lg overflow-hidden z-50 hidden"></div>
+            </div>
         </div>
 
         {{-- ROW 2: menu links + cart + mobile profile --}}

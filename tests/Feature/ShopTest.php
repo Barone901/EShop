@@ -75,6 +75,8 @@ class ShopTest extends TestCase
         $this->get('/products?category=tools&sort=price_asc&search=ham')->assertOk()->assertSee('Hammer');
         $this->get(route('product.show', $product))->assertOk()->assertSee('Steel hammer');
         $this->get(route('category.show', 'tools'))->assertOk();
+        $this->getJson('/api/products/search?q=ham')->assertOk()->assertJsonPath('0.name', 'Hammer');
+        $this->getJson('/api/products/hammer')->assertOk()->assertJsonPath('name', 'Hammer');
     }
 
     public function test_inactive_categories_are_hidden(): void

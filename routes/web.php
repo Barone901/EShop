@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
@@ -36,6 +37,11 @@ Route::controller(PageController::class)->group(function () {
 
 // API pre JS (web middleware kvôli session/CSRF pre košík)
 Route::prefix('api')->name('api.')->group(function () {
+
+    Route::prefix('products')->name('products.')->controller(ProductApiController::class)->group(function () {
+        Route::get('/search', 'search')->name('search');
+        Route::get('/{product:slug}', 'show')->name('show');
+    });
 
     Route::prefix('cart')->name('cart.')->controller(CartController::class)->group(function () {
         Route::get('/', 'index')->name('index');
