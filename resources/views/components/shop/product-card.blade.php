@@ -11,6 +11,19 @@
                 />
             @endif
 
+            {{-- Quick view button --}}
+            <button
+                type="button"
+                data-quick-view="{{ $product->slug }}"
+                aria-label="Quick view: {{ $product->name }}"
+                class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-white"
+            >
+                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </button>
+
             {{-- Stock badge --}}
             @if(!$product->is_in_stock)
                 <span class="absolute bottom-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
