@@ -20,6 +20,7 @@
                 required
                 minlength="2"
                 maxlength="255"
+                :pattern="$patterns['name']"
                 autofocus
                 autocomplete="name"
             />

@@ -25,11 +25,13 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'patterns' => RegisterRequest::PATTERNS,
+        ]);
     }
 
     /**
-     * Spracuje registraciu a prihlasi noveho pouzivatela.
+     * Spracuje registraciu, vytvori pouzivatela a priradi rolu customer.
      */
     public function store(RegisterRequest $request): RedirectResponse
     {

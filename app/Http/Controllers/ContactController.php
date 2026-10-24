@@ -18,7 +18,9 @@ class ContactController extends Controller
      */
     public function index(): View
     {
-        return view('pages.contact.index');
+        return view('pages.contact.index', [
+            'patterns' => ContactRequest::PATTERNS,
+        ]);
     }
 
     /**

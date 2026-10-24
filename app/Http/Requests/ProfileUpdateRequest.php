@@ -5,11 +5,20 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */
+    public const PATTERNS = [
+        'first_name' => InputPattern::PERSON_NAME,
+        'last_name' => InputPattern::PERSON_NAME,
+        'name' => InputPattern::USERNAME,
+        'phone' => InputPattern::PHONE,
+    ];
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -17,7 +26,7 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        return InputPattern::applyTo([
             'first_name' => [
                 'nullable',
                 'string',
@@ -47,7 +56,7 @@ class ProfileUpdateRequest extends FormRequest
                 'string',
                 'max:20',
             ],
-        ];
+        ], self::PATTERNS);
     }
 
     /**
@@ -58,6 +67,7 @@ class ProfileUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
+            ...InputPattern::messagesFor(self::PATTERNS),
             'email.unique' => 'This email is already used by another account.',
         ];
     }

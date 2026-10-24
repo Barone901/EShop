@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -25,6 +26,8 @@ class DashboardController extends Controller
             'recentOrders' => $user->orders()->latest()->take(self::RECENT_ORDERS_LIMIT)->get(),
             'shippingAddress' => $user->default_shipping_address,
             'billingAddress' => $user->default_billing_address,
+            // Vzory pre kontrolu formulara profilu v prehliadaci (rovnake ako na serveri)
+            'profilePatterns' => ProfileUpdateRequest::PATTERNS,
         ]);
     }
 }

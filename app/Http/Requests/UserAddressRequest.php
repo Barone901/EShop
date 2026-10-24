@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\UserAddress;
+use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +17,18 @@ use Illuminate\Validation\Rule;
  */
 class UserAddressRequest extends FormRequest
 {
+    /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */
+    public const PATTERNS = [
+        'first_name' => InputPattern::PERSON_NAME,
+        'last_name' => InputPattern::PERSON_NAME,
+        'phone' => InputPattern::PHONE,
+        'city' => InputPattern::CITY,
+        'postal_code' => InputPattern::POSTAL_CODE,
+        'ico' => InputPattern::COMPANY_ID,
+        'dic' => InputPattern::COMPANY_ID,
+        'ic_dph' => InputPattern::COMPANY_ID,
+    ];
+
     public function authorize(): bool
     {
         return true;
@@ -23,7 +36,7 @@ class UserAddressRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return InputPattern::applyTo([
             'type' => [
                 Rule::requiredIf($this->isMethod('POST')),
                 Rule::in(array_keys(UserAddress::TYPES)),
@@ -41,7 +54,12 @@ class UserAddressRequest extends FormRequest
             'dic' => ['nullable', 'string', 'max:20'],
             'ic_dph' => ['nullable', 'string', 'max:20'],
             'is_default' => ['nullable', 'boolean'],
-        ];
+        ], self::PATTERNS);
+    }
+
+    public function messages(): array
+    {
+        return InputPattern::messagesFor(self::PATTERNS);
     }
 
     /**

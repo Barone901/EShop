@@ -5,10 +5,26 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CheckoutRequest extends FormRequest
 {
+    /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */
+    public const PATTERNS = [
+        'shipping_name' => InputPattern::PERSON_NAME,
+        'shipping_phone' => InputPattern::PHONE,
+        'shipping_city' => InputPattern::CITY,
+        'shipping_postal_code' => InputPattern::POSTAL_CODE,
+        'billing_name' => InputPattern::PERSON_NAME,
+        'billing_phone' => InputPattern::PHONE,
+        'billing_city' => InputPattern::CITY,
+        'billing_postal_code' => InputPattern::POSTAL_CODE,
+        'billing_ico' => InputPattern::COMPANY_ID,
+        'billing_dic' => InputPattern::COMPANY_ID,
+        'billing_ic_dph' => InputPattern::COMPANY_ID,
+    ];
+
     public function authorize(): bool
     {
         return true;
@@ -16,7 +32,7 @@ class CheckoutRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return InputPattern::applyTo([
             // Shipping
             'shipping_name' => ['required', 'string', 'max:255'],
             'shipping_email' => ['required', 'email', 'max:255'],
@@ -42,7 +58,7 @@ class CheckoutRequest extends FormRequest
 
             // Other
             'note' => ['nullable', 'string', 'max:1000'],
-        ];
+        ], self::PATTERNS);
     }
 
     public function messages(): array
@@ -62,6 +78,8 @@ class CheckoutRequest extends FormRequest
             'billing_address.required' => 'Billing address is required.',
             'billing_city.required' => 'Billing city is required.',
             'billing_postal_code.required' => 'Billing postal code is required.',
+
+            ...InputPattern::messagesFor(self::PATTERNS),
         ];
     }
 }

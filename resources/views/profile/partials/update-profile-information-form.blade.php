@@ -21,20 +21,20 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <x-input-label for="first_name" :value="__('First Name')" />
-                <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full" :value="old('first_name', $user->first_name)" maxlength="100" autofocus autocomplete="given-name" />
+                <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full" :value="old('first_name', $user->first_name)" maxlength="100" :pattern="$profilePatterns['first_name']" autofocus autocomplete="given-name" />
                 <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
             </div>
 
             <div>
                 <x-input-label for="last_name" :value="__('Last Name')" />
-                <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)" maxlength="100" autocomplete="family-name" />
+                <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)" maxlength="100" :pattern="$profilePatterns['last_name']" autocomplete="family-name" />
                 <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
             </div>
         </div>
 
         <div>
             <x-input-label for="name" :value="__('Username')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required minlength="2" maxlength="255" autocomplete="name" />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required minlength="2" maxlength="255" :pattern="$profilePatterns['name']" autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
@@ -64,7 +64,7 @@
 
         <div>
             <x-input-label for="phone" :value="__('Phone')" />
-            <x-text-input id="phone" name="phone" type="tel" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="+1 XXX XXX XXXX" maxlength="20" autocomplete="tel" />
+            <x-text-input id="phone" name="phone" type="tel" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="+1 XXX XXX XXXX" maxlength="20" :pattern="$profilePatterns['phone']" autocomplete="tel" />
             <x-input-error class="mt-2" :messages="$errors->get('phone')" />
         </div>
 

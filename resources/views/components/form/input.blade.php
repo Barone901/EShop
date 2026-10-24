@@ -6,6 +6,7 @@
     - trieda (class) sa aplikuje na obal, ostatne atributy (placeholder, autocomplete...) na pole
     - inputClass = doplnkove triedy priamo pre pole (napr. resize-none)
     - focus stav je jednotny pre vsetky polia (app.css)
+    - pattern = vzor z App\Support\InputPattern (rovnaky ako na serveri), doplni aj hlasku pre JS validator
     - maxlength, minlength a dalsie HTML atributy sa predavaju priamo poli
 --}}
 @props([
@@ -16,12 +17,20 @@
     'required' => false,
     'textarea' => false,
     'inputClass' => '',
+    'pattern' => null,
 ])
 
 @php
     // Pri chybe cerveny okraj namiesto sedeho (border-gray-* prefarbuje app.css, preto nie oba naraz)
     $borderClass = $errors->has($name) ? 'border-red-500' : 'border-gray-300';
     $fieldClasses = trim("w-full px-4 py-3 border {$borderClass} rounded-lg {$inputClass}");
+
+    if ($pattern) {
+        $attributes = $attributes->merge([
+            'pattern' => $pattern,
+            'data-pattern-message' => \App\Support\InputPattern::message($pattern),
+        ]);
+    }
 @endphp
 
 <div {{ $attributes->only('class') }}>

@@ -3,11 +3,17 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
+use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
+    /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */
+    public const PATTERNS = [
+        'name' => InputPattern::USERNAME, // len písmená, medzery a pomlčky
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,11 +29,27 @@ class RegisterRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => ['required', 'string', 'min:2', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'string', 'confirmed', Password::defaults()],
-        ];
+        return InputPattern::applyTo([
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:' . User::class,
+            ],
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                Password::defaults(),
+            ],
+        ], self::PATTERNS);
     }
 
     /**
@@ -38,6 +60,7 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
+            ...InputPattern::messagesFor(self::PATTERNS),
             'email.unique' => 'This email is already registered.',
         ];
     }

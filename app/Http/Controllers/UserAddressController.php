@@ -53,6 +53,7 @@ class UserAddressController extends Controller
                 'email' => $user->email,
                 'country' => UserAddress::DEFAULT_COUNTRY,
             ],
+            'patterns' => UserAddressRequest::PATTERNS,
         ]);
     }
 
@@ -83,6 +84,7 @@ class UserAddressController extends Controller
 
         return view('pages.addresses.edit', [
             'address' => $address,
+            'patterns' => UserAddressRequest::PATTERNS,
         ]);
     }
 

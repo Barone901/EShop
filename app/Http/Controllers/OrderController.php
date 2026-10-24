@@ -53,6 +53,8 @@ class OrderController extends Controller
             'defaultBillingAddress' => $billingAddresses->first(),
             'shippingAddresses' => $shippingAddresses,
             'billingAddresses' => $billingAddresses,
+            // Vzory pre kontrolu poli v prehliadaci (rovnake ako validacia na serveri)
+            'patterns' => CheckoutRequest::PATTERNS,
         ]);
     }
 

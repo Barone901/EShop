@@ -66,18 +66,22 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <x-form.input name="shipping_name" label="Full Name" required placeholder="John Doe" maxlength="255"
+                                          :pattern="$patterns['shipping_name']"
                                           :value="$defaultShippingAddress?->full_name ?? $user?->full_name" />
 
                             <x-form.input name="shipping_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
                                           :value="$defaultShippingAddress?->email ?? $user?->email" />
 
                             <x-form.input name="shipping_phone" type="tel" label="Phone" required placeholder="+421 XXX XXX XXX" maxlength="20"
+                                          :pattern="$patterns['shipping_phone']"
                                           :value="$defaultShippingAddress?->phone" />
 
                             <x-form.input name="shipping_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                          :pattern="$patterns['shipping_postal_code']"
                                           :value="$defaultShippingAddress?->postal_code" />
 
                             <x-form.input name="shipping_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                          :pattern="$patterns['shipping_city']"
                                           :value="$defaultShippingAddress?->city" />
 
                             <x-form.input name="shipping_country" label="Country" maxlength="100"
@@ -135,18 +139,22 @@
                         <div id="billing-fields">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <x-form.input name="billing_name" label="Full Name" required placeholder="John Doe" maxlength="255"
+                                              :pattern="$patterns['billing_name']"
                                               :value="$defaultBillingAddress?->full_name ?? $user?->full_name" />
 
                                 <x-form.input name="billing_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
                                               :value="$defaultBillingAddress?->email ?? $user?->email" />
 
                                 <x-form.input name="billing_phone" type="tel" label="Phone" placeholder="+421 XXX XXX XXX" maxlength="20"
+                                              :pattern="$patterns['billing_phone']"
                                               :value="$defaultBillingAddress?->phone" />
 
                                 <x-form.input name="billing_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                              :pattern="$patterns['billing_postal_code']"
                                               :value="$defaultBillingAddress?->postal_code" />
 
                                 <x-form.input name="billing_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                              :pattern="$patterns['billing_city']"
                                               :value="$defaultBillingAddress?->city" />
 
                                 <x-form.input name="billing_country" label="Country" maxlength="100"
@@ -164,12 +172,15 @@
                                                   class="md:col-span-2" :value="$defaultBillingAddress?->company_name" />
 
                                     <x-form.input name="billing_ico" label="Company ID (IČO)" placeholder="12345678" maxlength="20"
+                                                  :pattern="$patterns['billing_ico']"
                                                   :value="$defaultBillingAddress?->ico" />
 
                                     <x-form.input name="billing_dic" label="Tax ID (DIČ)" placeholder="1234567890" maxlength="20"
+                                                  :pattern="$patterns['billing_dic']"
                                                   :value="$defaultBillingAddress?->dic" />
 
                                     <x-form.input name="billing_ic_dph" label="VAT ID (IČ DPH)" placeholder="SK1234567890" maxlength="20"
+                                                  :pattern="$patterns['billing_ic_dph']"
                                                   :value="$defaultBillingAddress?->ic_dph" />
                                 </div>
                             </div>

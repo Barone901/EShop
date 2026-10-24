@@ -23,7 +23,7 @@
                         @csrf
 
                         <div class="grid md:grid-cols-2 gap-6">
-                            <x-form.input name="name" label="Your Name" required maxlength="255" :value="auth()->user()?->name" />
+                            <x-form.input name="name" label="Your Name" required maxlength="255" :pattern="$patterns['name']" :value="auth()->user()?->name" />
 
                             <x-form.input name="email" type="email" label="Email Address" required maxlength="255" :value="auth()->user()?->email" />
                         </div>
