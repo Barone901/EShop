@@ -5,6 +5,7 @@
  */
 
 import CartService from '../services/cartService';
+import Toast from './toast';
 import escapeHtml from '../utils/escape-html';
 
 const DROPDOWN_ITEMS_LIMIT = 4;
@@ -126,8 +127,13 @@ const Cart = {
      * Spoločné spracovanie odpovede pre akcie nad košíkom.
      */
     async handleAction(request) {
-        const data = await request;
-        this.updateUI(data.cart);
+        try {
+            const data = await request;
+            this.updateUI(data.cart);
+            Toast.success(data.message);
+        } catch (error) {
+            Toast.error(error.message);
+        }
     },
 
     add(productId, quantity = 1) {

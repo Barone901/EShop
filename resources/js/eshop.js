@@ -4,6 +4,7 @@
 import Cart from './modules/cart';
 import Checkout from './modules/checkout';
 import PageActions from './modules/page-actions';
+import Toast from './modules/toast';
 import Services from './services';
 
 const Eshop = {
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Verejné API modulov (napr. pre ladenie v konzole)
 window.Eshop = {
+    Toast,
     Cart,
     Services,
 };
