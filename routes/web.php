@@ -27,7 +27,7 @@ Route::view('/cart', 'pages.cart.index')->name('cart.index');
 
 Route::controller(ContactController::class)->group(function () {
     Route::get('/contact', 'index')->name('contact');
-    Route::post('/contact', 'send')->name('contact.send');
+    Route::post('/contact', 'send')->middleware('throttle:5,1')->name('contact.send');
 });
 
 Route::controller(PageController::class)->group(function () {
@@ -35,8 +35,8 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/pages/{slug}', 'show')->name('pages.show');
 });
 
-// API pre JS (web middleware kvôli session/CSRF pre košík)
-Route::prefix('api')->name('api.')->group(function () {
+// API pre JS (web middleware kvôli session/CSRF pre košík; limit 60 požiadaviek za minútu)
+Route::prefix('api')->name('api.')->middleware('throttle:60,1')->group(function () {
 
     Route::prefix('products')->name('products.')->controller(ProductApiController::class)->group(function () {
         Route::get('/search', 'search')->name('search');

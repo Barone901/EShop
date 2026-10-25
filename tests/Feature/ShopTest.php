@@ -317,4 +317,22 @@ class ShopTest extends TestCase
             ->assertSee('<h2>Heading</h2>', false)
             ->assertDontSee('alert("xss")', false);
     }
+
+    public function test_contact_form_is_validated_and_throttled(): void
+    {
+        $data = [
+            'name' => 'John',
+            'email' => 'john@gmail.com',
+            'subject' => 'Hello',
+            'message' => 'Hello, I have a question.',
+        ];
+
+        $this->post('/contact', [])->assertSessionHasErrors(['name', 'email', 'subject', 'message']);
+
+        for ($i = 0; $i < 4; $i++) {
+            $this->post('/contact', $data)->assertSessionHas('success');
+        }
+
+        $this->post('/contact', $data)->assertStatus(429);
+    }
 }
