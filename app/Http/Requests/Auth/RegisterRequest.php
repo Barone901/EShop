@@ -47,6 +47,7 @@ class RegisterRequest extends FormRequest
                 'required',
                 'string',
                 'confirmed',
+                // pravidla hesla su nastavene v AppServiceProvider (rovnake aj pri zmene hesla)
                 Password::defaults(),
             ],
         ], self::PATTERNS);

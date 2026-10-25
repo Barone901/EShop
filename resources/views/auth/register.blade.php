@@ -52,9 +52,13 @@
                 type="password"
                 name="password"
                 required
+                data-rules="password"
                 autocomplete="new-password"
             />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <p class="mt-1 text-xs text-gray-500">
+                The password must be at least 8 characters long and contain upper and lower case letters and numbers.
+            </p>
         </div>
 
         {{-- Confirm Password --}}

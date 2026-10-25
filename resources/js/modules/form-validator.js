@@ -6,7 +6,7 @@
  * Pravidlá sa berú z HTML atribútov poľa, ktoré zodpovedajú validácii na serveri:
  *   required, type="email", minlength, maxlength, pattern (+ data-pattern-message)
  * a z vlastného atribútu data-rules pre pravidlá, ktoré HTML nemá:
- *   data-rules="match:#password"
+ *   data-rules="password|match:#password"
  *
  * Validuje sa pri opustení poľa (blur) a pri odoslaní formulára.
  * Skryté a vypnuté polia sa preskakujú.
@@ -56,6 +56,20 @@ const FormValidator = {
             const target = document.querySelector(targetSelector);
             if (!target) return true;
             return value === target.value || message;
+        },
+
+        password: (value) => {
+            if (!value) return true;
+            const hasMinLength = value.length >= 8;
+            const hasUppercase = /[A-Z]/.test(value);
+            const hasLowercase = /[a-z]/.test(value);
+            const hasNumber = /[0-9]/.test(value);
+
+            if (!hasMinLength) return 'The password must be at least 8 characters long.';
+            if (!hasUppercase) return 'The password must contain a capital letter.';
+            if (!hasLowercase) return 'The password must contain a lowercase letter.';
+            if (!hasNumber) return 'The password must contain a number.';
+            return true;
         },
     },
 

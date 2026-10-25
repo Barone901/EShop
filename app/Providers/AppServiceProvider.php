@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,5 +34,9 @@ class AppServiceProvider extends ServiceProvider
 
             return $user->hasRole('admin') ? true : null;
         });
+
+        // Jednotne pravidla hesla pre registraciu aj zmenu hesla v profile
+        // (rovnake pravidla kontroluje v prehliadaci form-validator.js, pravidlo "password")
+        Password::defaults(fn () => Password::min(8)->mixedCase()->numbers());
     }
 }

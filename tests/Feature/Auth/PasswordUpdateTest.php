@@ -33,6 +33,22 @@ class PasswordUpdateTest extends TestCase
         $this->assertTrue(Hash::check('NewPassword123', $user->refresh()->password));
     }
 
+    public function test_new_password_must_follow_the_same_rules_as_registration(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->put('/password', [
+                'current_password' => 'password',
+                'password' => 'weakpassword',
+                'password_confirmation' => 'weakpassword',
+            ])
+            ->assertSessionHasErrorsIn('updatePassword', 'password');
+
+        $this->assertTrue(Hash::check('password', $user->refresh()->password));
+    }
+
     public function test_correct_password_must_be_provided_to_update_password(): void
     {
         $user = User::factory()->create();

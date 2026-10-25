@@ -22,7 +22,7 @@
 
         <div>
             <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" required autocomplete="new-password" />
+            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" required data-rules="password" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
 

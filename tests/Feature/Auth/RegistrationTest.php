@@ -36,4 +36,17 @@ class RegistrationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
         $this->assertTrue(User::firstWhere('email', 'test.user@gmail.com')->hasRole('customer'));
     }
+
+    public function test_weak_password_is_rejected(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test.user@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('password');
+        $this->assertGuest();
+    }
 }
