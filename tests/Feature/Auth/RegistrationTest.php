@@ -25,6 +25,8 @@ class RegistrationTest extends TestCase
         // Registracia priraduje rolu "customer" (v produkcii ju vytvara RolesAndPermissionsSeeder)
         Role::create(['name' => 'customer', 'guard_name' => 'web']);
 
+        // Email musi mat domenu s platnym DNS zaznamom (pravidlo email:rfc,dns),
+        // heslo musi mat aspon 8 znakov, velke aj male pismena a cislo
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test.user@gmail.com',
