@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\UserFactory;
@@ -22,9 +24,7 @@ class User extends Authenticatable implements FilamentUser
     use HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Polia povolene pre hromadne priradenie.
      */
     protected $fillable = [
         'name',
@@ -36,9 +36,7 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Polia skryte pri serializacii.
      */
     protected $hidden = [
         'password',
@@ -46,9 +44,7 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Pretypovanie atributov.
      */
     protected function casts(): array
     {
@@ -121,6 +117,10 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->addressesOfType(UserAddress::TYPE_BILLING)->first();
     }
+
+    // =========================================================================
+    // FILAMENT A AUTORIZACIA
+    // =========================================================================
 
     /**
      * Urci ci pouzivatel moze pristupit do admin panelu.
