@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             DemoUserSeeder::class,
             CatalogSeeder::class,
             ContentSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }
-
