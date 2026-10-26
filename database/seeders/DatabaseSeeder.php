@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             // Ukazkove data pre prvy beh aplikacie
             DemoUserSeeder::class,
             CatalogSeeder::class,
+            ContentSeeder::class,
         ]);
     }
 }
