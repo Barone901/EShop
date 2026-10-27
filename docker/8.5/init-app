@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# Inicializacia aplikacie pri starte kontajnera.
+# Pri prvom spusteni nainstaluje zavislosti, vytvori .env, spusti migracie,
+# naimportuje ukazkove data a zbuildi frontend. Pri dalsich spusteniach
+# kroky, ktore uz boli vykonane, preskoci.
+#
+# [AI] Vygenerovane s pomocou AI (Claude).
+
+set -e
+cd /var/www/html
+
+# Prikazy spusta pod pouzivatelom sail, aby subory na hoste nepatrili rootovi.
+run() {
+    gosu "$WWWUSER" "$@"
+}
+
+echo "[init] Priprava aplikacie..."
+
+# storage/app a storage/framework su v .gitignore, po naklonovani chybaju
+run mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions \
+    storage/framework/views storage/logs bootstrap/cache
+
+if [ ! -f .env ]; then
+    echo "[init] Vytvaram .env z .env.example"
+    run cp .env.example .env
+fi
+
+if [ ! -f vendor/autoload.php ]; then
+    echo "[init] composer install"
+    run composer install --no-interaction --prefer-dist
+fi
+
+if ! grep -q '^APP_KEY=base64:' .env; then
+    echo "[init] Generujem APP_KEY"
+    run php artisan key:generate --force
+fi
+
+echo "[init] Migracie"
+run php artisan migrate --force
+
+# Ukazkove data sa importuju len do prazdnej databazy.
+USERS=$(run php artisan tinker --execute="echo \Illuminate\Support\Facades\DB::table('users')->count();" | tail -n 1)
+if [ "$USERS" = "0" ]; then
+    echo "[init] Importujem ukazkove data"
+    run php artisan db:seed --force
+fi
+
+if [ ! -L public/storage ]; then
+    echo "[init] storage:link"
+    run php artisan storage:link
+fi
+
+if [ ! -f public/build/manifest.json ]; then
+    echo "[init] Build frontendu (npm)"
+    run npm ci
+    run npm run build
+fi
+
+echo "[init] Hotovo, aplikacia bezi na http://localhost (port podla APP_PORT, predvolene 80)"

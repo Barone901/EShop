@@ -1,6 +1,6 @@
 # Zalozene na Laravel Sail (https://github.com/laravel/sail).
 # Runtime je skopirovany do ./docker, aby sa projekt dal spustit aj bez
-# priecinka vendor.
+# priecinka vendor (pri prvom spusteni ho vytvori skript docker/8.5/init-app).
 # Predvolene hodnoty premennych zodpovedaju .env.example.
 services:
     laravel.test:

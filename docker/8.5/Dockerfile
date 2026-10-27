@@ -1,4 +1,5 @@
 # Prevzate z Laravel Sail (vendor/laravel/sail/runtimes/8.5), zdroj: https://github.com/laravel/sail
+# Upravene s pomocou AI (Claude): pridany skript init-app pre prvotnu inicializaciu aplikacie.
 FROM ubuntu:24.04
 
 LABEL maintainer="Taylor Otwell"
@@ -84,9 +85,10 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 RUN git config --global --add safe.directory /var/www/html
 
 COPY start-container /usr/local/bin/start-container
+COPY init-app /usr/local/bin/init-app
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.5/cli/conf.d/99-sail.ini
-RUN chmod +x /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container /usr/local/bin/init-app
 
 EXPOSE 80/tcp
 

@@ -22,5 +22,8 @@ if [ $# -gt 0 ]; then
         exec gosu $WWWUSER "$@"
     fi
 else
+    # Prvotna inicializacia aplikacie (pridane do Sail runtime, viac v init-app).
+    # Ak zlyha, kontajner sa ukonci a chyba je v "docker compose logs laravel.test".
+    /usr/local/bin/init-app || { echo "[init] CHYBA: inicializacia zlyhala"; exit 1; }
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 fi
