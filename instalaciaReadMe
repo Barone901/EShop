@@ -1,0 +1,62 @@
+Instalacia a spustenie projektu (Docker / Laravel Sail)
+==================================================
+
+Podrobny popis projektu, ukazkove ucty a prehlad poziadaviek su v README.md.
+
+Poziadavky
+----------
+- Docker (s Docker Compose)
+
+1) Spustenie
+------------
+git clone <adresa-repozitara> eShop
+cd eShop
+docker compose up -d
+
+Pri prvom spusteni kontajner automaticky (skript docker/8.5/init-app):
+- vytvori .env z .env.example
+- nainstaluje PHP zavislosti (composer install)
+- vygeneruje APP_KEY
+- spusti migracie a naimportuje ukazkove data (len do prazdnej databazy)
+- vytvori storage link pre obrazky
+- zbuildi frontend (npm ci, npm run build)
+
+Priebeh: docker compose logs -f laravel.test
+Hotovo je, ked sa v logu objavi "[init] Hotovo". Prve spustenie trva niekolko minut.
+
+2) Otvorenie aplikacie
+----------------------
+http://localhost        e-shop
+http://localhost/admin  administracia (admin@admin.com / admin123)
+
+Ukazkove ucty a ich hesla su v README.md. Hesla su slabe a verejne,
+sluzia len na lokalne vyskusanie (pozri upozornenie v README.md).
+
+Ak je port 80 alebo 3306 obsadeny: pred spustenim cp .env.example .env
+a v .env nastav APP_PORT a FORWARD_DB_PORT.
+
+Uzitocne prikazy
+----------------
+Zastavenie kontajnerov:
+docker compose down
+
+Zmazanie databazy a novy import ukazkovych dat:
+docker compose down -v
+docker compose up -d
+
+Testy:
+docker compose exec laravel.test php artisan test
+
+Vyvoj s Vite dev serverom (hot reload):
+docker compose exec laravel.test npm run dev
+
+Vycistenie cache:
+docker compose exec laravel.test php artisan optimize:clear
+
+Najcastejsie problemy
+---------------------
+- Permissions error:
+  docker compose exec laravel.test chmod -R 775 storage bootstrap/cache
+
+- Kontajner sa po starte ukonci:
+  docker compose logs laravel.test   (posledny riadok [init] ukaze krok, ktory zlyhal)
