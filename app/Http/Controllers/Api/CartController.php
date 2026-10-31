@@ -42,7 +42,7 @@ class CartController extends Controller
             'quantity'   => ['nullable', 'integer', 'min:1', 'max:' . config('shop.max_cart_quantity')],
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        $product = Product::findOrFail((int) $validated['product_id']);
 
         return $this->respond(
             fn () => $this->cartService->addProduct($product, (int) ($validated['quantity'] ?? 1)),

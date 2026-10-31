@@ -185,7 +185,9 @@ class OrderService
             ->whereNotNull('guest_token')
             ->first();
 
-        return $order && hash_equals($order->guest_token, $guestToken) ? $order : null;
+        return $order !== null && is_string($order->guest_token) && hash_equals($order->guest_token, $guestToken)
+            ? $order
+            : null;
     }
 
     /**
@@ -201,7 +203,7 @@ class OrderService
             DB::transaction(function () use ($order, $byAdmin) {
                 // Stav overime az pod zamkom objednavky - dva subezne requesty (napr. dvojklik)
                 // by inak oba presli kontrolou a vratili tovar na sklad dvakrat
-                $locked = Order::query()->lockForUpdate()->findOrFail($order->getKey());
+                $locked = Order::query()->lockForUpdate()->findOrFail((int) $order->getKey());
 
                 if ($locked->isCancelled()) {
                     throw new OrderException('Order is already cancelled.');
