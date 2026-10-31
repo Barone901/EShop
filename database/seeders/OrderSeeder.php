@@ -4,11 +4,14 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\UserAddress;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -25,10 +28,10 @@ class OrderSeeder extends Seeder
 
         $orders = [
             // [stav, stav platby, pred kolkymi dnami, [slug produktu => mnozstvo], poznamka]
-            [Order::STATUS_DELIVERED, Order::PAYMENT_PAID, 30, ['socket-set-14-46-pcs' => 1, 'combination-pliers-180-mm' => 2], null],
-            [Order::STATUS_SHIPPED, Order::PAYMENT_PENDING, 4, ['workshop-tool-cart-7-drawers' => 1], 'Please call before delivery.'],
-            [Order::STATUS_PENDING, Order::PAYMENT_PENDING, 1, ['screwdriver-set-with-stand-18-pcs' => 1, 'vde-screwdriver-set-7-pcs' => 1], null],
-            [Order::STATUS_CANCELLED, Order::PAYMENT_PENDING, 12, ['hub-puller-hydraulic' => 1], null],
+            [OrderStatus::Delivered, PaymentStatus::Paid, 30, ['socket-set-14-46-pcs' => 1, 'combination-pliers-180-mm' => 2], null],
+            [OrderStatus::Shipped, PaymentStatus::Pending, 4, ['workshop-tool-cart-7-drawers' => 1], 'Please call before delivery.'],
+            [OrderStatus::Pending, PaymentStatus::Pending, 1, ['screwdriver-set-with-stand-18-pcs' => 1, 'vde-screwdriver-set-7-pcs' => 1], null],
+            [OrderStatus::Cancelled, PaymentStatus::Pending, 12, ['hub-puller-hydraulic' => 1], null],
         ];
 
         foreach ($orders as [$status, $paymentStatus, $daysAgo, $items, $note]) {
@@ -45,18 +48,19 @@ class OrderSeeder extends Seeder
             });
 
             $subtotal = $lines->sum('subtotal');
+            $shippingCost = (float) config('shop.shipping_cost');
             $date = now()->subDays($daysAgo);
 
             $order = Order::create([
                 // rovnaky format ako Order::generateOrderNumber(), ale s datumom objednavky
-                'order_number' => 'ORD-'.$date->format('Ymd').'-'.strtoupper(Str::random(4)),
+                'order_number' => 'ORD-'.$date->format('Ymd').'-'.Str::upper(Str::random(6)),
                 'user_id' => $customer->id,
                 'status' => $status,
-                'payment_method' => Order::PAYMENT_COD,
+                'payment_method' => PaymentMethod::CashOnDelivery,
                 'payment_status' => $paymentStatus,
                 'subtotal' => $subtotal,
-                'shipping_cost' => Order::SHIPPING_COST,
-                'total' => $subtotal + Order::SHIPPING_COST,
+                'shipping_cost' => $shippingCost,
+                'total' => $subtotal + $shippingCost,
                 'note' => $note,
             ]);
 
@@ -66,7 +70,7 @@ class OrderSeeder extends Seeder
             $order->items()->createMany($lines->all());
 
             // Snapshot predvolenych adries zakaznika (typy adries su v oboch tabulkach rovnake)
-            foreach (array_keys(UserAddress::TYPES) as $type) {
+            foreach (AddressType::cases() as $type) {
                 $address = $customer->addresses()
                     ->where('type', $type)
                     ->where('is_default', true)

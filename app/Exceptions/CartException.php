@@ -18,8 +18,18 @@ class CartException extends RuntimeException
         return new self('Not enough items in stock.', 422);
     }
 
+    public static function quantityLimit(int $max): self
+    {
+        return new self("You can add at most {$max} pieces of one product.", 422);
+    }
+
     public static function notInCart(): self
     {
         return new self('Product is not in cart.', 404);
+    }
+
+    public static function notAvailable(): self
+    {
+        return new self('Product is no longer available.', 404);
     }
 }

@@ -4,8 +4,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AddressType;
+use App\Enums\UserRole;
 use App\Models\User;
-use App\Models\UserAddress;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,14 +18,14 @@ class DemoUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->createUser('employee@example.com', 'Eva', 'Zamestnana', 'employee');
-        $this->createUser('designer@example.com', 'Dano', 'Dizajner', 'designer');
+        $this->createUser('employee@example.com', 'Eva', 'Zamestnana', UserRole::Employee->value);
+        $this->createUser('designer@example.com', 'Dano', 'Dizajner', UserRole::Designer->value);
 
-        $customer = $this->createUser('customer@example.com', 'Jana', 'Novakova', 'customer');
+        $customer = $this->createUser('customer@example.com', 'Jana', 'Novakova', UserRole::Customer->value);
 
         $customer->addresses()->createMany([
             [
-                'type' => UserAddress::TYPE_SHIPPING,
+                'type' => AddressType::Shipping,
                 'is_default' => true,
                 'first_name' => 'Jana',
                 'last_name' => 'Novakova',
@@ -36,7 +37,7 @@ class DemoUserSeeder extends Seeder
                 'country' => 'Slovakia',
             ],
             [
-                'type' => UserAddress::TYPE_SHIPPING,
+                'type' => AddressType::Shipping,
                 'is_default' => false,
                 'first_name' => 'Jana',
                 'last_name' => 'Novakova',
@@ -48,7 +49,7 @@ class DemoUserSeeder extends Seeder
                 'country' => 'Slovakia',
             ],
             [
-                'type' => UserAddress::TYPE_BILLING,
+                'type' => AddressType::Billing,
                 'is_default' => true,
                 'first_name' => 'Jana',
                 'last_name' => 'Novakova',

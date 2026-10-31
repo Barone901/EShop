@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Pages\Tables;
 
-use App\Models\Page;
+use App\Enums\PageStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -40,15 +40,10 @@ class PagesTable
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                // Popisok a farbu badge berie Filament z enumu PageStatus
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->colors([
-                        'warning' => Page::STATUS_DRAFT,
-                        'success' => Page::STATUS_PUBLISHED,
-                        'gray' => Page::STATUS_ARCHIVED,
-                    ])
-                    ->formatStateUsing(fn (string $state) => Page::getStatuses()[$state] ?? $state)
                     ->sortable(),
 
                 TextColumn::make('author.name')
@@ -83,7 +78,7 @@ class PagesTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('Status')
-                    ->options(Page::getStatuses()),
+                    ->options(PageStatus::class),
 
                 TernaryFilter::make('is_featured')
                     ->label('Highlighted')

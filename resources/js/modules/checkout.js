@@ -41,7 +41,7 @@ const Checkout = {
         this.form = field('checkout-form');
         if (!this.form) return;
 
-        // Predvolená krajina z PHP (OrderAddress::DEFAULT_COUNTRY)
+        // Predvolená krajina z PHP (config/shop.php, default_country)
         this.defaultCountry = this.form.dataset.defaultCountry;
 
         this.sameAsShipping = field('same-as-shipping');

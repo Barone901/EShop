@@ -52,6 +52,9 @@ class ProductController extends Controller
     {
         $product->load('category');
 
+        // Produkty z neaktivnej kategorie nie su v ponuke (rovnako ako stranka kategorie)
+        abort_unless($product->isVisible(), 404);
+
         return view('pages.products.show', compact('product'));
     }
 }

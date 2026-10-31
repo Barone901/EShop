@@ -48,10 +48,11 @@
                     <div>
                         @php
                             $currentIndex = $order->progressStep();
-                            $lastIndex = count(\App\Models\Order::PROGRESS_STATUSES) - 1;
+                            $steps = \App\Enums\OrderStatus::progressSteps();
+                            $lastIndex = count($steps) - 1;
                         @endphp
                         <div class="flex items-center justify-between">
-                            @foreach(\App\Models\Order::PROGRESS_STATUSES as $index => $status)
+                            @foreach($steps as $index => $status)
                                 <div class="flex flex-col items-center relative {{ $index < $lastIndex ? 'flex-1' : '' }}">
                                     <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold
                                         {{ $index <= $currentIndex ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500' }}
@@ -65,7 +66,7 @@
                                         @endif
                                     </div>
                                     <span class="text-[11px] sm:text-xs mt-2 text-center {{ $index <= $currentIndex ? 'text-indigo-400 font-medium' : 'text-gray-500' }}">
-                                        {{ \App\Models\Order::STATUSES[$status] }}
+                                        {{ $status->getLabel() }}
                                     </span>
                                     @if($index < $lastIndex)
                                         <div class="absolute top-4 sm:top-5 left-full w-full h-0.5 {{ $index < $currentIndex ? 'bg-indigo-600' : 'bg-gray-200' }}" style="transform: translateX(-50%);"></div>
@@ -141,11 +142,11 @@
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Payment Method</span>
-                            <span class="font-medium text-gray-900">{{ $order->payment_method_text }}</span>
+                            <span class="font-medium text-gray-900">{{ $order->payment_method->getLabel() }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Payment Status</span>
-                            <span class="font-medium text-gray-900">{{ $order->payment_status_text }}</span>
+                            <span class="font-medium text-gray-900">{{ $order->payment_status->getLabel() }}</span>
                         </div>
                     </div>
                 </div>

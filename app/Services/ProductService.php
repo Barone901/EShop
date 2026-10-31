@@ -9,7 +9,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
- * Sluzba pre pracu s produktami.
+ * Sluzba pre pracu s produktami. Zobrazuju sa len produkty z aktivnych kategorii.
  */
 class ProductService
 {
@@ -19,15 +19,21 @@ class ProductService
     public const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
 
     /**
+     * Minimalna dlzka vyrazu pre autocomplete (rovnaka ako v search.js).
+     */
+    private const MIN_SEARCH_LENGTH = 2;
+
+    /**
      * Vyhlada produkty podla zadaneho vyrazu (autocomplete).
      */
     public function search(string $query, int $limit = 10): Collection
     {
-        if (strlen($query) < 2) {
+        if (mb_strlen($query) < self::MIN_SEARCH_LENGTH) {
             return collect();
         }
 
-        return Product::search($query)
+        return Product::visible()
+            ->search($query)
             ->with('category')
             ->limit($limit)
             ->get();
@@ -42,7 +48,7 @@ class ProductService
         ?string $sort = null,
         int $perPage = 12
     ): LengthAwarePaginator {
-        $query = Product::query()->search($search);
+        $query = Product::visible()->search($search);
 
         if ($categorySlug) {
             $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
@@ -56,47 +62,5 @@ class ProductService
         };
 
         return $query->paginate($perPage)->withQueryString();
-    }
-
-    /**
-     * Formatuje produkt pre API odpoved (vysledky vyhladavania).
-     */
-    public function formatForApi(Product $product): array
-    {
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'formatted_price' => $product->formatted_price,
-            'image_url' => $product->image_src,
-            'category' => $product->category?->name,
-            'in_stock' => $product->is_in_stock,
-            'url' => route('product.show', $product),
-        ];
-    }
-
-    /**
-     * Formatuje produkt s detailmi pre API odpoved (quick view).
-     */
-    public function formatDetailForApi(Product $product): array
-    {
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'description' => $product->description,
-            'price' => $product->price,
-            'formatted_price' => $product->formatted_price,
-            'stock' => $product->stock,
-            'in_stock' => $product->is_in_stock,
-            'image_url' => $product->image_src,
-            'category' => [
-                'id' => $product->category?->id,
-                'name' => $product->category?->name,
-                'slug' => $product->category?->slug,
-            ],
-            'url' => route('product.show', $product),
-        ];
     }
 }

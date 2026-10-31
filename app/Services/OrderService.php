@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Exceptions\OrderException;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +20,17 @@ use Illuminate\Support\Str;
 
 /**
  * Sluzba pre spravu objednavok.
+ *
+ * [AI] Upravene s pomocou AI (Claude): medzisucet z cien v DB, zamok objednavky pri ruseni,
+ *      spolocne rusenie pre zakaznika aj admina, vyhladanie objednavky zakaznika/hosta.
  */
 class OrderService
 {
+    /**
+     * Relacie potrebne pre detail objednavky.
+     */
+    private const DETAIL_RELATIONS = ['items.product', 'shippingAddress', 'billingAddress'];
+
     /**
      * Injektuje sluzbu pre kosik.
      */
@@ -42,71 +55,77 @@ class OrderService
 
         try {
             $order = DB::transaction(function () use ($orderData, $cart, $guestToken) {
-                $shippingCost = Order::SHIPPING_COST;
-                $subtotal = (float) $cart['total'];
-                $total = $subtotal + $shippingCost;
+                // 1) Produkty zamkneme jednym dotazom (lockForUpdate), aby sa sklad
+                //    neprebil so suzbeznymi objednavkami, a skontrolujeme dostupnost
+                $items = collect($cart['items']);
 
-                // 1) Objednavka
+                $products = Product::query()
+                    ->with('category')
+                    ->whereKey($items->pluck('id'))
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                $lines = $items->map(function (array $cartItem) use ($products) {
+                    $quantity = (int) $cartItem['quantity'];
+                    $product = $products->get($cartItem['id']);
+
+                    if (!$product || !$product->isVisible()) {
+                        throw new OrderException("Product \"{$cartItem['name']}\" is no longer available.");
+                    }
+
+                    if ($product->stock < $quantity) {
+                        throw new OrderException("Not enough stock for \"{$product->name}\". Available: {$product->stock}.");
+                    }
+
+                    // Cenu berieme z DB (zamknuty riadok), nie z kosika
+                    $unitPrice = (float) $product->price;
+
+                    return [
+                        'product' => $product,
+                        'price' => $unitPrice,
+                        'quantity' => $quantity,
+                        'subtotal' => $unitPrice * $quantity,
+                    ];
+                });
+
+                // 2) Objednavka - medzisucet z tych istych cien ako polozky
+                $subtotal = $lines->sum('subtotal');
+                $shippingCost = (float) config('shop.shipping_cost');
+
                 $order = Order::create([
                     'order_number' => Order::generateOrderNumber(),
                     'user_id' => Auth::id(),
                     'guest_token' => $guestToken,
                     'guest_email' => Auth::check() ? null : ($orderData['shipping_email'] ?? null),
 
-                    'status' => Order::STATUS_PENDING,
-                    'payment_method' => Order::PAYMENT_COD,
-                    'payment_status' => Order::PAYMENT_PENDING,
+                    'status' => OrderStatus::Pending,
+                    'payment_method' => PaymentMethod::CashOnDelivery,
+                    'payment_status' => PaymentStatus::Pending,
 
                     'subtotal' => $subtotal,
                     'shipping_cost' => $shippingCost,
-                    'total' => $total,
+                    'total' => $subtotal + $shippingCost,
 
                     'note' => $orderData['note'] ?? null,
                 ]);
 
-                // 2) Snapshot adries
-                $order->addresses()->create(
-                    OrderAddress::attributesFromCheckout($orderData, OrderAddress::TYPE_SHIPPING)
-                );
+                // 3) Snapshot adries
+                foreach (AddressType::cases() as $type) {
+                    $order->addresses()->create(OrderAddress::attributesFromCheckout($orderData, $type));
+                }
 
-                $order->addresses()->create(
-                    OrderAddress::attributesFromCheckout($orderData, OrderAddress::TYPE_BILLING)
-                );
-
-                // 3) Polozky + odpocet skladu. Produkty zamkneme jednym dotazom (lockForUpdate),
-                //    aby sa sklad neprebil so suzbeznymi objednavkami.
-                $items = collect($cart['items']);
-
-                $products = Product::query()
-                    ->whereKey($items->pluck('id'))
-                    ->lockForUpdate()
-                    ->get()
-                    ->keyBy('id');
-
-                foreach ($items as $cartItem) {
-                    $qty = (int) $cartItem['quantity'];
-                    $product = $products->get($cartItem['id']);
-
-                    if (!$product) {
-                        throw new OrderException("Product \"{$cartItem['name']}\" is no longer available.");
-                    }
-
-                    if ($product->stock < $qty) {
-                        throw new OrderException("Not enough stock for \"{$product->name}\". Available: {$product->stock}.");
-                    }
-
-                    // Cenu berieme z DB, nie z kosika (session)
-                    $unitPrice = (float) $product->price;
-
+                // 4) Polozky + odpocet skladu
+                foreach ($lines as $line) {
                     $order->items()->create([
-                        'product_id' => $product->id,
-                        'product_name' => $product->name,
-                        'price' => $unitPrice,
-                        'quantity' => $qty,
-                        'subtotal' => $unitPrice * $qty,
+                        'product_id' => $line['product']->id,
+                        'product_name' => $line['product']->name,
+                        'price' => $line['price'],
+                        'quantity' => $line['quantity'],
+                        'subtotal' => $line['subtotal'],
                     ]);
 
-                    $product->decrement('stock', $qty);
+                    $line['product']->decrement('stock', $line['quantity']);
                 }
 
                 return $order;
@@ -133,64 +152,95 @@ class OrderService
     /**
      * Ziska vsetky objednavky pouzivatela (s poctom poloziek, bez nacitania poloziek samotnych).
      */
-    public function getUserOrders(int $userId): Collection
+    public function getUserOrders(User $user): Collection
     {
-        return Order::where('user_id', $userId)
+        return $user->orders()
             ->withCount('items')
             ->latest()
             ->get();
     }
 
     /**
-     * Ziska objednavku podla cisla objednavky.
+     * Najde objednavku prihlaseneho pouzivatela podla cisla (cudziu objednavku nevrati).
      */
-    public function getOrderByNumber(string $orderNumber, ?int $userId = null): ?Order
+    public function findUserOrder(User $user, string $orderNumber): ?Order
     {
-        $query = Order::with(['items.product', 'shippingAddress', 'billingAddress'])
-            ->where('order_number', $orderNumber);
+        return $user->orders()
+            ->with(self::DETAIL_RELATIONS)
+            ->where('order_number', $orderNumber)
+            ->first();
+    }
 
-        if ($userId) {
-            $query->where('user_id', $userId);
+    /**
+     * Najde objednavku hosta podla cisla, len ak sedi token ulozeny v jeho session.
+     */
+    public function findGuestOrder(string $orderNumber, mixed $guestToken): ?Order
+    {
+        if (!is_string($guestToken)) {
+            return null;
         }
 
-        return $query->first();
+        $order = Order::with(self::DETAIL_RELATIONS)
+            ->where('order_number', $orderNumber)
+            ->whereNotNull('guest_token')
+            ->first();
+
+        return $order && hash_equals($order->guest_token, $guestToken) ? $order : null;
     }
 
     /**
      * Zrusi objednavku a vrati produkty na sklad.
+     * Zakaznik moze zrusit objednavku pred spracovanim, admin kym nebola odoslana
+     * (pri zruseni adminom sa platba oznaci ako neuspesna).
      *
      * @throws OrderException ak objednavku nie je mozne zrusit
      */
-    public function cancelOrder(Order $order): void
+    public function cancelOrder(Order $order, bool $byAdmin = false): void
     {
-        if ($order->status === Order::STATUS_CANCELLED) {
-            throw new OrderException('Order is already cancelled.');
-        }
-
-        if (!$order->isCancellable()) {
-            throw new OrderException('This order can no longer be cancelled.');
-        }
-
         try {
-            DB::transaction(function () use ($order) {
-                // Produkty zamkneme, aby sa sklad neprebil so suzbeznymi operaciami
+            DB::transaction(function () use ($order, $byAdmin) {
+                // Stav overime az pod zamkom objednavky - dva subezne requesty (napr. dvojklik)
+                // by inak oba presli kontrolou a vratili tovar na sklad dvakrat
+                $locked = Order::query()->lockForUpdate()->findOrFail($order->getKey());
+
+                if ($locked->isCancelled()) {
+                    throw new OrderException('Order is already cancelled.');
+                }
+
+                $cancellable = $byAdmin
+                    ? $locked->status->isCancellableByAdmin()
+                    : $locked->status->isCancellableByCustomer();
+
+                if (!$cancellable) {
+                    throw new OrderException('This order can no longer be cancelled.');
+                }
+
+                $items = $locked->items()->get();
+
                 $products = Product::query()
-                    ->whereKey($order->items->pluck('product_id')->filter())
+                    ->whereKey($items->pluck('product_id')->filter())
                     ->lockForUpdate()
                     ->get()
                     ->keyBy('id');
 
-                foreach ($order->items as $item) {
+                foreach ($items as $item) {
                     $products->get($item->product_id)?->increment('stock', $item->quantity);
                 }
 
-                $order->update(['status' => Order::STATUS_CANCELLED]);
+                $locked->update([
+                    'status' => OrderStatus::Cancelled,
+                    ...($byAdmin ? ['payment_status' => PaymentStatus::Failed] : []),
+                ]);
             });
+        } catch (OrderException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             report($e);
 
             throw new OrderException('Failed to cancel the order. Please try again.', previous: $e);
         }
+
+        $order->refresh();
     }
 
     /**

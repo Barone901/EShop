@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\UserAddress;
+use App\Enums\AddressType;
 use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,7 +39,7 @@ class UserAddressRequest extends FormRequest
         return InputPattern::applyTo([
             'type' => [
                 Rule::requiredIf($this->isMethod('POST')),
-                Rule::in(array_keys(UserAddress::TYPES)),
+                Rule::enum(AddressType::class),
             ],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
@@ -68,7 +68,7 @@ class UserAddressRequest extends FormRequest
     public function addressData(): array
     {
         $data = $this->safe()->except(['type', 'is_default']);
-        $data['country'] ??= UserAddress::DEFAULT_COUNTRY;
+        $data['country'] ??= config('shop.default_country');
 
         return $data;
     }

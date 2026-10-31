@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Model produktu v eshope.
  * Relacie: Category (N:1), OrderItem (1:N)
+ *
+ * [AI] Upravene s pomocou AI (Claude): viditelnost podla aktivnej kategorie, escapovanie LIKE.
  */
 class Product extends Model
 {
@@ -87,6 +89,14 @@ class Product extends Model
     }
 
     /**
+     * Scope: Iba produkty viditelne v obchode (ich kategoria je aktivna).
+     */
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->whereHas('category', fn (Builder $q) => $q->active());
+    }
+
+    /**
      * Scope: Vyhladavanie podla nazvu alebo popisu.
      */
     public function scopeSearch(Builder $query, ?string $term): Builder
@@ -97,9 +107,12 @@ class Product extends Model
             return $query;
         }
 
-        return $query->where(function (Builder $q) use ($term) {
-            $q->where('name', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
+        // % a _ su v LIKE zastupne znaky, v hladanom vyraze ich berieme doslovne
+        $like = '%' . addcslashes($term, '\\%_') . '%';
+
+        return $query->where(function (Builder $q) use ($like) {
+            $q->where('name', 'like', $like)
+                ->orWhere('description', 'like', $like);
         });
     }
 
@@ -137,5 +150,13 @@ class Product extends Model
     public function getIsLowStockAttribute(): bool
     {
         return $this->is_in_stock && $this->stock <= self::LOW_STOCK_THRESHOLD;
+    }
+
+    /**
+     * Ci je produkt viditelny v obchode (rovnaka podmienka ako scopeVisible).
+     */
+    public function isVisible(): bool
+    {
+        return (bool) $this->category?->is_active;
     }
 }

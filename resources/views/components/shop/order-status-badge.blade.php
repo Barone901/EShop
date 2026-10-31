@@ -1,6 +1,9 @@
 @props(['order', 'size' => 'xs'])
 
 @php
+    /** @var \App\Models\Order $order */
+    /** @var string $size */
+
     // Plné názvy tried, aby ich Tailwind našiel pri builde
     $colors = [
         'yellow' => 'bg-yellow-100 text-yellow-800',
@@ -22,7 +25,7 @@
 <span {{ $attributes->class([
     'inline-flex items-center rounded-full',
     $sizes[$size] ?? $sizes['xs'],
-    $colors[$order->status_color] ?? $colors['gray'],
+    $colors[$order->status->badgeColor()] ?? $colors['gray'],
 ]) }}>
-    {{ $order->status_text }}
+    {{ $order->status->getLabel() }}
 </span>

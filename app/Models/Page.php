@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PageStatus;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ use Illuminate\Support\Str;
 /**
  * Model stranky/clanku s podporou soft delete.
  * Relacia: User (N:1)
+ *
+ * [AI] Upravene s pomocou AI (Claude): enum stavu, unikatny slug aj voci zmazanym strankam.
  */
 class Page extends Model
 {
@@ -45,27 +48,11 @@ class Page extends Model
     protected function casts(): array
     {
         return [
+            'status' => PageStatus::class,
             'is_featured' => 'boolean',
             'sort_order' => 'integer',
             'views_count' => 'integer',
             'published_at' => 'datetime',
-        ];
-    }
-
-    // Konstanty pre statusy stranky
-    public const STATUS_DRAFT = 'draft';
-    public const STATUS_PUBLISHED = 'published';
-    public const STATUS_ARCHIVED = 'archived';
-
-    /**
-     * Vrati dostupne statusy pre UI.
-     */
-    public static function getStatuses(): array
-    {
-        return [
-            self::STATUS_DRAFT => 'Koncept',
-            self::STATUS_PUBLISHED => 'Publikované',
-            self::STATUS_ARCHIVED => 'Archivované',
         ];
     }
 
@@ -91,28 +78,27 @@ class Page extends Model
 
     /**
      * Vytvori unikatny slug pridanim ciselneho suffixu.
+     * Kontroluje aj zmazane (soft delete) stranky - unikatny index v DB ich obsahuje tiez.
      */
     private static function makeUniqueSlug(self $page, string $slug): string
     {
         $base = $slug;
         $i = 1;
 
-        $query = static::query()->where('slug', $slug);
-        if ($page->exists) {
-            $query->whereKeyNot($page->getKey());
-        }
-
-        while ($query->exists()) {
+        while (static::slugIsTaken($page, $slug)) {
             $slug = "{$base}-{$i}";
             $i++;
-
-            $query = static::query()->where('slug', $slug);
-            if ($page->exists) {
-                $query->whereKeyNot($page->getKey());
-            }
         }
 
         return $slug;
+    }
+
+    private static function slugIsTaken(self $page, string $slug): bool
+    {
+        return static::withTrashed()
+            ->where('slug', $slug)
+            ->when($page->exists, fn (Builder $query) => $query->whereKeyNot($page->getKey()))
+            ->exists();
     }
 
     // =========================================================================
@@ -136,11 +122,21 @@ class Page extends Model
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_PUBLISHED)
+        return $query->where('status', PageStatus::Published)
             ->where(function (Builder $q) {
                 $q->whereNull('published_at')
                     ->orWhere('published_at', '<=', now());
             });
+    }
+
+    /**
+     * Ci je stranka verejne dostupna (rovnaka podmienka ako scopePublished).
+     */
+    public function isPublished(): bool
+    {
+        return !$this->trashed()
+            && $this->status === PageStatus::Published
+            && ($this->published_at === null || $this->published_at->lte(now()));
     }
 
     /**

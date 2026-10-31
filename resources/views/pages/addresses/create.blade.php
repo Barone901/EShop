@@ -1,4 +1,4 @@
-@php($typeLabel = \App\Models\UserAddress::TYPES[$type])
+@php($typeLabel = $type->label())
 
 <x-layouts.default-layout title="New {{ $typeLabel }} Address">
 
@@ -14,7 +14,7 @@
             <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <form action="{{ route('addresses.store') }}" method="POST" data-validate>
                     @csrf
-                    <input type="hidden" name="type" value="{{ $type }}">
+                    <input type="hidden" name="type" value="{{ $type->value }}">
 
                     @include('pages.addresses.partials.form', [
                         'type' => $type,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pages\Schemas;
 
+use App\Enums\PageStatus;
 use App\Models\Page;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -85,8 +86,8 @@ class PageForm
                     ->schema([
                         Select::make('status')
                             ->label('Stav')
-                            ->options(Page::getStatuses())
-                            ->default(Page::STATUS_DRAFT)
+                            ->options(PageStatus::class)
+                            ->default(PageStatus::Draft)
                             ->required(),
 
                         DateTimePicker::make('published_at')

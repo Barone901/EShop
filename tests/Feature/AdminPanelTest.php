@@ -4,6 +4,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Models\Page;
 use App\Models\User;
@@ -64,7 +65,7 @@ class AdminPanelTest extends TestCase
             ->fillForm([
                 'title' => 'New article',
                 'slug' => 'new-article',
-                'status' => Page::STATUS_PUBLISHED,
+                'status' => PageStatus::Published->value,
             ])
             ->call('create')
             ->assertHasNoFormErrors();

@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
-use App\Models\Order;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,29 +29,13 @@ class OrdersTable
                     ->label('Customer')
                     ->searchable()
                     ->sortable(),
+                // Popisok a farbu badge berie Filament z enumu (HasLabel, HasColor)
                 TextColumn::make('status')
                     ->label('Status')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => Order::STATUSES[$state] ?? $state)
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'confirmed' => 'info',
-                        'processing' => 'primary',
-                        'shipped' => 'purple',
-                        'delivered' => 'success',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->badge(),
                 TextColumn::make('payment_status')
                     ->label('Payment')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => Order::PAYMENT_STATUSES[$state] ?? $state)
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'paid' => 'success',
-                        'failed' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->badge(),
                 TextColumn::make('total')
                     ->label('Total')
                     ->money('EUR')
@@ -68,10 +53,10 @@ class OrdersTable
             ->filters([
                 SelectFilter::make('status')
                     ->label('Status')
-                    ->options(Order::STATUSES),
+                    ->options(OrderStatus::class),
                 SelectFilter::make('payment_status')
                     ->label('Payment Status')
-                    ->options(Order::PAYMENT_STATUSES),
+                    ->options(PaymentStatus::class),
             ])
             ->recordActions([
                 ViewAction::make(),

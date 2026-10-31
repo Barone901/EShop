@@ -2,6 +2,8 @@
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use App\Models\User;
@@ -18,6 +20,17 @@ class ProfileUpdateRequest extends FormRequest
         'name' => InputPattern::USERNAME,
         'phone' => InputPattern::PHONE,
     ];
+
+    /**
+     * E-mail normalizujeme na male pismena, aby pouzivatel nemusel rucne prepisovat
+     * velke pismena (napr. ucet zaregistrovany pred zavedenim normalizacie).
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim($this->input('email')))]);
+        }
+    }
 
     /**
      * Get the validation rules that apply to the request.

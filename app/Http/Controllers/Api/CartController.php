@@ -39,7 +39,7 @@ class CartController extends Controller
     {
         $validated = $request->validate([
             'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity'   => ['nullable', 'integer', 'min:1', 'max:99'],
+            'quantity'   => ['nullable', 'integer', 'min:1', 'max:' . config('shop.max_cart_quantity')],
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
@@ -57,7 +57,7 @@ class CartController extends Controller
     {
         $validated = $request->validate([
             'product_id' => ['required', 'integer'],
-            'quantity'   => ['required', 'integer', 'min:0', 'max:99'],
+            'quantity'   => ['required', 'integer', 'min:0', 'max:' . config('shop.max_cart_quantity')],
         ]);
 
         return $this->respond(

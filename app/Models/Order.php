@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AddressType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Support\Price;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * Model objednavky.
  * Relacie: User (N:1), OrderItem (1:N), OrderAddress (1:N)
+ *
+ * [AI] Upravene s pomocou AI (Claude): enumy pre stavy, unikatne cislo objednavky.
  */
 class Order extends Model
 {
@@ -46,75 +53,25 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'status' => OrderStatus::class,
+            'payment_method' => PaymentMethod::class,
+            'payment_status' => PaymentStatus::class,
             'subtotal' => 'decimal:2',
             'shipping_cost' => 'decimal:2',
             'total' => 'decimal:2',
         ];
     }
 
-    // Cena dopravy (dobierka) v EUR
-    public const SHIPPING_COST = 3.00;
-
-    // Konstanty pre statusy objednavky
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_CONFIRMED = 'confirmed';
-    public const STATUS_PROCESSING = 'processing';
-    public const STATUS_SHIPPED = 'shipped';
-    public const STATUS_DELIVERED = 'delivered';
-    public const STATUS_CANCELLED = 'cancelled';
-
-    public const STATUSES = [
-        self::STATUS_PENDING => 'Pending',
-        self::STATUS_CONFIRMED => 'Confirmed',
-        self::STATUS_PROCESSING => 'Processing',
-        self::STATUS_SHIPPED => 'Shipped',
-        self::STATUS_DELIVERED => 'Delivered',
-        self::STATUS_CANCELLED => 'Cancelled',
-    ];
-
-    // Kroky postupu objednavky zobrazene zakaznikovi (bez "cancelled")
-    public const PROGRESS_STATUSES = [
-        self::STATUS_PENDING,
-        self::STATUS_CONFIRMED,
-        self::STATUS_PROCESSING,
-        self::STATUS_SHIPPED,
-        self::STATUS_DELIVERED,
-    ];
-
-    // Statusy, v ktorych moze zakaznik objednavku zrusit
-    public const CANCELLABLE_STATUSES = [
-        self::STATUS_PENDING,
-        self::STATUS_CONFIRMED,
-    ];
-
-    // Konstanty pre platobne statusy
-    public const PAYMENT_PENDING = 'pending';
-    public const PAYMENT_PAID = 'paid';
-    public const PAYMENT_FAILED = 'failed';
-
-    public const PAYMENT_STATUSES = [
-        self::PAYMENT_PENDING => 'Pending',
-        self::PAYMENT_PAID => 'Paid',
-        self::PAYMENT_FAILED => 'Failed',
-    ];
-
-    // Konstanty pre platobne metody
-    public const PAYMENT_COD = 'cod';
-
-    public const PAYMENT_METHODS = [
-        self::PAYMENT_COD => 'Cash on Delivery',
-    ];
-
     /**
-     * Vygeneruje unikatne cislo objednavky.
+     * Vygeneruje unikatne cislo objednavky, napr. ORD-20261031-K7Q2XM.
      */
     public static function generateOrderNumber(): string
     {
-        $prefix = 'ORD';
-        $date = now()->format('Ymd');
-        $random = strtoupper(substr(uniqid('', true), -4));
+        do {
+            $number = 'ORD-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
+        } while (static::where('order_number', $number)->exists());
 
-        return "{$prefix}-{$date}-{$random}";
+        return $number;
     }
 
     /**
@@ -122,7 +79,7 @@ class Order extends Model
      */
     public function isCancellable(): bool
     {
-        return in_array($this->status, self::CANCELLABLE_STATUSES, true);
+        return $this->status->isCancellableByCustomer();
     }
 
     /**
@@ -130,7 +87,7 @@ class Order extends Model
      */
     public function isCancelled(): bool
     {
-        return $this->status === self::STATUS_CANCELLED;
+        return $this->status === OrderStatus::Cancelled;
     }
 
     /**
@@ -143,11 +100,11 @@ class Order extends Model
     }
 
     /**
-     * Vrati index aktualneho kroku v PROGRESS_STATUSES (-1 pre zrusenu objednavku).
+     * Vrati index aktualneho kroku v OrderStatus::progressSteps() (-1 pre zrusenu objednavku).
      */
     public function progressStep(): int
     {
-        $index = array_search($this->status, self::PROGRESS_STATUSES, true);
+        $index = array_search($this->status, OrderStatus::progressSteps(), true);
 
         return $index === false ? -1 : $index;
     }
@@ -186,7 +143,7 @@ class Order extends Model
     public function shippingAddress(): HasOne
     {
         return $this->hasOne(OrderAddress::class)
-            ->where('type', OrderAddress::TYPE_SHIPPING);
+            ->where('type', AddressType::Shipping);
     }
 
     /**
@@ -195,7 +152,7 @@ class Order extends Model
     public function billingAddress(): HasOne
     {
         return $this->hasOne(OrderAddress::class)
-            ->where('type', OrderAddress::TYPE_BILLING);
+            ->where('type', AddressType::Billing);
     }
 
     // =========================================================================
@@ -224,45 +181,5 @@ class Order extends Model
     public function getFormattedSubtotalAttribute(): string
     {
         return Price::format($this->subtotal);
-    }
-
-    /**
-     * Vrati textovu reprezentaciu statusu.
-     */
-    public function getStatusTextAttribute(): string
-    {
-        return self::STATUSES[$this->status] ?? (string) $this->status;
-    }
-
-    /**
-     * Vrati textovu reprezentaciu platobneho statusu.
-     */
-    public function getPaymentStatusTextAttribute(): string
-    {
-        return self::PAYMENT_STATUSES[$this->payment_status] ?? (string) $this->payment_status;
-    }
-
-    /**
-     * Vrati textovu reprezentaciu platobnej metody.
-     */
-    public function getPaymentMethodTextAttribute(): string
-    {
-        return self::PAYMENT_METHODS[$this->payment_method] ?? (string) $this->payment_method;
-    }
-
-    /**
-     * Vrati farbu statusu pre UI.
-     */
-    public function getStatusColorAttribute(): string
-    {
-        return match ((string) $this->status) {
-            self::STATUS_PENDING => 'yellow',
-            self::STATUS_CONFIRMED => 'blue',
-            self::STATUS_PROCESSING => 'indigo',
-            self::STATUS_SHIPPED => 'purple',
-            self::STATUS_DELIVERED => 'green',
-            self::STATUS_CANCELLED => 'red',
-            default => 'gray',
-        };
     }
 }

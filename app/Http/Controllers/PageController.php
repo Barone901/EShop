@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Services\PageService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -32,15 +33,17 @@ class PageController extends Controller
     /**
      * Zobrazi detail clanku podla slug a zvysi pocitadlo zobrazeni.
      */
-    public function show(string $slug): View
+    public function show(Request $request, string $slug): View
     {
-        $page = $this->pageService->findBySlug($slug);
+        $page = $this->pageService->findBySlug($slug) ?? abort(404);
 
-        if (!$page) {
-            abort(404);
+        // Zobrazenie pocitame raz za session, nie pri kazdom obnoveni stranky
+        $viewedKey = "viewed_pages.{$page->id}";
+
+        if (!$request->session()->has($viewedKey)) {
+            $request->session()->put($viewedKey, true);
+            $page->incrementViews();
         }
-
-        $page->incrementViews();
 
         $relatedPages = $this->pageService->getRelatedPages($page);
 

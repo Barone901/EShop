@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\AddressType;
 use App\Exceptions\OrderException;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Order;
-use App\Models\UserAddress;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +16,8 @@ use Illuminate\View\View;
 
 /**
  * Controller pre spracovanie objednavok a checkout procesu.
+ *
+ * [AI] Upravene s pomocou AI (Claude): spolocne vyhladanie objednavky (cudzia/neexistujuca = 404).
  */
 class OrderController extends Controller
 {
@@ -42,8 +44,8 @@ class OrderController extends Controller
         $user = $request->user();
 
         // Ulozene adresy (len pre prihlaseneho), predvolena je v kazdom zozname prva
-        $shippingAddresses = $user?->addressesOfType(UserAddress::TYPE_SHIPPING) ?? collect();
-        $billingAddresses = $user?->addressesOfType(UserAddress::TYPE_BILLING) ?? collect();
+        $shippingAddresses = $user?->addressesOfType(AddressType::Shipping) ?? collect();
+        $billingAddresses = $user?->addressesOfType(AddressType::Billing) ?? collect();
 
         return view('pages.checkout.index', [
             'cart' => $cart,
@@ -77,14 +79,13 @@ class OrderController extends Controller
      * Zobrazi potvrdenie objednavky po uspesnom dokonceni.
      * Prihlaseny pouzivatel vidi len svoje objednavky, host len tu, ktorej token ma v session.
      */
-    public function confirmation(Request $request, string $orderNumber): View|RedirectResponse
+    public function confirmation(Request $request, string $orderNumber): View
     {
-        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()?->id);
+        $order = $request->user()
+            ? $this->orderService->findUserOrder($request->user(), $orderNumber)
+            : $this->orderService->findGuestOrder($orderNumber, $request->session()->get('guest_order_token'));
 
-        if (!$order || (!$request->user() && !$this->isGuestOwner($request, $order))) {
-            return redirect()->route('home')
-                ->with('error', 'Order not found.');
-        }
+        abort_if($order === null, 404);
 
         return view('pages.checkout.confirmation', [
             'order' => $order,
@@ -97,24 +98,17 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         return view('pages.orders.index', [
-            'orders' => $this->orderService->getUserOrders($request->user()->id),
+            'orders' => $this->orderService->getUserOrders($request->user()),
         ]);
     }
 
     /**
      * Zobrazi detail konkretnej objednavky.
      */
-    public function show(Request $request, string $orderNumber): View|RedirectResponse
+    public function show(Request $request, string $orderNumber): View
     {
-        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
-
-        if (!$order) {
-            return redirect()->route('orders.index')
-                ->with('error', 'Order not found.');
-        }
-
         return view('pages.orders.show', [
-            'order' => $order,
+            'order' => $this->userOrder($request, $orderNumber),
         ]);
     }
 
@@ -123,12 +117,7 @@ class OrderController extends Controller
      */
     public function cancel(Request $request, string $orderNumber): RedirectResponse
     {
-        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
-
-        if (!$order) {
-            return redirect()->route('orders.index')
-                ->with('error', 'Order not found.');
-        }
+        $order = $this->userOrder($request, $orderNumber);
 
         try {
             $this->orderService->cancelOrder($order);
@@ -145,12 +134,7 @@ class OrderController extends Controller
      */
     public function destroy(Request $request, string $orderNumber): RedirectResponse
     {
-        $order = $this->orderService->getOrderByNumber($orderNumber, $request->user()->id);
-
-        if (!$order) {
-            return redirect()->route('orders.index')
-                ->with('error', 'Order not found.');
-        }
+        $order = $this->userOrder($request, $orderNumber);
 
         try {
             $this->orderService->deleteOrder($order);
@@ -163,14 +147,10 @@ class OrderController extends Controller
     }
 
     /**
-     * Overi, ze host ma v session token prave tejto objednavky.
+     * Objednavka prihlaseneho pouzivatela, inak 404 (cudziu objednavku neprezradime).
      */
-    private function isGuestOwner(Request $request, Order $order): bool
+    private function userOrder(Request $request, string $orderNumber): Order
     {
-        $token = $request->session()->get('guest_order_token');
-
-        return is_string($token)
-            && $order->guest_token !== null
-            && hash_equals($order->guest_token, $token);
+        return $this->orderService->findUserOrder($request->user(), $orderNumber) ?? abort(404);
     }
 }

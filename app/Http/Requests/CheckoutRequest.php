@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace App\Http\Requests;
@@ -8,6 +7,9 @@ namespace App\Http\Requests;
 use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validacia checkout formulara (dorucovacia a fakturacna adresa, poznamka).
+ */
 class CheckoutRequest extends FormRequest
 {
     /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */

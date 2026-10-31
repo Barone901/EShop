@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductDetailResource;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * API Controller pre vyhladavanie a zobrazenie produktov.
@@ -25,32 +27,27 @@ class ProductApiController extends Controller
     /**
      * Vyhlada produkty podla zadaneho vyrazu pre autocomplete.
      */
-    public function search(Request $request): JsonResponse
+    public function search(Request $request): AnonymousResourceCollection
     {
         // Server-side validacia search query
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $q = trim($validated['q'] ?? '');
-
-        $products = $this->productService
-            ->search($q)
-            ->map(fn ($product) => $this->productService->formatForApi($product))
-            ->values();
-
-        return response()->json($products);
+        return ProductResource::collection(
+            $this->productService->search(trim($validated['q'] ?? ''))
+        );
     }
 
     /**
      * Vrati detail produktu pre AJAX modal.
      */
-    public function show(Product $product): JsonResponse
+    public function show(Product $product): ProductDetailResource
     {
         $product->load('category');
 
-        return response()->json(
-            $this->productService->formatDetailForApi($product)
-        );
+        abort_unless($product->isVisible(), 404);
+
+        return new ProductDetailResource($product);
     }
 }

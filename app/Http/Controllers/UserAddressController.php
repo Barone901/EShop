@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\AddressType;
 use App\Http\Requests\UserAddressRequest;
 use App\Models\UserAddress;
 use Illuminate\Http\RedirectResponse;
@@ -28,8 +29,8 @@ class UserAddressController extends Controller
             ->get();
 
         return view('pages.addresses.index', [
-            'shippingAddresses' => $addresses->where('type', UserAddress::TYPE_SHIPPING),
-            'billingAddresses' => $addresses->where('type', UserAddress::TYPE_BILLING),
+            'shippingAddresses' => $addresses->where('type', AddressType::Shipping),
+            'billingAddresses' => $addresses->where('type', AddressType::Billing),
         ]);
     }
 
@@ -38,9 +39,7 @@ class UserAddressController extends Controller
      */
     public function create(Request $request): View
     {
-        $type = in_array($request->query('type'), array_keys(UserAddress::TYPES), true)
-            ? $request->query('type')
-            : UserAddress::TYPE_SHIPPING;
+        $type = AddressType::tryFrom($request->string('type')->toString()) ?? AddressType::Shipping;
 
         $user = $request->user();
 
@@ -51,7 +50,7 @@ class UserAddressController extends Controller
                 'last_name' => $user->last_name,
                 'phone' => $user->phone,
                 'email' => $user->email,
-                'country' => UserAddress::DEFAULT_COUNTRY,
+                'country' => config('shop.default_country'),
             ],
             'patterns' => UserAddressRequest::PATTERNS,
         ]);

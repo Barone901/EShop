@@ -2,9 +2,15 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Exceptions\OrderException;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Services\OrderService;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditOrder extends EditRecord
@@ -19,34 +25,37 @@ class EditOrder extends EditRecord
                 ->icon('heroicon-o-check')
                 ->color('info')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => $this->record->status === 'pending')
-                ->action(fn () => $this->record->update(['status' => 'confirmed'])),
+                ->visible(fn (): bool => $this->record->status === OrderStatus::Pending)
+                ->action(fn () => $this->record->update(['status' => OrderStatus::Confirmed])),
 
             Actions\Action::make('process')
                 ->label('Process')
                 ->icon('heroicon-o-cog')
                 ->color('primary')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => $this->record->status === 'confirmed')
-                ->action(fn () => $this->record->update(['status' => 'processing'])),
+                ->visible(fn (): bool => $this->record->status === OrderStatus::Confirmed)
+                ->action(fn () => $this->record->update(['status' => OrderStatus::Processing])),
 
             Actions\Action::make('ship')
                 ->label('Ship')
                 ->icon('heroicon-o-truck')
                 ->color('purple')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => in_array($this->record->status, ['confirmed', 'processing']))
-                ->action(fn () => $this->record->update(['status' => 'shipped'])),
+                ->visible(fn (): bool => in_array($this->record->status, [OrderStatus::Confirmed, OrderStatus::Processing], true))
+                ->action(fn () => $this->record->update(['status' => OrderStatus::Shipped])),
 
             Actions\Action::make('deliver')
                 ->label('Mark Delivered')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => $this->record->status === 'shipped')
+                ->visible(fn (): bool => $this->record->status === OrderStatus::Shipped)
                 ->action(fn () => $this->record->update([
-                    'status' => 'delivered',
-                    'payment_status' => $this->record->payment_method === 'cod' ? 'paid' : $this->record->payment_status,
+                    'status' => OrderStatus::Delivered,
+                    // Dobierka je pri doruceni zaplatena
+                    'payment_status' => $this->record->payment_method === PaymentMethod::CashOnDelivery
+                        ? PaymentStatus::Paid
+                        : $this->record->payment_status,
                 ])),
 
             Actions\Action::make('cancel')
@@ -56,18 +65,16 @@ class EditOrder extends EditRecord
                 ->requiresConfirmation()
                 ->modalHeading('Cancel Order')
                 ->modalDescription('Are you sure you want to cancel this order? This will return products to stock.')
-                ->visible(fn (): bool => !in_array($this->record->status, ['shipped', 'delivered', 'cancelled']))
+                ->visible(fn (): bool => $this->record->status->isCancellableByAdmin())
                 ->action(function () {
-                    // Return products to stock
-                    foreach ($this->record->items as $item) {
-                        if ($item->product) {
-                            $item->product->increment('stock', $item->quantity);
-                        }
+                    // Rovnake rusenie ako u zakaznika (transakcia, zamok, vratenie na sklad)
+                    try {
+                        app(OrderService::class)->cancelOrder($this->getOrder(), byAdmin: true);
+                    } catch (OrderException $e) {
+                        Notification::make()->title($e->getMessage())->danger()->send();
                     }
-                    $this->record->update([
-                        'status' => 'cancelled',
-                        'payment_status' => 'failed',
-                    ]);
+
+                    $this->refreshFormData(['status', 'payment_status']);
                 }),
 
             Actions\ViewAction::make(),
@@ -75,9 +82,19 @@ class EditOrder extends EditRecord
         ];
     }
 
+    /**
+     * Upravovany zaznam ako Order ($this->record je v EditRecord typovany vseobecne).
+     */
+    private function getOrder(): Order
+    {
+        $record = $this->getRecord();
+        assert($record instanceof Order);
+
+        return $record;
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
 }
-

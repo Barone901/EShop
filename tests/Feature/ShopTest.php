@@ -4,6 +4,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderStatus;
+use App\Enums\PageStatus;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Page;
@@ -159,7 +161,7 @@ class ShopTest extends TestCase
         $this->post(route('orders.cancel', $order->order_number))
             ->assertSessionHas('success');
 
-        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
         $this->assertSame(5, $product->fresh()->stock);
     }
 
@@ -174,8 +176,7 @@ class ShopTest extends TestCase
         ]);
 
         $this->get(route('orders.confirmation', $order->order_number))
-            ->assertRedirect(route('home'))
-            ->assertSessionHas('error', 'Order not found.');
+            ->assertNotFound();
     }
 
     public function test_processing_order_cannot_be_cancelled(): void
@@ -184,7 +185,7 @@ class ShopTest extends TestCase
         $order = Order::create([
             'order_number' => 'ORD-TEST-0001',
             'user_id' => $user->id,
-            'status' => Order::STATUS_PROCESSING,
+            'status' => OrderStatus::Processing,
             'subtotal' => 10,
             'shipping_cost' => 3,
             'total' => 13,
@@ -198,7 +199,7 @@ class ShopTest extends TestCase
         $this->post(route('orders.cancel', $order->order_number))
             ->assertSessionHas('error');
 
-        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+        $this->assertSame(OrderStatus::Processing, $order->fresh()->status);
     }
 
     public function test_user_can_delete_only_own_cancelled_order(): void
@@ -221,8 +222,7 @@ class ShopTest extends TestCase
         // Cudzi pouzivatel zrusenu objednavku nezmaze
         $this->actingAs(User::factory()->create())
             ->delete(route('orders.destroy', $order->order_number))
-            ->assertRedirect(route('orders.index'))
-            ->assertSessionHas('error', 'Order not found.');
+            ->assertNotFound();
         $this->assertModelExists($order);
 
         // Vlastnik ju zmaze aj s polozkami a adresami
@@ -308,7 +308,7 @@ class ShopTest extends TestCase
             'title' => 'News',
             'slug' => 'news',
             'content' => '<h2>Heading</h2><script>alert("xss")</script>',
-            'status' => Page::STATUS_PUBLISHED,
+            'status' => PageStatus::Published,
         ]);
 
         $this->get('/pages')->assertOk()->assertSee('News');

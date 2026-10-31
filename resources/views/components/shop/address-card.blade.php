@@ -6,7 +6,9 @@
 @props(['address'])
 
 @php
-    $isBilling = $address->type === \App\Models\UserAddress::TYPE_BILLING;
+    /** @var \App\Models\UserAddress $address */
+
+    $isBilling = $address->type === \App\Enums\AddressType::Billing;
 
     // Plné názvy tried, aby ich Tailwind našiel pri builde
     $colors = $isBilling

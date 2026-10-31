@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
-use App\Models\Order;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -22,15 +24,15 @@ class OrderForm
                             ->disabled(),
                         Select::make('status')
                             ->label('Order status')
-                            ->options(Order::STATUSES)
+                            ->options(OrderStatus::class)
                             ->required(),
                         Select::make('payment_status')
                             ->label('Payment status')
-                            ->options(Order::PAYMENT_STATUSES)
+                            ->options(PaymentStatus::class)
                             ->required(),
                         Select::make('payment_method')
                             ->label('Payment method')
-                            ->options(Order::PAYMENT_METHODS)
+                            ->options(PaymentMethod::class)
                             ->disabled(),
                     ])->columns(2),
 

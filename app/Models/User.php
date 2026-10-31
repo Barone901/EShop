@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AddressType;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -60,6 +62,8 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Pouzivatel ma viacero objednavok.
+     *
+     * @return HasMany<Order, $this>
      */
     public function orders(): HasMany
     {
@@ -68,6 +72,8 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Pouzivatel ma viacero ulozenych adries.
+     *
+     * @return HasMany<UserAddress, $this>
      */
     public function addresses(): HasMany
     {
@@ -93,8 +99,10 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Vrati adresy daneho typu, predvolena je prva.
      * Pouziva nacitanu relaciu $this->addresses, takze vsetky adresy sa nacitaju jednym dotazom.
+     *
+     * @return Collection<int, UserAddress>
      */
-    public function addressesOfType(string $type): Collection
+    public function addressesOfType(AddressType $type): Collection
     {
         return $this->addresses
             ->where('type', $type)
@@ -107,7 +115,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function getDefaultShippingAddressAttribute(): ?UserAddress
     {
-        return $this->addressesOfType(UserAddress::TYPE_SHIPPING)->first();
+        return $this->addressesOfType(AddressType::Shipping)->first();
     }
 
     /**
@@ -115,7 +123,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function getDefaultBillingAddressAttribute(): ?UserAddress
     {
-        return $this->addressesOfType(UserAddress::TYPE_BILLING)->first();
+        return $this->addressesOfType(AddressType::Billing)->first();
     }
 
     // =========================================================================
@@ -127,6 +135,6 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasAnyRole(['designer', 'employee', 'admin']);
+        return $this->hasAnyRole(UserRole::panelRoles());
     }
 }

@@ -52,7 +52,7 @@
                             <span class="text-gray-900">{{ $order->formatted_subtotal }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Shipping ({{ $order->payment_method_text }})</span>
+                            <span class="text-gray-600">Shipping ({{ $order->payment_method->getLabel() }})</span>
                             <span class="text-gray-900">{{ $order->formatted_shipping_cost }}</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
@@ -75,11 +75,11 @@
                     <div class="flex flex-wrap gap-6">
                         <div>
                             <p class="text-sm text-gray-500">Payment Method</p>
-                            <p class="font-medium text-gray-900">{{ $order->payment_method_text }}</p>
+                            <p class="font-medium text-gray-900">{{ $order->payment_method->getLabel() }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Payment Status</p>
-                            <p class="font-medium text-gray-900">{{ $order->payment_status_text }}</p>
+                            <p class="font-medium text-gray-900">{{ $order->payment_status->getLabel() }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Order Status</p>

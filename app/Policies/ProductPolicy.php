@@ -1,76 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\Product;
-use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Policies\Concerns\AuthorizesByPermission;
 
+/**
+ * Pristup k admin sekcii: produkty.
+ */
 class ProductPolicy
 {
-    use HandlesAuthorization;
+    use AuthorizesByPermission;
 
-    /**
-     * Zobraziť zoznam produktov v administrácii.
-     */
-    public function viewAny(User $user): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Zobraziť detail konkrétneho produktu.
-     */
-    public function view(User $user, Product $product): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Vytvoriť nový produkt.
-     */
-    public function create(User $user): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Upraviť existujúci produkt.
-     */
-    public function update(User $user, Product $product): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Vymazať produkt.
-     */
-    public function delete(User $user, Product $product): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Hromadné mazanie produktov (bulk delete).
-     */
-    public function deleteAny(User $user): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Obnoviť produkt (ak používaš SoftDeletes).
-     */
-    public function restore(User $user, Product $product): bool
-    {
-        return $user->can('manage products');
-    }
-
-    /**
-     * Trvalo vymazať produkt z databázy.
-     */
-    public function forceDelete(User $user, Product $product): bool
-    {
-        return $user->can('manage products');
-    }
+    private const PERMISSION = 'manage products';
 }

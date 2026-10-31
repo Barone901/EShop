@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -11,7 +12,7 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $adminRole = Role::firstOrCreate(['name' => UserRole::Admin->value, 'guard_name' => 'web']);
 
         $user = User::updateOrCreate(
             ['email' => 'admin@admin.com'],
@@ -21,7 +22,7 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        if (! $user->hasRole('admin')) {
+        if (! $user->hasRole(UserRole::Admin->value)) {
             $user->assignRole($adminRole);
         }
     }

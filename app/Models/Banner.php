@@ -55,8 +55,9 @@ class Banner extends Model
             return (string) $this->link_url;
         }
 
-        if (!empty($this->page_id) && $this->page) {
-            return route('pages.show', (string) $this->page->slug);
+        // Na nepublikovanu stranku neodkazujeme (skoncilo by to 404)
+        if ($this->page?->isPublished()) {
+            return $this->page->url;
         }
 
         return null;

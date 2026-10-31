@@ -4,6 +4,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\PageStatus;
 use App\Models\Banner;
 use App\Models\Page;
 use App\Models\User;
@@ -33,7 +34,7 @@ class ContentSeeder extends Seeder
                 .'<p>The whole repair is done <strong>directly on the vehicle</strong>.</p>',
             'featured_image' => $this->demoImage('banner-glow-plugs.jpg', 'pages'),
             'meta_description' => 'Removing broken glow plugs without dismounting the cylinder head.',
-            'status' => Page::STATUS_PUBLISHED,
+            'status' => PageStatus::Published,
             'published_at' => now()->subDays(20),
             'author_id' => $author?->id,
             'is_featured' => true,
@@ -48,7 +49,7 @@ class ContentSeeder extends Seeder
                 .'<h2>Advantages</h2>'
                 .'<ul><li>Original paint stays intact</li><li>Repair takes minutes, not days</li><li>No interior parts need to be removed</li></ul>',
             'featured_image' => $this->demoImage('banner-dent-repair.jpg', 'pages'),
-            'status' => Page::STATUS_PUBLISHED,
+            'status' => PageStatus::Published,
             'published_at' => now()->subDays(10),
             'author_id' => $author?->id,
             'views_count' => 57,
@@ -61,7 +62,7 @@ class ContentSeeder extends Seeder
             'content' => '<p>The drive size determines how much torque a socket can transfer.</p>'
                 .'<h2>Drive sizes</h2>'
                 .'<ul><li><strong>1/4"</strong> - small screws, interior work</li><li><strong>3/8"</strong> - universal size for most repairs</li><li><strong>1/2"</strong> - wheels, chassis, high torque</li></ul>',
-            'status' => Page::STATUS_PUBLISHED,
+            'status' => PageStatus::Published,
             'published_at' => now()->subDays(3),
             'author_id' => $author?->id,
             'views_count' => 12,
@@ -73,7 +74,7 @@ class ContentSeeder extends Seeder
             'slug' => 'plastic-welding-in-the-car-industry',
             'excerpt' => 'Draft article about hot air and airless plastic repair.',
             'content' => '<p>Work in progress.</p>',
-            'status' => Page::STATUS_DRAFT,
+            'status' => PageStatus::Draft,
             'author_id' => $author?->id,
         ]);
 

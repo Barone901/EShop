@@ -22,7 +22,7 @@
         <x-ui.flash-messages :types="['error']" />
 
         <form action="{{ route('orders.store') }}" method="POST" id="checkout-form" data-validate
-              data-default-country="{{ \App\Models\OrderAddress::DEFAULT_COUNTRY }}">
+              data-default-country="{{ config('shop.default_country') }}">
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -85,7 +85,7 @@
                                           :value="$defaultShippingAddress?->city" />
 
                             <x-form.input name="shipping_country" label="Country" maxlength="100"
-                                          :value="$defaultShippingAddress?->country ?? \App\Models\OrderAddress::DEFAULT_COUNTRY" />
+                                          :value="$defaultShippingAddress?->country ?? config('shop.default_country')" />
 
                             <x-form.input name="shipping_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
                                           class="md:col-span-2" :value="$defaultShippingAddress?->street" />
@@ -158,7 +158,7 @@
                                               :value="$defaultBillingAddress?->city" />
 
                                 <x-form.input name="billing_country" label="Country" maxlength="100"
-                                              :value="$defaultBillingAddress?->country ?? \App\Models\OrderAddress::DEFAULT_COUNTRY" />
+                                              :value="$defaultBillingAddress?->country ?? config('shop.default_country')" />
 
                                 <x-form.input name="billing_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
                                               class="md:col-span-2" :value="$defaultBillingAddress?->street" />

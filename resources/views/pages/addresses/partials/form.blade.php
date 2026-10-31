@@ -1,6 +1,6 @@
 {{--
     Spoločné polia formulára adresy (create + edit).
-    Premenné: $type ('shipping'|'billing'), $values (predvolené hodnoty), $submitLabel,
+    Premenné: $type (App\Enums\AddressType), $values (predvolené hodnoty), $submitLabel,
     $patterns (vzory polí z UserAddressRequest::PATTERNS)
 --}}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -21,7 +21,7 @@
     <x-form.input name="country" label="Country" maxlength="100" class="md:col-span-2" :value="$values['country'] ?? null" />
 </div>
 
-@if($type === 'billing')
+@if($type === \App\Enums\AddressType::Billing)
     {{-- Company Details --}}
     <div class="mt-8 pt-6 border-t border-gray-200">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Company Details (Optional)</h3>

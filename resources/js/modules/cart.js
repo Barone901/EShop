@@ -15,7 +15,7 @@ import { icon, productImage } from '../utils/templates';
 
 const DROPDOWN_ITEMS_LIMIT = 4;
 
-// Rovnaký limit ako validácia v Api\CartController
+// Rovnaký limit ako na serveri (config/shop.php, max_cart_quantity)
 const MAX_QUANTITY = 99;
 
 const toInt = (value) => parseInt(value, 10);

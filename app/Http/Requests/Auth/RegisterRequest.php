@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
@@ -7,6 +9,9 @@ use App\Support\InputPattern;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Validacia registracie. E-mail sa uklada malymi pismenami (rovnako ho vyzaduje uprava profilu).
+ */
 class RegisterRequest extends FormRequest
 {
     /** Polia kontrolovane vzorom (rovnaky vzor ma aj formular v prehliadaci). */
@@ -20,6 +25,13 @@ class RegisterRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim($this->input('email')))]);
+        }
     }
 
     /**

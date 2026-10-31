@@ -2,6 +2,8 @@
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
