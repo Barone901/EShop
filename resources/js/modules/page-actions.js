@@ -5,28 +5,31 @@
  * - <form data-confirm="...">       potvrdenie pred odoslaním
  * - <select data-navigate-on-change> presmerovanie na URL vybranej option
  * - <button data-copy-url="...">    skopírovanie URL do schránky
+ *
+ * [AI] Upravené s pomocou AI (Claude): kopírovanie cez await + Toast namiesto alert.
  */
+import Toast from './toast';
+import { delegate } from '../utils/dom';
 
 const PageActions = {
     init() {
-        document.addEventListener('submit', (e) => {
-            const form = e.target.closest('form[data-confirm]');
-            if (form && !window.confirm(form.dataset.confirm)) {
+        delegate('submit', 'form[data-confirm]', (e, form) => {
+            if (!window.confirm(form.dataset.confirm)) {
                 e.preventDefault();
             }
         });
 
-        document.addEventListener('change', (e) => {
-            if (e.target.matches('select[data-navigate-on-change]')) {
-                window.location.href = e.target.value;
-            }
+        delegate('change', 'select[data-navigate-on-change]', (e, select) => {
+            window.location.href = select.value;
         });
 
-        document.addEventListener('click', (e) => {
-            const copyBtn = e.target.closest('[data-copy-url]');
-            if (copyBtn) {
-                navigator.clipboard.writeText(copyBtn.dataset.copyUrl);
-                window.alert('Link copied!');
+        delegate('click', '[data-copy-url]', async (e, btn) => {
+            try {
+                // navigator.clipboard existuje len v zabezpečenom kontexte (HTTPS, localhost)
+                await navigator.clipboard.writeText(btn.dataset.copyUrl);
+                Toast.success('Link copied!');
+            } catch {
+                Toast.error('Could not copy the link.');
             }
         });
     },

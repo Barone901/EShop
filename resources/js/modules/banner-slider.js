@@ -1,60 +1,47 @@
 /**
  * Banner Slider Module
+ *
  * Automatické posúvanie bannerov s možnosťou manuálneho ovládania
+ * (šípky, bodky, klávesnica, swipe). Pri hoveri sa autoplay pozastaví.
+ *
+ * [AI] Upravené s pomocou AI (Claude): prepísané z triedy na modul s init() ako ostatné moduly.
  */
 
-export default class BannerSlider {
-    constructor(options = {}) {
-        this.container = document.querySelector('#banner-slider');
+const AUTOPLAY_INTERVAL_MS = 5000;
+const SWIPE_THRESHOLD_PX = 50;
+
+const BannerSlider = {
+    container: null,
+    slidesContainer: null,
+    dots: [],
+    currentIndex: 0,
+    totalSlides: 0,
+    autoplayTimer: null,
+    isHovered: false,
+
+    init() {
+        this.container = document.getElementById('banner-slider');
         if (!this.container) return;
 
         this.slidesContainer = this.container.querySelector('.banner-slides');
-        this.slides = this.container.querySelectorAll('.banner-slide');
         this.dots = this.container.querySelectorAll('.banner-dot');
-        this.prevBtn = this.container.querySelector('.banner-prev');
-        this.nextBtn = this.container.querySelector('.banner-next');
+        this.totalSlides = this.container.querySelectorAll('.banner-slide').length;
 
-        this.currentIndex = 0;
-        this.totalSlides = this.slides.length;
-        this.autoplayInterval = options.interval || 5000; // 5 sekúnd default
-        this.autoplayTimer = null;
-        this.isHovered = false;
+        if (this.totalSlides <= 1) return;
 
-        if (this.totalSlides > 1) {
-            this.init();
-        }
-    }
-
-    init() {
         this.bindEvents();
         this.startAutoplay();
-    }
+    },
 
     bindEvents() {
-        // Navigation buttons
-        if (this.prevBtn) {
-            this.prevBtn.addEventListener('click', () => {
-                this.prev();
-                this.resetAutoplay();
-            });
-        }
+        this.container.querySelector('.banner-prev')?.addEventListener('click', () => this.navigate(this.currentIndex - 1));
+        this.container.querySelector('.banner-next')?.addEventListener('click', () => this.navigate(this.currentIndex + 1));
 
-        if (this.nextBtn) {
-            this.nextBtn.addEventListener('click', () => {
-                this.next();
-                this.resetAutoplay();
-            });
-        }
-
-        // Dots navigation
         this.dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                this.goToSlide(index);
-                this.resetAutoplay();
-            });
+            dot.addEventListener('click', () => this.navigate(index));
         });
 
-        // Pause on hover
+        // Pozastavenie pri hoveri
         this.container.addEventListener('mouseenter', () => {
             this.isHovered = true;
             this.stopAutoplay();
@@ -65,103 +52,59 @@ export default class BannerSlider {
             this.startAutoplay();
         });
 
-        // Touch/Swipe support
+        // Swipe na dotykových zariadeniach
         let touchStartX = 0;
-        let touchEndX = 0;
 
         this.slidesContainer.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
         }, { passive: true });
 
         this.slidesContainer.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            this.handleSwipe(touchStartX, touchEndX);
+            const diff = touchStartX - e.changedTouches[0].screenX;
+
+            if (Math.abs(diff) > SWIPE_THRESHOLD_PX) {
+                this.navigate(this.currentIndex + (diff > 0 ? 1 : -1));
+            }
         }, { passive: true });
 
-        // Keyboard navigation
+        // Ovládanie klávesnicou
         this.container.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') {
-                this.prev();
-                this.resetAutoplay();
-            } else if (e.key === 'ArrowRight') {
-                this.next();
-                this.resetAutoplay();
-            }
+            if (e.key === 'ArrowLeft') this.navigate(this.currentIndex - 1);
+            else if (e.key === 'ArrowRight') this.navigate(this.currentIndex + 1);
         });
-    }
+    },
 
-    handleSwipe(startX, endX) {
-        const threshold = 50;
-        const diff = startX - endX;
-
-        if (Math.abs(diff) > threshold) {
-            if (diff > 0) {
-                this.next();
-            } else {
-                this.prev();
-            }
-            this.resetAutoplay();
-        }
-    }
+    /**
+     * Manuálny posun – po ňom sa interval autoplay začne počítať odznova.
+     */
+    navigate(index) {
+        this.goToSlide(index);
+        this.startAutoplay();
+    },
 
     goToSlide(index) {
-        if (index < 0) {
-            this.currentIndex = this.totalSlides - 1;
-        } else if (index >= this.totalSlides) {
-            this.currentIndex = 0;
-        } else {
-            this.currentIndex = index;
-        }
+        // Za posledným slidom nasleduje prvý a naopak
+        this.currentIndex = (index + this.totalSlides) % this.totalSlides;
 
-        this.updateSlider();
-    }
+        this.slidesContainer.style.transform = `translateX(${-this.currentIndex * 100}%)`;
 
-    next() {
-        this.goToSlide(this.currentIndex + 1);
-    }
-
-    prev() {
-        this.goToSlide(this.currentIndex - 1);
-    }
-
-    updateSlider() {
-        // Move slides
-        const translateX = -this.currentIndex * 100;
-        this.slidesContainer.style.transform = `translateX(${translateX}%)`;
-
-        // Aktivna bodka sa styluje cez [aria-current="true"] (app.css)
-        this.dots.forEach((dot, index) => {
-            dot.setAttribute('aria-current', index === this.currentIndex ? 'true' : 'false');
+        // Aktívna bodka sa štýluje cez [aria-current="true"] (app.css)
+        this.dots.forEach((dot, i) => {
+            dot.setAttribute('aria-current', i === this.currentIndex ? 'true' : 'false');
         });
-    }
+    },
 
     startAutoplay() {
-        if (this.isHovered || this.totalSlides <= 1) return;
-
         this.stopAutoplay();
-        this.autoplayTimer = setInterval(() => {
-            this.next();
-        }, this.autoplayInterval);
-    }
+        if (this.isHovered) return;
+
+        this.autoplayTimer = setInterval(() => this.goToSlide(this.currentIndex + 1), AUTOPLAY_INTERVAL_MS);
+    },
 
     stopAutoplay() {
-        if (this.autoplayTimer) {
-            clearInterval(this.autoplayTimer);
-            this.autoplayTimer = null;
-        }
-    }
+        clearInterval(this.autoplayTimer);
+        this.autoplayTimer = null;
+    },
+};
 
-    resetAutoplay() {
-        this.stopAutoplay();
-        if (!this.isHovered) {
-            this.startAutoplay();
-        }
-    }
-}
-
-// Auto-initialize
-document.addEventListener('DOMContentLoaded', () => {
-    new BannerSlider({
-        interval: 5000 // 5 sec. between slides
-    });
-});
+export default BannerSlider;

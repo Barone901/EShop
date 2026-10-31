@@ -1,7 +1,7 @@
 /**
- * Toast Notifications Module
+ * Toast Module
  *
- * Zobrazuje notifikácie (success, error, info)
+ * Zobrazuje notifikácie (success, error, info).
  */
 import escapeHtml from '../utils/escape-html';
 
@@ -10,6 +10,8 @@ const TYPES = {
     error: { bgColor: 'bg-red-500', icon: '✗' },
     info: { bgColor: 'bg-blue-500', icon: 'ℹ' },
 };
+
+const ANIMATION_MS = 300;
 
 const Toast = {
     container: null,
@@ -40,15 +42,15 @@ const Toast = {
 
         this.container.appendChild(toast);
 
-        // Animate in
+        // Animácia zobrazenia
         requestAnimationFrame(() => {
             toast.classList.remove('translate-x-full', 'opacity-0');
         });
 
-        // Animate out & remove
+        // Animácia skrytia a odstránenie
         setTimeout(() => {
             toast.classList.add('translate-x-full', 'opacity-0');
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(() => toast.remove(), ANIMATION_MS);
         }, duration);
     },
 
@@ -65,5 +67,4 @@ const Toast = {
     },
 };
 
-export { Toast };
 export default Toast;

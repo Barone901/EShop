@@ -12,12 +12,15 @@
  * Skryté a vypnuté polia sa preskakujú.
  *
  * [AI] Rozšírené s pomocou AI (Claude): pravidlá z HTML atribútov, pattern, skryté polia,
- *      poradie submit handlerov.
+ *      poradie submit handlerov, parametre pravidiel s dvojbodkou, mazanie chyby len daného poľa.
  */
 
 import Toast from './toast';
 
 const FIELD_SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea, select';
+
+// Pole -> element s jeho chybovou hláškou
+const errorElements = new WeakMap();
 
 const FormValidator = {
     // Validačné pravidlá: vrátia true alebo chybovú hlášku
@@ -171,7 +174,7 @@ const FormValidator = {
      */
     runRules(input) {
         for (const rule of this.ruleList(input)) {
-            const [ruleName, ...params] = rule.split(':');
+            const [ruleName, ...params] = this.parseRule(rule);
             const ruleFunc = this.rules[ruleName];
 
             if (!ruleFunc) continue;
@@ -181,6 +184,19 @@ const FormValidator = {
         }
 
         return null;
+    },
+
+    /**
+     * Rozdelí pravidlo na názov a najviac dva parametre, napr. "match:#password:Hláška".
+     * Posledný parameter (hláška) môže obsahovať dvojbodku.
+     */
+    parseRule(rule) {
+        const [ruleName, first, ...rest] = rule.split(':');
+
+        if (first === undefined) return [ruleName];
+        if (rest.length === 0) return [ruleName, first];
+
+        return [ruleName, first, rest.join(':')];
     },
 
     /**
@@ -209,7 +225,8 @@ const FormValidator = {
         errorEl.className = 'mt-1 text-sm text-red-400 validation-error';
         errorEl.textContent = message;
 
-        input.parentNode.insertBefore(errorEl, input.nextSibling);
+        input.after(errorEl);
+        errorElements.set(input, errorEl);
     },
 
     /**
@@ -220,7 +237,9 @@ const FormValidator = {
         input.classList.add('border-gray-300');
         input.removeAttribute('aria-invalid');
 
-        input.parentNode.querySelector('.validation-error')?.remove();
+        // Len chyba tohto poľa (viac polí môže mať spoločného rodiča)
+        errorElements.get(input)?.remove();
+        errorElements.delete(input);
     },
 };
 

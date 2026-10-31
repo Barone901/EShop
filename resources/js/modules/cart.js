@@ -1,37 +1,35 @@
 /**
  * Cart Module
  *
- * Správa nákupného košíka - pridávanie, odoberanie, aktualizácia
+ * Správa nákupného košíka - pridávanie, odoberanie, aktualizácia.
+ * Otváranie dropdownu košíka v hlavičke rieši menu.js.
+ *
+ * [AI] Upravené s pomocou AI (Claude): limit množstva, obnova košíka po chybe, spoločné šablóny.
  */
 
 import CartService from '../services/cartService';
 import Toast from './toast';
 import escapeHtml from '../utils/escape-html';
+import { delegate } from '../utils/dom';
+import { icon, productImage } from '../utils/templates';
 
 const DROPDOWN_ITEMS_LIMIT = 4;
 
-const CART_ICON_PATH = 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z';
-const TRASH_ICON_PATH = 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16';
+// Rovnaký limit ako validácia v Api\CartController
+const MAX_QUANTITY = 99;
 
 const toInt = (value) => parseInt(value, 10);
 
-// Bez obrazka ostava prazdna siva plocha (rovnako ako vo vysledkoch vyhladavania)
-const renderImage = (item) => (item.image_url
-    ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover">`
-    : '');
-
 const Cart = {
     countElement: null,
-    dropdownElement: null,
     dropdownContent: null,
     urls: { cart: '', checkout: '', home: '' },
 
     init() {
         this.countElement = document.getElementById('cart-count');
-        this.dropdownElement = document.getElementById('cart-dropdown');
         this.dropdownContent = document.getElementById('cart-dropdown-content');
 
-        // URL adresy generuje Blade cez route() (data atributy na #cart-wrapper v headeri)
+        // URL adresy generuje Blade cez route() (data atribúty na #cart-wrapper v hlavičke)
         const { cartUrl, checkoutUrl, homeUrl } = document.getElementById('cart-wrapper')?.dataset ?? {};
         this.urls = { cart: cartUrl, checkout: checkoutUrl, home: homeUrl };
 
@@ -40,41 +38,29 @@ const Cart = {
     },
 
     bindEvents() {
-        document.addEventListener('click', (e) => {
-            const addBtn = e.target.closest('[data-add-to-cart]');
-            if (addBtn) {
-                e.preventDefault();
-                this.add(addBtn.dataset.addToCart, this.resolveQuantity(addBtn));
-            }
-
-            const updateBtn = e.target.closest('[data-update-cart]');
-            if (updateBtn) {
-                e.preventDefault();
-                this.update(updateBtn.dataset.updateCart, updateBtn.dataset.quantity);
-            }
-
-            const removeBtn = e.target.closest('[data-remove-from-cart]');
-            if (removeBtn) {
-                e.preventDefault();
-                this.remove(removeBtn.dataset.removeFromCart);
-            }
-
-            const clearBtn = e.target.closest('[data-clear-cart]');
-            if (clearBtn) {
-                e.preventDefault();
-                this.clear();
-            }
+        delegate('click', '[data-add-to-cart]', (e, btn) => {
+            e.preventDefault();
+            this.add(btn.dataset.addToCart, this.resolveQuantity(btn));
         });
 
-        document.addEventListener('change', (e) => {
-            if (e.target.matches('[data-cart-quantity]')) {
-                const productId = e.target.dataset.cartQuantity;
-                const quantity = toInt(e.target.value) || 0;
-                this.update(productId, quantity);
-            }
+        delegate('click', '[data-update-cart]', (e, btn) => {
+            e.preventDefault();
+            this.update(btn.dataset.updateCart, btn.dataset.quantity);
         });
 
-        this.initDropdown();
+        delegate('click', '[data-remove-from-cart]', (e, btn) => {
+            e.preventDefault();
+            this.remove(btn.dataset.removeFromCart);
+        });
+
+        delegate('click', '[data-clear-cart]', (e) => {
+            e.preventDefault();
+            this.clear();
+        });
+
+        delegate('change', '[data-cart-quantity]', (e, input) => {
+            this.update(input.dataset.cartQuantity, toInt(input.value) || 0);
+        });
     },
 
     /**
@@ -92,37 +78,6 @@ const Cart = {
         return quantity || 1;
     },
 
-    initDropdown() {
-        const cartWrapper = document.getElementById('cart-wrapper');
-
-        if (!cartWrapper || !this.dropdownElement) return;
-
-        // Pozn.: menu.js zatvara tento dropdown pri otvoreni ineho menu alebo kliknuti mimo
-
-        let hideTimeout;
-
-        const showDropdown = () => {
-            clearTimeout(hideTimeout);
-            this.dropdownElement.classList.remove('hidden', 'opacity-0', 'translate-y-2');
-            this.dropdownElement.classList.add('opacity-100', 'translate-y-0');
-        };
-
-        const hideDropdown = () => {
-            hideTimeout = setTimeout(() => {
-                this.dropdownElement.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => {
-                    this.dropdownElement.classList.add('hidden');
-                }, 200);
-            }, 150);
-        };
-
-        cartWrapper.addEventListener('mouseenter', showDropdown);
-        cartWrapper.addEventListener('mouseleave', hideDropdown);
-
-        this.dropdownElement.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
-        this.dropdownElement.addEventListener('mouseleave', hideDropdown);
-    },
-
     /**
      * Spoločné spracovanie odpovede pre akcie nad košíkom.
      */
@@ -133,6 +88,8 @@ const Cart = {
             Toast.success(data.message);
         } catch (error) {
             Toast.error(error.message);
+            // Neplatná hodnota (napr. množstvo nad limit) by inak ostala v inpute
+            this.refresh();
         }
     },
 
@@ -181,9 +138,7 @@ const Cart = {
         if (cart.items.length === 0) {
             this.dropdownContent.innerHTML = `
                 <div class="p-6 text-center text-gray-500">
-                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${CART_ICON_PATH}"/>
-                    </svg>
+                    ${icon('cart', 'w-12 h-12 mx-auto mb-3 text-gray-300', 1.5)}
                     <p class="text-sm">Your cart is empty</p>
                 </div>
             `;
@@ -193,7 +148,7 @@ const Cart = {
         const itemsHtml = cart.items.slice(0, DROPDOWN_ITEMS_LIMIT).map((item) => `
             <div class="flex gap-3 p-3 hover:bg-gray-50">
                 <div class="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    ${renderImage(item)}
+                    ${productImage(item)}
                 </div>
                 <div class="flex-1 min-w-0">
                     <a href="${escapeHtml(item.url)}" class="text-sm font-medium hover:underline line-clamp-1">${escapeHtml(item.name)}</a>
@@ -201,9 +156,7 @@ const Cart = {
                     <div class="text-sm font-semibold">${escapeHtml(item.formatted_subtotal)}</div>
                 </div>
                 <button type="button" data-remove-from-cart="${item.id}" class="text-gray-400 hover:text-red-500 p-1" aria-label="Remove ${escapeHtml(item.name)}">
-                    <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                    ${icon('close')}
                 </button>
             </div>
         `).join('');
@@ -240,15 +193,11 @@ const Cart = {
         if (cart.items.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-16">
-                    <svg class="w-20 h-20 mx-auto mb-4 text-gray-300" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${CART_ICON_PATH}"/>
-                    </svg>
+                    ${icon('cart', 'w-20 h-20 mx-auto mb-4 text-gray-300', 1.5)}
                     <h2 class="text-xl font-semibold mb-2">Your cart is empty</h2>
                     <p class="text-gray-500 mb-6">Add some items to your cart and come back.</p>
                     <a href="${this.urls.home}" class="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity">
-                        <svg class="w-5 h-5" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
+                        ${icon('arrowLeft', 'w-5 h-5')}
                         Continue Shopping
                     </a>
                 </div>
@@ -259,7 +208,7 @@ const Cart = {
         const itemsHtml = cart.items.map((item) => `
             <div class="flex gap-4 p-4 bg-white rounded-xl border">
                 <div class="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    ${renderImage(item)}
+                    ${productImage(item)}
                 </div>
                 <div class="flex-1 min-w-0">
                     <a href="${escapeHtml(item.url)}" class="font-semibold hover:underline">${escapeHtml(item.name)}</a>
@@ -277,17 +226,18 @@ const Cart = {
                                 type="number"
                                 value="${item.quantity}"
                                 min="0"
-                                max="99"
+                                max="${MAX_QUANTITY}"
                                 data-cart-quantity="${item.id}"
                                 class="w-12 h-8 text-center text-sm border-x focus:outline-none"
                                 aria-label="Quantity"
                             />
                             <button
                                 type="button"
-                                class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 data-update-cart="${item.id}"
                                 data-quantity="${item.quantity + 1}"
                                 aria-label="Increase quantity"
+                                ${item.quantity >= MAX_QUANTITY ? 'disabled' : ''}
                             >+</button>
                         </div>
                         <button
@@ -295,9 +245,7 @@ const Cart = {
                             data-remove-from-cart="${item.id}"
                             class="text-red-400 hover:text-red-300 text-sm flex items-center gap-1"
                         >
-                            <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${TRASH_ICON_PATH}"/>
-                            </svg>
+                            ${icon('trash')}
                             Remove
                         </button>
                     </div>
@@ -314,9 +262,7 @@ const Cart = {
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold">Items in Cart (${cart.count})</h2>
                         <button type="button" data-clear-cart class="text-sm text-red-50 hover:text-white flex items-center gap-1">
-                            <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${TRASH_ICON_PATH}"/>
-                            </svg>
+                            ${icon('trash')}
                             Clear Cart
                         </button>
                     </div>

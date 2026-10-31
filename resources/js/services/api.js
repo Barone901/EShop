@@ -2,11 +2,29 @@
  * ApiService
  * - jednotný wrapper pre všetky API volania (/api/...)
  * - CSRF sa berie z meta tagu
+ *
+ * [AI] Upravené s pomocou AI (Claude): odolnosť voči odpovediam, ktoré nie sú JSON, hláška pri 419, AbortSignal.
  */
 const API_BASE_URL = '/api';
 
+const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
+const SESSION_EXPIRED_MESSAGE = 'Your session has expired. Please refresh the page.';
+
 const getCsrfToken = () =>
     document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+
+/**
+ * Prázdne body vráti ako null, neplatný JSON (napr. HTML chybová stránka) ako undefined.
+ */
+const parseJson = (text) => {
+    if (!text) return null;
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        return undefined;
+    }
+};
 
 const ApiService = {
     async request(endpoint, options = {}) {
@@ -25,12 +43,14 @@ const ApiService = {
             },
         });
 
-        // Server môže vrátiť prázdne body
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : null;
+        const data = parseJson(await response.text());
 
-        if (!response.ok) {
-            const error = new Error(data?.message || 'Nastala chyba');
+        if (!response.ok || data === undefined) {
+            const message = response.status === 419
+                ? SESSION_EXPIRED_MESSAGE
+                : data?.message || DEFAULT_ERROR_MESSAGE;
+
+            const error = new Error(message);
             error.status = response.status;
             error.data = data;
             throw error;
@@ -39,7 +59,7 @@ const ApiService = {
         return data;
     },
 
-    get(endpoint, params = {}) {
+    get(endpoint, params = {}, options = {}) {
         const query = new URLSearchParams();
 
         Object.entries(params).forEach(([key, value]) => {
@@ -50,7 +70,7 @@ const ApiService = {
 
         const queryString = query.toString();
 
-        return this.request(queryString ? `${endpoint}?${queryString}` : endpoint, { method: 'GET' });
+        return this.request(queryString ? `${endpoint}?${queryString}` : endpoint, { ...options, method: 'GET' });
     },
 
     post(endpoint, data = {}) {

@@ -41,7 +41,7 @@ const Checkout = {
         this.form = field('checkout-form');
         if (!this.form) return;
 
-        // Predvolena krajina z PHP (OrderAddress::DEFAULT_COUNTRY)
+        // Predvolená krajina z PHP (OrderAddress::DEFAULT_COUNTRY)
         this.defaultCountry = this.form.dataset.defaultCountry;
 
         this.sameAsShipping = field('same-as-shipping');
@@ -79,9 +79,7 @@ const Checkout = {
                 this.copyShippingToBilling();
             }
 
-            if (billingSelector) {
-                billingSelector.style.display = this.sameAsShipping.checked ? 'none' : 'block';
-            }
+            billingSelector?.classList.toggle('hidden', this.sameAsShipping.checked);
         });
 
         // Pri zmene doručovacej adresy aktualizuj aj fakturačnú

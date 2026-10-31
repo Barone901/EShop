@@ -1,11 +1,15 @@
 /**
  * Search Module
  *
- * Vyhľadávanie produktov s autocomplete (desktop aj mobilné pole v headeri)
+ * Vyhľadávanie produktov s autocomplete (desktop aj mobilné pole v hlavičke).
+ *
+ * [AI] Upravené s pomocou AI (Claude): rušenie zastaraných requestov (výsledky starého dotazu neprepíšu nový).
  */
 
 import ProductService from '../services/productService';
 import escapeHtml from '../utils/escape-html';
+import { onOutsideClick } from '../utils/dom';
+import { productImage } from '../utils/templates';
 
 const MIN_QUERY_LENGTH = 2;
 const DEBOUNCE_MS = 300;
@@ -28,10 +32,7 @@ const renderResults = (products) => {
     return products.map((product) => `
         <a href="${escapeHtml(product.url)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors">
             <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                ${product.image_url
-                    ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" class="w-full h-full object-cover">`
-                    : ''
-                }
+                ${productImage(product)}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="font-medium text-sm truncate">${escapeHtml(product.name)}</div>
@@ -56,48 +57,51 @@ const Search = {
 
     bind(input, results) {
         let debounceTimer = null;
+        let controller = null;
 
         const show = () => results.classList.remove('hidden');
         const hide = () => results.classList.add('hidden');
 
         const search = async (query) => {
+            controller = new AbortController();
+
+            try {
+                const products = await ProductService.search(query, { signal: controller.signal });
+                results.innerHTML = renderResults(products);
+                show();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Search error:', error);
+                }
+            }
+        };
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            // Výsledok staršieho dotazu sa už nesmie vykresliť
+            controller?.abort();
+
+            const query = input.value.trim();
+
             if (query.length < MIN_QUERY_LENGTH) {
                 hide();
                 return;
             }
 
-            try {
-                const products = await ProductService.search(query);
-                results.innerHTML = renderResults(products);
-                show();
-            } catch (error) {
-                console.error('Search error:', error);
-            }
-        };
-
-        input.addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => search(e.target.value), DEBOUNCE_MS);
+            debounceTimer = setTimeout(() => search(query), DEBOUNCE_MS);
         });
 
         input.addEventListener('focus', () => {
-            if (input.value.length >= MIN_QUERY_LENGTH) {
+            if (input.value.trim().length >= MIN_QUERY_LENGTH && results.innerHTML.trim()) {
                 show();
-            }
-        });
-
-        // Close on click outside
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !results.contains(e.target)) {
-                hide();
             }
         });
 
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                hide();
-            }
+            if (e.key === 'Escape') hide();
         });
+
+        onOutsideClick([input, results], hide);
     },
 };
 

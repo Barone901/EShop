@@ -5,8 +5,6 @@ import ApiService from './api';
 import ProductService from './productService';
 import CartService from './cartService';
 
-export { ApiService, ProductService, CartService };
-
 export default {
     Api: ApiService,
     Product: ProductService,

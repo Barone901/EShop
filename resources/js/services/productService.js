@@ -6,10 +6,10 @@ import ApiService from './api';
 
 const ProductService = {
     /**
-     * Vyhľadávanie produktov.
+     * Vyhľadávanie produktov (options.signal umožní zrušiť zastaraný request).
      */
-    search(query) {
-        return ApiService.get('/products/search', { q: query });
+    search(query, options = {}) {
+        return ApiService.get('/products/search', { q: query }, options);
     },
 
     /**
