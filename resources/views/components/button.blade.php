@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Tlacidlo dizajnoveho systemu (nahradza Breeze primary/secondary/danger-button).
     - variant: primary | secondary | ghost | danger (obrysove, tmava cervena) | dark (obrysove na tmavom pozadi)

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 @props(['text' => 'Loading...'])
 
 <div class="flex items-center justify-center py-16" role="status">

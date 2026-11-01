@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Ulozene adresy pouzivatela (dorucovacie a fakturacne). --}}
 @php
     $groups = [

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Kosik. Obsah #cart-page-content vykresluje cart.js (renderCartPage) - ID nemen.
 --}}

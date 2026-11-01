@@ -5,6 +5,8 @@
  * (šípky, bodky, klávesnica, swipe). Pri hoveri sa autoplay pozastaví.
  *
  * Prvky sa hľadajú cez data-banner-* atribúty (slides, slide, dot, prev, next), nie cez CSS triedy.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 
 import { byId } from '../utils/dom';

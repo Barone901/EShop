@@ -1,6 +1,8 @@
 Instalacia a spustenie projektu na Ubuntu (Docker / Laravel Sail)
 =================================================================
 
+[AI] Upravene s pomocou AI (Claude).
+
 Podrobny popis projektu, ukazkove ucty a prehlad poziadaviek su v README.md.
 Architektura kodu je popisana v app/README.md (a v README.md v jednotlivych priecinkoch).
 

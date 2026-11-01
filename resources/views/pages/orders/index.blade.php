@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Zoznam objednavok prihlaseneho pouzivatela. --}}
 <x-layouts.default-layout title="My Orders">
 

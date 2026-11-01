@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Mriezka kategorii (homepage). Karta = odkaz na vypis produktov s filtrom kategorie.
     Vsetky fotky: rovnaky pomer 4:3, podklad tile, object-contain (nic sa neoreze).

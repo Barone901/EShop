@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Hlavicka (tmava zona). JS vazby - nemen ID, aria-* ani pociatocne triedy dropdownov:
     - menu.js: #mobile-menu-btn/#mobile-nav, #mobile-profile-btn/-dropdown/-arrow, #cart-wrapper/#cart-btn/#cart-dropdown

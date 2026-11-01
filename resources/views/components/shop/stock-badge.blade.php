@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Dostupnost produktu (text + farba + bodka). --}}
 @props(['product'])
 

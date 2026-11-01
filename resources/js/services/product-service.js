@@ -1,6 +1,8 @@
 /**
  * ProductService
  * - API volania pre produkty
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 import ApiService from './api';
 

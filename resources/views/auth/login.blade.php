@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Zalozene na Laravel Breeze (https://github.com/laravel/breeze). Reset hesla neexistuje - nepridavaj odkaz "Forgot password". --}}
 <x-layouts.default-layout title="Log in" type="guest">
     <div class="mb-6">

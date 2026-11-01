@@ -3,6 +3,8 @@
  *
  * Predvyplnenie adries z uložených adries, "rovnaká ako doručovacia"
  * a loading stav pri odoslaní objednávky.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 import { byId } from '../utils/dom';
 

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Potvrdenie objednavky (krok 3 nakupu). --}}
 <x-layouts.default-layout title="Order Confirmed">
 

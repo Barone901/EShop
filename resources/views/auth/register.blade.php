@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Zalozene na Laravel Breeze (https://github.com/laravel/breeze). --}}
 <x-layouts.default-layout title="Registration" type="guest">
     <div class="mb-6">

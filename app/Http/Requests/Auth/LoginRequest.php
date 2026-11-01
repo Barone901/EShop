@@ -1,6 +1,7 @@
 <?php
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
+// [AI] Upravene s pomocou AI (Claude).
 
 declare(strict_types=1);
 

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Vypis produktov s filtrom kategorie, vyhladavanim a radenim (GET parametre category, search, sort).
     JS: select #sort [data-navigate-on-change] (page-actions.js) - hodnota option = URL.

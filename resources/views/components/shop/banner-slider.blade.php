@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Banner slider (sucast hero na homepage, sirku urcuje rodic).
     JS (banner-slider.js) sa viaze na #banner-slider a data-banner-* atributy - nemen ich.

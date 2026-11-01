@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Detail produktu.
     JS: [data-add-to-cart] + data-quantity-input="#quantity" (cart.js) cita mnozstvo z inputu #quantity - nemen.

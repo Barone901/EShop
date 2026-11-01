@@ -3,6 +3,8 @@
  *
  * Správa nákupného košíka - pridávanie, odoberanie, aktualizácia.
  * Otváranie dropdownu košíka v hlavičke rieši menu.js.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 
 import CartService from '../services/cart-service';

@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 /**
  * Model stranky/clanku s podporou soft delete.
  * Relacia: User (N:1)
+ *
+ * [AI] Upravene s pomocou AI (Claude).
  */
 class Page extends Model
 {

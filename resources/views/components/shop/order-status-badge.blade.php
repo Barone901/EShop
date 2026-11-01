@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Stav objednavky. Farbu urcuje OrderStatus::badgeColor() (nazov farby, pouziva sa aj inde),
     tu sa mapuje na varianty x-ui.badge dizajnoveho systemu.

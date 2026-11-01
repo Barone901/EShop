@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene. --}}
 {{-- pattern = vzor z App\Support\InputPattern, doplni aj hlasku pre JS validator (ako x-form.input) --}}
 {{-- Okraj, focus a chybovy stav (aria-invalid) riesi app.css, preto tu nie su farby okraja. --}}

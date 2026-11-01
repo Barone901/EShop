@@ -10,6 +10,8 @@
  *
  * Validuje sa pri opustení poľa (blur) a pri odoslaní formulára.
  * Skryté a vypnuté polia sa preskakujú.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 
 import Toast from './toast';

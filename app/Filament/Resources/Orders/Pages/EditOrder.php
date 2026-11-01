@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude).
+
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\OrderStatus;

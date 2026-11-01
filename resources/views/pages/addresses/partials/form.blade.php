@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Spoločné polia formulára adresy (create + edit).
     Premenné: $type (App\Enums\AddressType), $values (predvolené hodnoty), $submitLabel,

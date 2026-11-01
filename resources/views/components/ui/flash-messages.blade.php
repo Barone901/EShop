@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 @props(['types' => ['success', 'error']])
 
 @php

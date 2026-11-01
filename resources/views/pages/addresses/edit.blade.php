@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 <x-layouts.default-layout title="Edit {{ $address->type_label }} Address">
 
     @include('pages.addresses.partials.breadcrumb', ['current' => "Edit {$address->type_label} Address"])

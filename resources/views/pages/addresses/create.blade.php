@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 @php($typeLabel = $type->label())
 
 <x-layouts.default-layout title="New {{ $typeLabel }} Address">

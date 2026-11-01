@@ -2,6 +2,8 @@
  * Search Module
  *
  * Vyhľadávanie produktov s autocomplete (desktop aj mobilné pole v hlavičke).
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 
 import ProductService from '../services/product-service';

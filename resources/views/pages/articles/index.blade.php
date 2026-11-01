@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 @php
     $title = 'Articles and news';
 @endphp

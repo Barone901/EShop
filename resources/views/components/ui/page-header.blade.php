@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Hlavicka stranky (h1). Volitelne: eyebrow (technicky popis nad nadpisom), slot $actions vpravo.
 --}}

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Karta produktu vo vypise.
     JS: [data-quick-view] (quickview.js) a [data-add-to-cart] (cart.js) - atributy nemen.

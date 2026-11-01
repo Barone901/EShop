@@ -2,6 +2,8 @@
  * ApiService
  * - jednotný wrapper pre všetky API volania (/api/...)
  * - CSRF sa berie z meta tagu
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 const API_BASE_URL = '/api';
 

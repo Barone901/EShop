@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Prehlad uctu + nastavenia profilu (Breeze partials). Kotva #profile = ciel presmerovania z profile.edit.
 --}}

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Detail clanku. JS: [data-copy-url] (page-actions.js) - nemen.
     Obsah clanku je HTML z administracie (sanitizovane v modeli), styly v .article-content (app.css).

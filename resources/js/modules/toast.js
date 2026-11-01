@@ -2,6 +2,8 @@
  * Toast Module
  *
  * Zobrazuje notifikácie (success, error, info).
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 import { escapeHtml } from '../utils/escape-html';
 

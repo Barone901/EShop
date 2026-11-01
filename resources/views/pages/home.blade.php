@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 @php
     // Vyhody obchodu: len fakty, ktore aplikacia realne poskytuje
     $benefits = [

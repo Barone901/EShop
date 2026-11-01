@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Karta clanku (vypis clankov aj suvisiace clanky). headingLevel = uroven nadpisu (h2 vo vypise, h3 pri suvisiacich). --}}
 @props(['page', 'headingLevel' => 2])
 

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Pokladna. JS vazby (checkout.js + form-validator.js) - nemen ID, name ani data-* atributy:
     #checkout-form[data-validate][data-default-country], #shipping-address-select, #billing-address-select

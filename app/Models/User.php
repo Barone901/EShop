@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude).
+
 declare(strict_types=1);
 
 namespace App\Models;

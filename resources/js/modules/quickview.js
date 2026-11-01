@@ -2,6 +2,8 @@
  * Quick View Module
  *
  * Rýchly náhľad produktu v modálnom okne.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 
 import ProductService from '../services/product-service';

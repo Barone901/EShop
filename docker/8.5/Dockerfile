@@ -1,4 +1,5 @@
 # Prevzate z Laravel Sail (vendor/laravel/sail/runtimes/8.5), zdroj: https://github.com/laravel/sail
+# [AI] Upravene s pomocou AI (Claude).
 FROM ubuntu:24.04
 
 LABEL maintainer="Taylor Otwell"

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- O nas. Texty su povodne; cisla vo faktoch su prevzate z textu stranky. --}}
 @php
     $facts = [

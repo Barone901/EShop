@@ -1,6 +1,8 @@
 /**
  * CartService
  * - API volania pre košík
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 import ApiService from './api';
 

@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Ucet v hlavicke (desktop).
     - prihlaseny: dropdown (menu.js: #account-btn, #account-dropdown, #account-arrow - nemen ID ani

@@ -1,5 +1,7 @@
 /**
  * Centrálny export pre všetky API services.
+ *
+ * [AI] Upravené s pomocou AI (Claude).
  */
 import ApiService from './api';
 import ProductService from './product-service';

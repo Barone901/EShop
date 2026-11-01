@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Detail objednavky.
     JS: formulare zrusenia/zmazania maju data-confirm (page-actions.js) - nemen.
