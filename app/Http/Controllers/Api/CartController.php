@@ -1,16 +1,20 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): validacia presunuta do FormRequest (Api/*CartItemRequest), readonly injekcia.
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\CartException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AddCartItemRequest;
+use App\Http\Requests\Api\RemoveCartItemRequest;
+use App\Http\Requests\Api\UpdateCartItemRequest;
 use App\Models\Product;
 use App\Services\CartService;
 use Closure;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * API Controller pre pracu s nakupnym kosikom.
@@ -33,19 +37,14 @@ class CartController extends Controller
     }
 
     /**
-     * Prida produkt do kosika s validaciou mnozstva a dostupnosti.
+     * Prida produkt do kosika (validaciu robi AddCartItemRequest, dostupnost CartService).
      */
-    public function add(Request $request): JsonResponse
+    public function add(AddCartItemRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity'   => ['nullable', 'integer', 'min:1', 'max:' . config('shop.max_cart_quantity')],
-        ]);
-
-        $product = Product::findOrFail((int) $validated['product_id']);
+        $product = Product::findOrFail($request->integer('product_id'));
 
         return $this->respond(
-            fn () => $this->cartService->addProduct($product, (int) ($validated['quantity'] ?? 1)),
+            fn () => $this->cartService->addProduct($product, (int) ($request->validated('quantity') ?? 1)),
             'Product has been added to cart.'
         );
     }
@@ -53,15 +52,10 @@ class CartController extends Controller
     /**
      * Aktualizuje mnozstvo produktu v kosiku.
      */
-    public function update(Request $request): JsonResponse
+    public function update(UpdateCartItemRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'product_id' => ['required', 'integer'],
-            'quantity'   => ['required', 'integer', 'min:0', 'max:' . config('shop.max_cart_quantity')],
-        ]);
-
         return $this->respond(
-            fn () => $this->cartService->updateQuantity((int) $validated['product_id'], (int) $validated['quantity']),
+            fn () => $this->cartService->updateQuantity($request->integer('product_id'), $request->integer('quantity')),
             'Cart has been updated.'
         );
     }
@@ -69,14 +63,10 @@ class CartController extends Controller
     /**
      * Odstrani produkt z kosika.
      */
-    public function remove(Request $request): JsonResponse
+    public function remove(RemoveCartItemRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'product_id' => ['required', 'integer'],
-        ]);
-
         return $this->respond(
-            fn () => $this->cartService->removeProduct((int) $validated['product_id']),
+            fn () => $this->cartService->removeProduct($request->integer('product_id')),
             'Product has been removed from cart.'
         );
     }

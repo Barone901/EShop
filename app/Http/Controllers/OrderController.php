@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): opravy typov, readonly injekcia, jednotne 404 cez ?? abort(404).
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -25,8 +27,8 @@ class OrderController extends Controller
      * Injektuje sluzby pre objednavky a kosik.
      */
     public function __construct(
-        private OrderService $orderService,
-        private CartService $cartService
+        private readonly OrderService $orderService,
+        private readonly CartService $cartService
     ) {}
 
     /**
@@ -81,11 +83,10 @@ class OrderController extends Controller
      */
     public function confirmation(Request $request, string $orderNumber): View
     {
-        $order = $request->user()
+        $order = ($request->user()
             ? $this->orderService->findUserOrder($request->user(), $orderNumber)
-            : $this->orderService->findGuestOrder($orderNumber, $request->session()->get('guest_order_token'));
-
-        abort_if($order === null, 404);
+            : $this->orderService->findGuestOrder($orderNumber, $request->session()->get('guest_order_token')))
+            ?? abort(404);
 
         return view('pages.checkout.confirmation', [
             'order' => $order,

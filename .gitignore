@@ -26,3 +26,8 @@ Thumbs.db
 # Project exclude paths
 /storage/app/
 /storage/framework/
+
+# Vygenerovane IDE helpery (barryvdh/laravel-ide-helper) - necommitovat
+/_ide_helper.php
+/_ide_helper_models.php
+/.phpstorm.meta.php

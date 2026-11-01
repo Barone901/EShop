@@ -4,11 +4,13 @@
  * Vyhľadávanie produktov s autocomplete (desktop aj mobilné pole v hlavičke).
  *
  * [AI] Upravené s pomocou AI (Claude): rušenie zastaraných requestov (výsledky starého dotazu neprepíšu nový).
+ *
+ * [AI] Upravené s pomocou AI (Claude): redizajn (Tailwind triedy), onEscape() a byId() zo spoločných utils.
  */
 
-import ProductService from '../services/productService';
-import escapeHtml from '../utils/escape-html';
-import { onOutsideClick } from '../utils/dom';
+import ProductService from '../services/product-service';
+import { escapeHtml } from '../utils/escape-html';
+import { byId, onEscape, onOutsideClick } from '../utils/dom';
 import { productImage } from '../utils/templates';
 
 const MIN_QUERY_LENGTH = 2;
@@ -23,22 +25,22 @@ const INSTANCES = [
 const renderResults = (products) => {
     if (products.length === 0) {
         return `
-            <div class="p-4 text-sm text-gray-500">
+            <div class="p-4 text-sm text-subtle">
                 No results found for this search.
             </div>
         `;
     }
 
     return products.map((product) => `
-        <a href="${escapeHtml(product.url)}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors">
-            <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+        <a href="${escapeHtml(product.url)}" class="flex items-center gap-3 px-4 py-3 border-b border-line last:border-b-0 hover:bg-paper hover:text-brand-600 transition-colors">
+            <div class="size-12 bg-tile border border-line rounded-xs overflow-hidden shrink-0">
                 ${productImage(product)}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="font-medium text-sm truncate">${escapeHtml(product.name)}</div>
-                <div class="text-xs text-gray-500">${escapeHtml(product.category)}</div>
+                <div class="eyebrow">${escapeHtml(product.category)}</div>
             </div>
-            <div class="text-sm font-bold">${escapeHtml(product.formatted_price)}</div>
+            <div class="num text-sm text-text">${escapeHtml(product.formatted_price)}</div>
         </a>
     `).join('');
 };
@@ -46,8 +48,8 @@ const renderResults = (products) => {
 const Search = {
     init() {
         INSTANCES.forEach(([inputId, resultsId]) => {
-            const input = document.getElementById(inputId);
-            const results = document.getElementById(resultsId);
+            const input = byId(inputId);
+            const results = byId(resultsId);
 
             if (input && results) {
                 this.bind(input, results);
@@ -97,10 +99,7 @@ const Search = {
             }
         });
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') hide();
-        });
-
+        onEscape(hide);
         onOutsideClick([input, results], hide);
     },
 };

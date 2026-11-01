@@ -1,5 +1,7 @@
 /**
  * Escapuje hodnotu pred vložením do HTML šablóny (innerHTML).
+ *
+ * [AI] Upravené s pomocou AI (Claude): pomenovaný export ako ostatné utils.
  */
 const HTML_ENTITIES = {
     '&': '&amp;',
@@ -9,8 +11,8 @@ const HTML_ENTITIES = {
     "'": '&#39;',
 };
 
-export default function escapeHtml(value) {
+export const escapeHtml = (value) => {
     if (value === null || value === undefined) return '';
 
     return String(value).replace(/[&<>"']/g, (char) => HTML_ENTITIES[char]);
-}
+};

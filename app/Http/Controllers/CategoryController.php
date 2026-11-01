@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): jednotny styl (readonly injekcia, data do view polom).
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -18,8 +20,8 @@ class CategoryController extends Controller
      * Injektuje sluzby pre kategorie a bannery.
      */
     public function __construct(
-        private CategoryService $categoryService,
-        private BannerService $bannerService
+        private readonly CategoryService $categoryService,
+        private readonly BannerService $bannerService
     ) {}
 
     /**
@@ -29,9 +31,10 @@ class CategoryController extends Controller
     {
         abort_unless($category->is_active, 404);
 
-        $categories = $this->categoryService->getParentCategories();
-        $banners = $this->bannerService->getActiveBanners();
-
-        return view('pages.home', compact('categories', 'banners', 'category'));
+        return view('pages.home', [
+            'category' => $category,
+            'categories' => $this->categoryService->getParentCategories(),
+            'banners' => $this->bannerService->getActiveBanners(),
+        ]);
     }
 }

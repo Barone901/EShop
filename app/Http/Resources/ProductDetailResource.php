@@ -1,6 +1,7 @@
 <?php
 
 // [AI] Vygenerovane s pomocou AI (Claude) - presunute z ProductService::formatDetailForApi().
+// [AI] Upravene s pomocou AI (Claude): pole low_stock pre quick view.
 
 declare(strict_types=1);
 
@@ -27,6 +28,7 @@ class ProductDetailResource extends JsonResource
             'formatted_price' => $this->formatted_price,
             'stock' => $this->stock,
             'in_stock' => $this->is_in_stock,
+            'low_stock' => $this->is_low_stock,
             'image_url' => $this->image_src,
             'category' => [
                 'id' => $this->category?->id,

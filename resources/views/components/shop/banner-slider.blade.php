@@ -1,84 +1,74 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{--
+    Banner slider (sucast hero na homepage, sirku urcuje rodic).
+    JS (banner-slider.js) sa viaze na #banner-slider a data-banner-* atributy - nemen ich.
+    Aktivnu bodku nastavuje JS cez aria-current, styl je v app.css.
+    Pomer stran = pomer bannerov (671 x 375), preto object-cover nic neoreze a nevzniknu tmave okraje.
+--}}
 @props(['banners' => null])
 
 @if($banners && $banners->isNotEmpty())
-    <section id="banner-slider" class="relative w-full bg-black overflow-hidden">
-        {{-- Full-width pás, ale obsah banneru má limit (na 4K) --}}
-        <div class="relative mx-auto w-full max-w-[1600px]">
-            <div class="banner-slider-container relative">
-                {{-- SLIDES AREA --}}
-                <div class="relative h-[240px] sm:h-[340px] lg:h-[460px]">
-                    <div class="banner-slides flex h-full transition-transform duration-500 ease-in-out">
-                        @foreach($banners as $banner)
-                            <div class="banner-slide min-w-full h-full">
-                                @if(!empty($banner->link))
-                                    <a href="{{ $banner->link }}" class="block h-full">
-                                @endif
+    <section id="banner-slider" class="relative overflow-hidden rounded-xs bg-ink-950" aria-roledescription="carousel" aria-label="Featured">
+        <div class="relative aspect-[671/375] w-full">
+            <div data-banner-slides class="flex h-full transition-transform duration-500 ease-in-out motion-reduce:transition-none">
+                @foreach($banners as $banner)
+                    <div data-banner-slide class="relative h-full min-w-full" aria-roledescription="slide" aria-label="{{ $loop->iteration }} / {{ $loop->count }}">
+                        @if(!empty($banner->link))
+                            <a href="{{ $banner->link }}" class="absolute inset-0 block">
+                        @endif
 
-                                {{-- Tu je kľúč: object-contain + čierne pozadie => nič sa neoreže --}}
-                                <div class="relative h-full w-full bg-black">
-                                    <img
-                                        src="{{ $banner->image_url }}"
-                                        alt="{{ $banner->name }}"
-                                        class="absolute inset-0 w-full h-full object-contain select-none"
-                                        draggable="false"
-                                    />
-                                </div>
+                        <img
+                            src="{{ $banner->image_url }}"
+                            alt="{{ $banner->name }}"
+                            class="absolute inset-0 h-full w-full object-cover select-none"
+                            draggable="false"
+                            @if(!$loop->first) loading="lazy" @endif
+                        />
 
-                                @if(!empty($banner->link))
-                                    </a>
-                                @endif
-                            </div>
+                        @if(!empty($banner->link))
+                            </a>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Ovladanie vnutri slidera (pravy dolny roh, mimo textu bannerov vlavo) --}}
+            @if($banners->count() > 1)
+                <div class="absolute bottom-2 right-2 z-10 flex items-stretch rounded-xs bg-ink-950/80 sm:bottom-3 sm:right-3">
+                    <div class="flex items-center gap-2 px-3">
+                        @foreach($banners as $index => $banner)
+                            <button
+                                type="button"
+                                data-banner-dot
+                                aria-label="Go to slide {{ $index + 1 }}"
+                                aria-current="{{ $index === 0 ? 'true' : 'false' }}"
+                            ></button>
                         @endforeach
                     </div>
+
+                    <button
+                        type="button"
+                        data-banner-prev
+                        aria-label="Previous slide"
+                        class="grid size-10 place-items-center border-l border-white/15 text-steel-100 transition-colors hover:bg-ink-800 sm:size-11"
+                    >
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+
+                    <button
+                        type="button"
+                        data-banner-next
+                        aria-label="Next slide"
+                        class="grid size-10 place-items-center border-l border-white/15 text-steel-100 transition-colors hover:bg-ink-800 sm:size-11"
+                    >
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 </div>
-
-                {{-- CONTROLS BAR (space under image) --}}
-                @if($banners->count() > 1)
-                    <div class="relative z-20 bg-black">
-                        <div class="mx-auto flex items-center justify-end gap-3 px-4 py-3">
-                            <div class="flex items-center overflow-hidden rounded-xl border border-white/10 bg-white/90 backdrop-blur shadow-lg">
-                                {{-- Dots --}}
-                                <div class="banner-dots flex items-center gap-2 px-4 py-2">
-                                    @foreach($banners as $index => $banner)
-                                        <button
-                                            type="button"
-                                            aria-label="Go to slide {{ $index + 1 }}"
-                                            aria-current="{{ $index === 0 ? 'true' : 'false' }}"
-                                            class="banner-dot"
-                                        ></button>
-                                    @endforeach
-                                </div>
-
-                                {{-- Divider --}}
-                                <div class="h-10 w-px bg-black/10"></div>
-
-                                {{-- Prev / Next --}}
-                                <button
-                                    type="button"
-                                    aria-label="Previous slide"
-                                    class="banner-prev grid h-10 w-12 place-items-center hover:bg-black/5 transition"
-                                >
-                                    <svg class="h-5 w-5 text-gray-800" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                    </svg>
-                                </button>
-
-                                <div class="h-10 w-px bg-black/10"></div>
-
-                                <button
-                                    type="button"
-                                    aria-label="Next slide"
-                                    class="banner-next grid h-10 w-12 place-items-center hover:bg-black/5 transition"
-                                >
-                                    <svg class="h-5 w-5 text-gray-800" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            </div>
+            @endif
         </div>
     </section>
 @endif

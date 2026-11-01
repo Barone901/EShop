@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -10,6 +11,9 @@
     {{-- CSRF token pre formulare a ajax requesty (ochrana) --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- Farba listy prehliadaca na mobile = grafitovy header --}}
+    <meta name="theme-color" content="#16191C">
+
     {{-- Nazov stranky: pouzije $title ak existuje, inak nazov aplikacie z configu --}}
     <title>{{ $title ?? config('app.name', 'Eshop') }}</title>
 
@@ -21,12 +25,16 @@
 </head>
 
 {{--
-    Body triedy:
-    - font-sans + antialiased = krajsie vykreslenie textu
-    - min-h-screen = minimalne vyska celej obrazovky
-    - flex flex-col = layout do stlpca (header hore, footer dole)
+    Hybridny dizajn: tmavy header a footer (theme-dark), svetly obsah (bg-paper).
+    flex flex-col + flex-grow na obsahu = footer vzdy dole.
 --}}
-<body class="font-sans antialiased min-h-screen flex flex-col">
+<body class="flex min-h-screen flex-col bg-paper font-sans text-text antialiased">
+
+{{-- Preskocenie navigacie pre klavesnicu a citacky obrazovky --}}
+<a href="#main-content"
+   class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:bg-brand-600 focus:px-4 focus:py-2 focus:font-display focus:font-semibold focus:uppercase focus:tracking-wider focus:text-white">
+    Skip to content
+</a>
 
 {{-- Header / navbar (spolocny pre vsetky stranky) --}}
 @include('layouts.partials.header')
@@ -34,40 +42,31 @@
 {{-- Prepnutie layoutu podla $type --}}
 @if($type === 'guest')
     {{--
-        Guest layout:
-        - pouziva sa na login/register
-        - obsah je vycentrovany
-        - uzsia karta, aby to vyzeralo ako formular
+        Guest layout (login, register, overenie emailu):
+        uzka biela karta vycentrovana na svetlom pozadi, s akcentovym pruhom navrchu.
     --}}
-    <div class="flex-grow flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-        <div class="card w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+    <main id="main-content" class="flex flex-grow items-start justify-center px-4 py-10 sm:items-center sm:py-16">
+        <div class="card w-full max-w-md border-t-3 border-t-brand-600 p-6 sm:p-8">
             {{-- $slot = obsah konkretnej stranky --}}
             {{ $slot }}
         </div>
-    </div>
+    </main>
 
 @elseif($type === 'app')
     {{--
-        App layout:
-        - normalne stranky aplikacie
-        - moze mat volitelny $header nad obsahom
+        App layout: stranky uctu, volitelny $header nad obsahom.
     --}}
     @isset($header)
-        <header class="card bg-white shadow">
+        <div class="border-b border-line bg-white">
             {{-- Rovnaka sirka ako header, footer a obsah (max-w-7xl) --}}
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 {{ $header }}
             </div>
-        </header>
+        </div>
     @endisset
 
-    {{--
-        Hlavny obsah:
-        - max-w-7xl = rovnaka sirka ako header a footer, aby bolo vsetko zarovnane
-        - py-8 = jedine zvisle odsadenie obsahu (stranky si nepridavaju vlastne)
-        - flex-grow = aby footer ostal dole
-    --}}
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    {{-- py-8/10 = jedine zvisle odsadenie obsahu (stranky si nepridavaju vlastne) --}}
+    <main id="main-content" class="mx-auto w-full max-w-7xl flex-grow px-4 py-8 sm:px-6 md:py-10 lg:px-8">
         {{ $slot }}
     </main>
 
@@ -79,7 +78,7 @@
     --}}
     {{ $fullWidth ?? '' }}
 
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    <main id="main-content" class="mx-auto w-full max-w-7xl flex-grow px-4 py-8 sm:px-6 md:py-10 lg:px-8">
         {{ $slot }}
     </main>
 @endif

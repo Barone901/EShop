@@ -1,19 +1,20 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Zalozene na Laravel Breeze (https://github.com/laravel/breeze). --}}
 <x-layouts.default-layout title="Registration" type="guest">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-center">Registration</h2>
-        <p class="text-center text-gray-600 text-sm mt-1">Create your profile</p>
+        <p class="eyebrow">Customer account</p>
+        <h1 class="mt-2 text-3xl">Registration</h1>
+        <p class="mt-1 text-sm text-muted">Create your profile to save addresses and track your orders.</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" data-validate>
+    <form method="POST" action="{{ route('register') }}" data-validate class="space-y-5">
         @csrf
 
         {{-- Name --}}
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('Name')" class="mb-1.5" />
             <x-text-input
                 id="name"
-                class="block mt-1 w-full"
                 type="text"
                 name="name"
                 :value="old('name')"
@@ -24,15 +25,14 @@
                 autofocus
                 autocomplete="name"
             />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
         </div>
 
         {{-- Email Address --}}
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
+        <div>
+            <x-input-label for="email" :value="__('Email')" class="mb-1.5" />
             <x-text-input
                 id="email"
-                class="block mt-1 w-full"
                 type="email"
                 name="email"
                 :value="old('email')"
@@ -40,53 +40,50 @@
                 maxlength="255"
                 autocomplete="username"
             />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
         {{-- Password --}}
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <div>
+            <x-input-label for="password" :value="__('Password')" class="mb-1.5" />
             <x-text-input
                 id="password"
-                class="block mt-1 w-full"
                 type="password"
                 name="password"
                 required
                 data-rules="password"
                 autocomplete="new-password"
+                aria-describedby="password-hint"
             />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-            <p class="mt-1 text-xs text-gray-500">
+            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
+            <p id="password-hint" class="mt-1.5 text-xs text-subtle">
                 The password must be at least 8 characters long and contain upper and lower case letters and numbers.
             </p>
         </div>
 
         {{-- Confirm Password --}}
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm password')" />
+        <div>
+            <x-input-label for="password_confirmation" :value="__('Confirm password')" class="mb-1.5" />
             <x-text-input
                 id="password_confirmation"
-                class="block mt-1 w-full"
                 type="password"
                 name="password_confirmation"
                 required
                 data-rules="match:#password:The passwords do not match."
                 autocomplete="new-password"
             />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5" />
         </div>
 
-        <div class="mt-6">
-            <x-button variant="primary" class="w-full justify-center">
-                Register
-            </x-button>
-        </div>
+        <x-button variant="primary" size="lg" class="w-full">
+            Register
+        </x-button>
     </form>
 
-    <div class="mt-6 text-center text-sm text-gray-600">
-        Already have an account?
-        <a href="{{ route('login') }}" class="text-indigo-400 hover:underline font-medium">
+    <div class="mt-8 border-t border-line pt-6 text-center">
+        <p class="text-sm text-muted">Already have an account?</p>
+        <x-button :href="route('login')" variant="secondary" class="mt-3 w-full">
             Log in
-        </a>
+        </x-button>
     </div>
 </x-layouts.default-layout>

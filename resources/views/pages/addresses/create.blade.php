@@ -1,29 +1,27 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 @php($typeLabel = $type->label())
 
 <x-layouts.default-layout title="New {{ $typeLabel }} Address">
 
-    <div>
+    @include('pages.addresses.partials.breadcrumb', ['current' => "New {$typeLabel} Address"])
 
-        {{-- Page Header --}}
-        <x-ui.page-header
-            title="New {{ $typeLabel }} Address"
-            subtitle="Fill in the details for your new address."
-        />
+    <x-ui.page-header
+        eyebrow="My addresses"
+        title="New {{ $typeLabel }} Address"
+        subtitle="Fill in the details for your new address."
+    />
 
-        <div class="max-w-2xl mx-auto">
-            <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <form action="{{ route('addresses.store') }}" method="POST" data-validate>
-                    @csrf
-                    <input type="hidden" name="type" value="{{ $type->value }}">
+    <x-ui.card padding="lg" class="max-w-3xl">
+        <form action="{{ route('addresses.store') }}" method="POST" data-validate>
+            @csrf
+            <input type="hidden" name="type" value="{{ $type->value }}">
 
-                    @include('pages.addresses.partials.form', [
-                        'type' => $type,
-                        'values' => $values,
-                        'submitLabel' => 'Save Address',
-                    ])
-                </form>
-            </div>
-        </div>
-    </div>
+            @include('pages.addresses.partials.form', [
+                'type' => $type,
+                'values' => $values,
+                'submitLabel' => 'Save Address',
+            ])
+        </form>
+    </x-ui.card>
 
 </x-layouts.default-layout>

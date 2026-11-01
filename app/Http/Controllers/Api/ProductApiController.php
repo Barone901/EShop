@@ -1,15 +1,17 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): validacia presunuta do FormRequest (Api/ProductSearchRequest).
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ProductSearchRequest;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -27,15 +29,10 @@ class ProductApiController extends Controller
     /**
      * Vyhlada produkty podla zadaneho vyrazu pre autocomplete.
      */
-    public function search(Request $request): AnonymousResourceCollection
+    public function search(ProductSearchRequest $request): AnonymousResourceCollection
     {
-        // Server-side validacia search query
-        $validated = $request->validate([
-            'q' => ['nullable', 'string', 'max:255'],
-        ]);
-
         return ProductResource::collection(
-            $this->productService->search(trim($validated['q'] ?? ''))
+            $this->productService->search(trim((string) $request->validated('q')))
         );
     }
 

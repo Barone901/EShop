@@ -1,209 +1,209 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{--
+    Hlavicka (tmava zona). JS vazby - nemen ID, aria-* ani pociatocne triedy dropdownov:
+    - menu.js: #mobile-menu-btn/#mobile-nav, #mobile-profile-btn/-dropdown/-arrow, #cart-wrapper/#cart-btn/#cart-dropdown
+      (dropdowny zacinaju zatvorene: "hidden opacity-0 translate-y-2", stav v aria-expanded)
+    - cart.js: #cart-count (trieda hidden), #cart-dropdown-content, data-*-url na #cart-wrapper
+    - search.js: #search-input/#search-results, #search-input-mobile/#search-results-mobile
+    Desktop ucet (#account-*) je v partials/account.
+--}}
 @php
-    // Hlavne menu (desktop aj mobil): route => text odkazu
+    // Hlavne menu (desktop aj mobil): route => [text odkazu, vzor rout pre aktivny stav]
     $navLinks = [
-        'home' => 'Home',
-        'products.index' => 'Products',
-        'pages.index' => 'Articles',
-        'about' => 'About us',
-        'contact' => 'Contact',
+        'home' => ['Home', 'home'],
+        'products.index' => ['Products', ['products.*', 'product.*']],
+        'pages.index' => ['Articles', 'pages.*'],
+        'about' => ['About us', 'about'],
+        'contact' => ['Contact', 'contact'],
     ];
+
+    // Spolocne triedy dropdown panelov (svetly panel pod tmavou hlavickou)
+    $panelClasses = 'theme-light hidden opacity-0 translate-y-2 transition-all duration-200 absolute top-full mt-2 z-50 overflow-hidden rounded-xs border border-line bg-white text-text shadow-2xl';
+
+    // Pole vyhladavania v tmavej hlavicke
+    $searchClasses = 'block w-full min-h-11 border-ink-700 bg-ink-800 py-2 pl-10 pr-3 text-sm text-steel-100 placeholder:text-steel-300 focus:border-brand-500 focus:outline-brand-500';
 @endphp
 
-<header class="site-header sticky top-0 z-50">
-    {{-- ROW 1: logo + search + profile (account) --}}
-    <div class="header-top bg-white border-b">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="h-16 flex items-center gap-4">
-                {{-- Logo --}}
-                <a href="{{ route('home') }}" class="flex items-center">
-                    <img src="{{ asset('images/triumfLogo.png') }}" alt="Triumf" class="h-10 w-auto"/>
-                </a>
+<header class="site-header theme-dark sticky top-0 z-50 border-b-3 border-brand-500 bg-ink-900 text-steel-100">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {{-- RIADOK 1: menu (mobil) + logo + vyhladavanie + ucet + kosik --}}
+        <div class="flex h-16 items-center gap-2 sm:gap-4 md:h-20 md:gap-6">
+            {{-- Tlacidlo mobilneho menu --}}
+            <button
+                id="mobile-menu-btn"
+                type="button"
+                class="-ml-2 inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xs px-2 text-steel-100 hover:bg-ink-800 lg:hidden"
+                aria-expanded="false"
+                aria-controls="mobile-nav"
+            >
+                <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="square" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span class="sr-only sm:not-sr-only sm:font-display sm:text-base sm:font-semibold sm:uppercase sm:tracking-wider">Menu</span>
+            </button>
 
-                {{-- Right side --}}
-                <div class="ml-auto flex items-center gap-3 w-full max-w-4xl justify-end">
-                    {{-- Search (desktop) --}}
-                    <div class="relative w-full max-w-xl hidden md:block">
-                        <input
-                            type="text"
-                            id="search-input"
-                            placeholder="Search product..."
-                            aria-label="Search product"
-                            autocomplete="off"
-                            class="w-full rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm"
-                        />
-                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-                             stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
+            {{-- Logo (cervene na priehladnom pozadi) priamo na tmavej hlavicke --}}
+            <a href="{{ route('home') }}" class="flex shrink-0 items-center py-1.5" aria-label="{{ config('app.name', 'Eshop') }} – Home">
+                <img src="{{ asset('images/triumfLogo.png') }}" alt="Triumf" class="h-7 w-auto md:h-9" width="705" height="158"/>
+            </a>
 
-                        <div id="search-results"
-                             class="absolute top-full left-0 right-0 mt-1 bg-white border rounded-xl shadow-lg overflow-hidden z-50 hidden"></div>
-                    </div>
-
-                    {{-- Profile / account (desktop only, one place) --}}
-                    <div class="hidden md:flex items-center">
-                        @include('layouts.partials.account')
-                    </div>
-                </div>
-            </div>
-
-            {{-- Mobile search under row 1 --}}
-            <div class="md:hidden pb-3 relative">
+            {{-- Vyhladavanie (desktop) --}}
+            <div class="relative hidden max-w-xl flex-1 md:block" role="search">
+                <svg class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-steel-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="square" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
                 <input
                     type="text"
-                    id="search-input-mobile"
-                    placeholder="Search product..."
-                    aria-label="Search product"
+                    id="search-input"
+                    placeholder="Search products..."
+                    aria-label="Search products"
                     autocomplete="off"
-                    class="w-full rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm"
+                    class="{{ $searchClasses }}"
                 />
 
-                <div id="search-results-mobile"
-                     class="absolute top-full left-0 right-0 -mt-2 bg-white border rounded-xl shadow-lg overflow-hidden z-50 hidden"></div>
+                <div id="search-results"
+                     class="theme-light absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-[70vh] overflow-y-auto rounded-xs border border-line bg-white text-text shadow-2xl"></div>
             </div>
-        </div>
 
-        {{-- ROW 2: menu links + cart + mobile profile --}}
-        <div class="header-bottom text-white">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="h-12 flex items-center justify-between">
-                    {{-- Desktop nav --}}
-                    <nav class="site-nav hidden lg:flex items-center gap-8 text-sm font-medium">
-                        @foreach($navLinks as $route => $label)
-                            <a href="{{ route($route) }}" class="hover:opacity-90">{{ $label }}</a>
-                        @endforeach
-                    </nav>
+            <div class="ml-auto flex items-center gap-1 sm:gap-2">
+                {{-- Ucet (desktop): prihlaseny = dropdown, host = odkazy --}}
+                <div class="hidden md:block">
+                    @include('layouts.partials.account')
+                </div>
 
-                    {{-- Left side: cart always visible + menu only mobile --}}
-                    <div class="flex items-center gap-2">
-                        {{-- Cart (desktop + mobile) --}}
-                        <div id="cart-wrapper" class="relative static sm:relative z-[60] md:z-10"
-                             data-cart-url="{{ route('cart.index') }}"
-                             data-checkout-url="{{ route('checkout') }}"
-                             data-home-url="{{ route('home') }}">
-                            <a
-                                href="{{ route('cart.index') }}"
-                                id="cart-btn"
-                                class="relative inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10"
-                                aria-expanded="false"
-                                aria-controls="cart-dropdown"
-                            >
-                                <svg class="w-5 h-5" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                </svg>
+                {{-- Ucet (mobil): dropdown pre prihlaseneho aj hosta --}}
+                <div id="mobile-profile-wrapper" class="md:hidden">
+                    <button
+                        id="mobile-profile-btn"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="mobile-profile-dropdown"
+                        aria-label="My account"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-xs px-2 text-steel-100 hover:bg-ink-800"
+                    >
+                        <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <svg id="mobile-profile-arrow" class="size-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
 
-                                <span class="hidden sm:inline">Cart</span>
-
-                                <span id="cart-count"
-                                      class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
-                            </a>
-
-                            <div
-                                id="cart-dropdown"
-                                class="hidden opacity-0 translate-y-2 transition-all duration-200 absolute sm:absolute top-full mt-2 z-50 overflow-hidden bg-[#141414] text-white border border-white/10 shadow-xl rounded-xl right-2 left-2 w-auto max-w-none sm:right-0 sm:left-auto sm:w-80"
-                            >
-                                <div class="p-3 border-b border-white/10">
-                                    <h3 class="font-semibold text-sm">Cart</h3>
-                                </div>
-
-                                <div id="cart-dropdown-content">
-                                    <div class="p-6 text-center text-white/60">
-                                        <div class="animate-pulse">Loading...</div>
-                                    </div>
-                                </div>
+                    <div id="mobile-profile-dropdown" class="{{ $panelClasses }} right-4 w-64 max-w-[calc(100vw-2rem)]">
+                        @auth
+                            <div class="border-b border-line px-4 py-3">
+                                <p class="truncate text-sm font-semibold">{{ Auth::user()->name }}</p>
+                                <p class="truncate text-xs text-subtle">{{ Auth::user()->email }}</p>
                             </div>
+                            <div class="py-1">
+                                <a href="{{ route('profile.edit') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">My profile</a>
+                                <a href="{{ route('orders.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">Orders</a>
+                                <a href="{{ route('addresses.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">Addresses</a>
+                            </div>
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-line py-1">
+                                @csrf
+                                <button type="submit" class="flex min-h-11 w-full items-center px-4 text-left text-sm hover:bg-tile hover:text-brand-600">
+                                    Logout
+                                </button>
+                            </form>
+                        @else
+                            <div class="space-y-2 p-3">
+                                <x-button :href="route('login')" class="w-full">Log in</x-button>
+                                <x-button :href="route('register')" variant="secondary" class="w-full">Register</x-button>
+                            </div>
+                        @endauth
+                    </div>
+                </div>
+
+                {{-- Kosik: hover otvori nahlad (menu.js), klik vedie na stranku kosika --}}
+                <div id="cart-wrapper" class="static sm:relative"
+                     data-cart-url="{{ route('cart.index') }}"
+                     data-checkout-url="{{ route('checkout') }}"
+                     data-home-url="{{ route('home') }}">
+                    <a
+                        href="{{ route('cart.index') }}"
+                        id="cart-btn"
+                        class="relative inline-flex min-h-11 items-center gap-2 rounded-xs border border-ink-700 px-3 font-display text-base font-semibold uppercase tracking-wider text-steel-100 transition-colors hover:border-brand-500"
+                        aria-expanded="false"
+                        aria-controls="cart-dropdown"
+                    >
+                        <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2"
+                                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+
+                        <span class="hidden sm:inline">Cart</span>
+
+                        <span id="cart-count"
+                              class="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 font-sans text-xs font-bold text-white ring-2 ring-ink-900 hidden">0</span>
+                    </a>
+
+                    <div id="cart-dropdown" class="{{ $panelClasses }} left-4 right-4 sm:left-auto sm:right-0 sm:w-96">
+                        <div class="flex items-center justify-between border-b border-line px-4 py-3">
+                            <h3 class="text-lg">Cart</h3>
                         </div>
 
-                        {{-- Mobile menu button --}}
-                        <button
-                            id="mobile-menu-btn"
-                            type="button"
-                            class="lg:hidden inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white/10"
-                            aria-expanded="false"
-                            aria-controls="mobile-nav"
-                        >
-                            <svg class="w-5 h-5" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4 6h16M4 12h16M4 18h16"/>
-                            </svg>
-                            Menu
-                        </button>
-                    </div>
-
-                    {{-- Right side: mobile profile only --}}
-                    <div class="md:hidden flex items-center ml-auto">
-                        <div id="mobile-profile-wrapper" class="relative static sm:relative z-[60]">
-                            <button
-                                id="mobile-profile-btn"
-                                type="button"
-                                aria-expanded="false"
-                                aria-controls="mobile-profile-dropdown"
-                                class="inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10"
-                            >
-                                <svg class="w-4 h-4" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M16 14a4 4 0 10-8 0m8 0a4 4 0 014 4v1H4v-1a4 4 0 014-4m8 0H8m4-6a4 4 0 110-8 4 4 0 010 8z"/>
-                                </svg>
-
-                                <span class="inline">My profile</span>
-
-                                <svg id="mobile-profile-arrow" class="w-4 h-4 transition-transform duration-200" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-
-                            <div
-                                id="mobile-profile-dropdown"
-                                class="hidden opacity-0 translate-y-2 transition-all duration-200 absolute sm:absolute top-full mt-2 z-50 overflow-hidden
-                                       bg-[#141414] text-white border border-white/10 shadow-xl rounded-xl
-                                       right-2 left-auto w-[220px] max-w-[calc(100vw-1rem)]
-                                       sm:right-0 sm:w-72"
-                            >
-                                @auth
-                                    <div class="p-2">
-                                        <div class="px-3 py-2 text-xs text-white/60 border-b border-white/10 mb-1">
-                                            {{ Auth::user()->name }}
-                                        </div>
-
-                                        <a href="{{ route('profile.edit') }}" class="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
-                                            My profile
-                                        </a>
-
-                                        <a href="{{ route('orders.index') }}" class="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
-                                            Orders
-                                        </a>
-
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="w-full text-left rounded-md px-3 py-2 text-sm hover:bg-white/10">
-                                                Logout
-                                            </button>
-                                        </form>
-                                    </div>
-                                @else
-                                    <div class="p-2">
-                                        <a href="{{ route('login') }}" class="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
-                                            Login
-                                        </a>
-                                        <a href="{{ route('register') }}" class="block rounded-md px-3 py-2 text-sm hover:bg-white/10">
-                                            Register
-                                        </a>
-                                    </div>
-                                @endauth
+                        <div id="cart-dropdown-content">
+                            <div class="p-6 text-center text-sm text-subtle">
+                                <div class="animate-pulse">Loading...</div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                {{-- Mobile nav dropdown --}}
-                <nav id="mobile-nav" class="lg:hidden hidden pb-3 border-t border-white/20 text-sm">
-                    @foreach($navLinks as $route => $label)
-                        <a href="{{ route($route) }}" class="block rounded-md px-3 py-2 hover:bg-white/10">{{ $label }}</a>
-                    @endforeach
-                </nav>
             </div>
         </div>
+
+        {{-- Vyhladavanie (mobil) --}}
+        <div class="relative pb-3 md:hidden" role="search">
+            <svg class="pointer-events-none absolute left-3 top-[1.375rem] size-4 -translate-y-1/2 text-steel-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="square" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+                type="text"
+                id="search-input-mobile"
+                placeholder="Search products..."
+                aria-label="Search products"
+                autocomplete="off"
+                class="{{ $searchClasses }}"
+            />
+
+            <div id="search-results-mobile"
+                 class="theme-light absolute left-0 right-0 top-full z-50 -mt-1 hidden max-h-[70vh] overflow-y-auto rounded-xs border border-line bg-white text-text shadow-2xl"></div>
+        </div>
     </div>
+
+    {{-- RIADOK 2 (desktop): navigacia + kontakt --}}
+    <div class="hidden border-t border-ink-700 bg-ink-950 lg:block">
+        <div class="mx-auto flex h-12 max-w-7xl items-stretch justify-between px-4 sm:px-6 lg:px-8">
+            <nav class="flex items-stretch gap-8" aria-label="Main">
+                @foreach($navLinks as $route => [$label, $pattern])
+                    @php $active = request()->routeIs($pattern); @endphp
+                    <a href="{{ route($route) }}"
+                       @if($active) aria-current="page" @endif
+                       @class([
+                           'relative inline-flex items-center font-display text-base font-semibold uppercase tracking-wider transition-colors',
+                           'text-steel-100 after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:bg-brand-500' => $active,
+                           'text-steel-300 hover:text-steel-100' => !$active,
+                       ])>{{ $label }}</a>
+                @endforeach
+            </nav>
+
+        </div>
+    </div>
+
+    {{-- Mobilna navigacia (menu.js prepina triedu hidden) --}}
+    <nav id="mobile-nav" class="hidden border-t border-ink-700 bg-ink-900 lg:hidden" aria-label="Main">
+        <div class="mx-auto max-w-7xl px-4 py-2 sm:px-6">
+            @foreach($navLinks as $route => [$label, $pattern])
+                @php $active = request()->routeIs($pattern); @endphp
+                <a href="{{ route($route) }}"
+                   @if($active) aria-current="page" @endif
+                   @class([
+                       'flex min-h-12 items-center border-l-3 pl-4 font-display text-lg font-semibold uppercase tracking-wider',
+                       'border-brand-500 text-steel-100' => $active,
+                       'border-transparent text-steel-300 hover:text-steel-100' => !$active,
+                   ])>{{ $label }}</a>
+            @endforeach
+        </div>
+    </nav>
 </header>

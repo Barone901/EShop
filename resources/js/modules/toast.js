@@ -2,13 +2,15 @@
  * Toast Module
  *
  * Zobrazuje notifikácie (success, error, info).
+ *
+ * [AI] Upravené s pomocou AI (Claude): Tailwind triedy pri redizajne (pozícia, farby).
  */
-import escapeHtml from '../utils/escape-html';
+import { escapeHtml } from '../utils/escape-html';
 
 const TYPES = {
-    success: { bgColor: 'bg-green-500', icon: '✓' },
-    error: { bgColor: 'bg-red-500', icon: '✗' },
-    info: { bgColor: 'bg-blue-500', icon: 'ℹ' },
+    success: { bgColor: 'bg-ok-700', icon: '✓' },
+    error: { bgColor: 'bg-danger-700', icon: '✗' },
+    info: { bgColor: 'bg-ink-900', icon: 'ℹ' },
 };
 
 const ANIMATION_MS = 300;
@@ -21,7 +23,7 @@ const Toast = {
 
         this.container = document.createElement('div');
         this.container.id = 'toast-container';
-        this.container.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
+        this.container.className = 'fixed bottom-4 left-4 right-4 z-[200] flex flex-col items-end gap-2 sm:left-auto';
         document.body.appendChild(this.container);
     },
 
@@ -31,7 +33,7 @@ const Toast = {
         const { bgColor, icon } = TYPES[type] ?? TYPES.info;
         const toast = document.createElement('div');
 
-        toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
+        toast.className = `${bgColor} text-white text-sm font-medium px-4 py-3 rounded-xs border-l-3 border-white/40 shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
         toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
         toast.innerHTML = `
             <div class="flex items-center gap-2">

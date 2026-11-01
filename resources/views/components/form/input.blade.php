@@ -1,3 +1,4 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     [AI] Vygenerovane s pomocou AI (Claude) - vyclenene z opakujucich sa poli vo formularoch.
     Formularove pole: label + input/textarea + chybova hlaska.
@@ -5,7 +6,7 @@
     - povinne pole ma v labeli hviezdicku
     - trieda (class) sa aplikuje na obal, ostatne atributy (placeholder, autocomplete...) na pole
     - inputClass = doplnkove triedy priamo pre pole (napr. resize-none)
-    - focus stav je jednotny pre vsetky polia (app.css)
+    - okraj, focus a chybovy stav su jednotne pre vsetky polia (app.css); chyba zo servera nastavi aria-invalid
     - pattern = vzor z App\Support\InputPattern (rovnaky ako na serveri), doplni aj hlasku pre JS validator
     - maxlength, minlength a dalsie HTML atributy sa predavaju priamo poli
 --}}
@@ -21,9 +22,12 @@
 ])
 
 @php
-    // Pri chybe cerveny okraj namiesto sedeho (border-gray-* prefarbuje app.css, preto nie oba naraz)
-    $borderClass = $errors->has($name) ? 'border-red-500' : 'border-gray-300';
-    $fieldClasses = trim("w-full px-4 py-3 border {$borderClass} rounded-lg {$inputClass}");
+    $fieldClasses = trim("block w-full min-h-11 px-3 py-2.5 text-base {$inputClass}");
+
+    // Chyba zo servera -> rovnaky chybovy stav ako pri JS validacii (form-validator.js)
+    if ($errors->has($name)) {
+        $attributes = $attributes->merge(['aria-invalid' => 'true']);
+    }
 
     if ($pattern) {
         $attributes = $attributes->merge([
@@ -34,7 +38,7 @@
 @endphp
 
 <div {{ $attributes->only('class') }}>
-    <label for="{{ $name }}" class="block text-sm font-medium text-gray-700 mb-2">{{ $label }}@if($required) *@endif</label>
+    <label for="{{ $name }}" class="mb-1.5 block text-sm font-medium text-text">{{ $label }}@if($required) <span class="text-brand-600" aria-hidden="true">*</span>@endif</label>
 
     @if($textarea)
         <textarea
@@ -56,6 +60,6 @@
 
     @error($name)
         {{-- validation-error: JS validator hlasku zo servera odstrani, ked pouzivatel pole opravi --}}
-        <p class="mt-1 text-sm text-red-400 validation-error">{{ $message }}</p>
+        <p class="validation-error">{{ $message }}</p>
     @enderror
 </div>

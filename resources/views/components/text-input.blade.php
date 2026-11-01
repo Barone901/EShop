@@ -1,5 +1,7 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene. --}}
 {{-- pattern = vzor z App\Support\InputPattern, doplni aj hlasku pre JS validator (ako x-form.input) --}}
+{{-- Okraj, focus a chybovy stav (aria-invalid) riesi app.css, preto tu nie su farby okraja. --}}
 @props(['disabled' => false, 'pattern' => null])
 
 @php
@@ -9,6 +11,12 @@
             'data-pattern-message' => \App\Support\InputPattern::message($pattern),
         ]);
     }
+
+    // Chyba zo servera (predvoleny error bag) -> rovnaky chybovy stav ako pri JS validacii
+    $name = $attributes->get('name');
+    if ($name && $errors->has($name)) {
+        $attributes = $attributes->merge(['aria-invalid' => 'true']);
+    }
 @endphp
 
-<input @disabled($disabled) {{ $attributes->merge(['class' => 'px-4 py-3 border border-gray-300 rounded-lg']) }}>
+<input @disabled($disabled) {{ $attributes->merge(['class' => 'block w-full min-h-11 px-3 py-2.5 text-base disabled:bg-tile disabled:text-subtle']) }}>

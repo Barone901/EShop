@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): opravy typov a anotacii (upozornenia PhpStorm/PHPStan).
+
 declare(strict_types=1);
 
 namespace App\Services;

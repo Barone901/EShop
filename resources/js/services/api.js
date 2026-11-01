@@ -4,6 +4,8 @@
  * - CSRF sa berie z meta tagu
  *
  * [AI] Upravené s pomocou AI (Claude): odolnosť voči odpovediam, ktoré nie sú JSON, hláška pri 419, AbortSignal.
+ *
+ * [AI] Upravené s pomocou AI (Claude): post() prijíma options ako get().
  */
 const API_BASE_URL = '/api';
 
@@ -73,8 +75,8 @@ const ApiService = {
         return this.request(queryString ? `${endpoint}?${queryString}` : endpoint, { ...options, method: 'GET' });
     },
 
-    post(endpoint, data = {}) {
-        return this.request(endpoint, { method: 'POST', body: JSON.stringify(data) });
+    post(endpoint, data = {}, options = {}) {
+        return this.request(endpoint, { ...options, method: 'POST', body: JSON.stringify(data) });
     },
 };
 

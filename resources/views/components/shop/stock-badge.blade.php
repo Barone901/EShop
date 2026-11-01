@@ -1,15 +1,11 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{-- Dostupnost produktu (text + farba + bodka). --}}
 @props(['product'])
 
 @if(!$product->is_in_stock)
-    <span class="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700">
-        Out of Stock
-    </span>
+    <x-ui.badge variant="danger" dot {{ $attributes }}>Out of Stock</x-ui.badge>
 @elseif($product->is_low_stock)
-    <span class="rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
-        Last items: {{ $product->stock }}
-    </span>
+    <x-ui.badge variant="warn" dot {{ $attributes }}>Last items: {{ $product->stock }}</x-ui.badge>
 @else
-    <span class="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
-        In Stock: {{ $product->stock }}
-    </span>
+    <x-ui.badge variant="ok" dot {{ $attributes }}>In Stock: {{ $product->stock }}</x-ui.badge>
 @endif

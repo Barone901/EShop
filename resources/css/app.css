@@ -1,161 +1,238 @@
+/*
+ * Styly obchodu. Subor ma dve casti:
+ *   1. POVODNE PRAVIDLA AUTORA (spodna cast suboru) - napisane autorom projektu; pri redizajne AI (Claude)
+ *      zmenilo len hodnoty farieb/zaoblenia na tokeny dizajnu (napr. #1a1a1a -> var(--color-ink-900)).
+ *   2. [AI] Vygenerovane s pomocou AI (Claude): dizajnovy system "Workshop / Industrial" - tokeny (@theme),
+ *      zakladne styly (@layer base) a komponenty (@layer components). Pravidla a tokeny su popisane v CLAUDE.md.
+ */
 @import 'tailwindcss';
+
+/* Fonty (self-hosted cez @fontsource, len pouzivane rezy) */
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+@plugin '@tailwindcss/forms';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* ===== [AI] Vygenerovane s pomocou AI (Claude): tokeny, base a components ===== */
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Typografia */
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Barlow Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+    /* Tmave zony (header, hero, footer) - neutralna grafitova, bez modreho nadychu */
+    --color-ink-950: #111111;
+    --color-ink-900: #1A1A1A;
+    --color-ink-800: #242424;
+    --color-ink-700: #333333;
+    --color-steel-100: #EBEBEB;
+    --color-steel-300: #ADADAD;
+
+    /* Svetle zony (obsah) */
+    --color-paper: #F5F5F4;
+    --color-tile: #EFEFEE;
+    --color-line: #DCDCDB;
+    --color-line-strong: #8A8A87;
+    --color-text: #1A1A1A;
+    --color-muted: #52524F;
+    --color-subtle: #6B6B68;
+
+    /*
+     * Akcent "brand" = cervena z loga Triumf (#ED1C24).
+     * 500 = presna farba loga, len dekorativne (pruhy, podciarknutie, focus v tmavej zone) - biely text na nej nema 4.5:1.
+     * 600/700 = tlacidla a odkazy na svetlom pozadi, 400 = text v tmavej zone.
+     */
+    --color-brand-50: #FDECEC;
+    --color-brand-400: #F2575C;
+    --color-brand-500: #ED1C24;
+    --color-brand-600: #D0121B;
+    --color-brand-700: #A80E15;
+
+    /* Stavy (badge = svetle pozadie + tmavy text). Chyba je tmava "oxblood", odlisna od brand cervenej. */
+    --color-ok-50: #E7F5EC;
+    --color-ok-700: #1E7A3C;
+    --color-warn-50: #FFF4D6;
+    --color-warn-700: #7A5600;
+    --color-danger-50: #F6EAEA;
+    --color-danger-700: #7F1D1D;
+
+    /* Tvar: ostre hrany, radius 2px vsade (rounded-full len pocet v kosiku a bodky slidera) */
+    --radius-xs: 2px;
 }
 
-:root {
-    color-scheme: dark;
-}
-
-html,
-body {
-    background: #6b6969;
-    color: #f5f5f5;
-}
-
-/*
- * Zakladne styly elementov su v @layer base, aby ich Tailwind triedy v sablonach
- * (text-white, border-red-500...) mohli prepisat. Pravidla mimo @layer vyhravaju
- * nad vsetkymi utility triedami.
- */
 @layer base {
-    /* odkazy preberaju farbu okolia, farebne su len tie s triedou (text-indigo-400...) */
-    a {
-        color: inherit;
-        transition: color 0.2s ease-in-out;
+    html {
+        -webkit-tap-highlight-color: transparent;
     }
 
-    a:hover {
-        color: #93c5fd;
+    /* Alpine: prvok skryty, kym sa Alpine nenacita */
+    [x-cloak] {
+        display: none !important;
     }
 
-    /* inputy */
-    input,
-    textarea,
-    select {
-        background: #2a2a2a;
-        border-color: #444;
-        color: #e5e5e5;
+    body {
+        background-color: var(--color-paper);
+        color: var(--color-text);
     }
 
-    /* jednotny focus pre vsetky polia formularov */
-    input:focus,
-    textarea:focus,
-    select:focus {
-        border-color: #60a5fa;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+    h1, h2, h3 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        line-height: 1.1;
     }
 
-    /* odkazy a tlacidla: viditelny obrys len pri ovladani klavesnicou */
-    a:focus-visible,
-    button:focus-visible {
-        outline: 2px solid #93c5fd;
+    /* Viditelny focus len pri ovladani klavesnicou; v tmavych zonach svetlejsi akcent */
+    :focus-visible {
+        outline: 2px solid var(--color-brand-600);
         outline-offset: 2px;
     }
+
+    .theme-dark :focus-visible {
+        outline-color: var(--color-brand-500);
+    }
+
+    /* Svetly panel vnutri tmavej zony (dropdowny v hlavicke) */
+    .theme-light :focus-visible {
+        outline-color: var(--color-brand-600);
+    }
+
+    ::selection {
+        background-color: var(--color-brand-50);
+        color: var(--color-text);
+    }
 }
 
-/* header - horny riadok */
-.site-header .header-top {
-    background: #d98b8b;
-    border-bottom: 1px solid #333;
+@layer components {
+    /*
+     * Polia formularov. Su v components (nie base), lebo base styly pluginu @tailwindcss/forms
+     * sa generuju az za nase a prepisali by ich. Utility triedy ich stale mozu prepisat.
+     */
+    input:where(:not([type='checkbox'], [type='radio'], [type='hidden'])),
+    textarea,
+    select {
+        border-radius: var(--radius-xs);
+        border-color: var(--color-line-strong);
+        background-color: #fff;
+        color: var(--color-text);
+    }
+
+    input:where(:not([type='checkbox'], [type='radio'])):focus,
+    textarea:focus,
+    select:focus {
+        border-color: var(--color-brand-600);
+        outline: 2px solid var(--color-brand-600);
+        outline-offset: 0;
+        box-shadow: none;
+    }
+
+    /* Chybovy stav pola: nastavuje server (x-form.input) aj form-validator.js cez aria-invalid */
+    [aria-invalid='true'] {
+        border-color: var(--color-danger-700);
+    }
+
+    [type='checkbox'],
+    [type='radio'] {
+        border-color: var(--color-line-strong);
+        color: var(--color-brand-600);
+    }
+
+    [type='checkbox'] {
+        border-radius: var(--radius-xs);
+    }
+
+    [type='checkbox']:focus,
+    [type='radio']:focus {
+        --tw-ring-color: var(--color-brand-600);
+    }
+
+    /* Biela karta/panel v obsahovej casti (pouziva sa aj cez x-ui.card) */
+    .card {
+        background-color: #fff;
+        color: var(--color-text);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-xs);
+    }
+
+    /* Maly technicky popis nad nadpisom alebo pri parametri (napr. "SKU 0042") */
+    .eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--color-subtle);
+    }
+
+    /* Ceny, parametre, kody: mono s rovnakou sirkou cislic */
+    .num {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Chybova hlaska pola (server cez x-form.input, klient cez form-validator.js) */
+    .validation-error {
+        margin-top: 0.375rem;
+        font-size: var(--text-sm);
+        color: var(--color-danger-700);
+    }
+
+    /* Ikona pred chybou (alternativny text "" = citacka ju precita len ako text hlasky) */
+    .validation-error::before {
+        content: '⚠' / '';
+        margin-right: 0.375em;
+    }
 }
 
-/* header - spodny farebny riadok */
-.site-header .header-bottom {
-    background: #0f8f97;
-}
+/* =====================================================================================
+ * POVODNE PRAVIDLA AUTORA
+ * Napisane autorom projektu (pred redizajnom). AI (Claude) pri redizajne zmenilo len hodnoty farieb
+ * a zaoblenia na tokeny dizajnu; selektory, vlastnosti a ich ucel su povodne.
+ * Vynimka: selektory bodiek slidera su presunute z .banner-dot na [data-banner-dot] (schvalena zmena,
+ * JS sa viaze na data atributy), a pravidla oznacene [AI] su doplnene.
+ * ===================================================================================== */
 
 /* footer */
 .site-footer {
-    background: #1a1a1a;
-    border-top: 1px solid #333;
-}
-
-/* card komponent */
-.card {
-    background: #1f1f1f;
-    color: #e5e5e5;
-    border: 1px solid rgba(255, 255, 255, .08);
-    border-radius: 0.75rem; /* = rounded-xl, jednotne pre vsetky karty a panely */
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-/*
- * Tmava tema: nasledujuce pravidla prefarbuju svetle Tailwind utility (bg-white, bg-gray-*,
- * text-gray-*, border-*), aby sablony mohli pouzivat bezne triedy a stranka bola tmava.
- */
-.bg-white {
-    background-color: #1f1f1f;
-    color: #e5e5e5;
-}
-
-/* nav linky */
-.site-nav a {
-    color: rgba(255, 255, 255, .85);
-}
-
-.site-nav a:hover {
-    color: #fff;
-}
-
-/* prepis tailwind bg-gray tried */
-[class*="bg-gray-50"],
-[class*="bg-gray-100"] {
-    background-color: #121212;
-}
-
-[class*="bg-gray-200"],
-[class*="bg-gray-300"] {
-    background-color: #1f1f1f;
-}
-
-/*
- * Prepis tailwind text-gray tried.
- * Sedy sekundarny text je citatelny len na tmavych plochach (karty). Priamo na sivom
- * pozadi stranky (#6b6969) musi byt takmer biely, inak ma kontrast len ~2:1.
- */
-main [class*="text-gray-500"],
-main [class*="text-gray-600"] {
-    color: #ededed;
-}
-
-[class*="text-gray-500"],
-[class*="text-gray-600"],
-main :where(.card, .bg-white) [class*="text-gray-500"],
-main :where(.card, .bg-white) [class*="text-gray-600"] {
-    color: #9ca3af;
-}
-
-[class*="text-gray-700"],
-[class*="text-gray-800"],
-[class*="text-gray-900"] {
-    color: #f5f5f5;
-}
-
-/* prepis border farieb */
-[class*="border-gray"],
-[class*="border-b"],
-[class*="border-t"] {
-    border-color: #333;
+    background: var(--color-ink-900);
+    border-top: 1px solid var(--color-ink-700);
 }
 
 /* karty produktov a clankov v zoznamoch: jemne zdvihnutie pri hoveri */
 .product-card,
 .article-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .product-card:hover,
 .article-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 6px 16px rgba(17, 17, 17, 0.12);
+    border-color: var(--color-brand-600);
+}
+
+/* [AI] Bez animacie pre pouzivatelov, ktori si ju vypli v systeme */
+@media (prefers-reduced-motion: reduce) {
+    .product-card,
+    .article-card {
+        transition: none;
+    }
+
+    .product-card:hover,
+    .article-card:hover {
+        transform: none;
+    }
 }
 
 /*
@@ -173,88 +250,33 @@ main :where(.card, .bg-white) [class*="text-gray-600"] {
 .article-content ul { list-style: disc; padding-left: 1.5em; }
 .article-content ol { list-style: decimal; padding-left: 1.5em; }
 .article-content li + li { margin-top: 0.4em; }
-.article-content a { color: #a5b4fc; text-decoration: underline; text-underline-offset: 3px; }
-.article-content blockquote { border-left: 4px solid #6366f1; padding-left: 1em; font-style: italic; }
-.article-content pre { background: #1f1f1f; padding: 1em; border-radius: 0.5rem; overflow-x: auto; font-size: 0.875rem; }
-.article-content img { border-radius: 0.5rem; }
+.article-content a { color: var(--color-brand-600); text-decoration: underline; text-underline-offset: 3px; }
+.article-content blockquote { border-left: 4px solid var(--color-brand-600); padding-left: 1em; font-style: italic; }
+.article-content pre { background: var(--color-ink-900); color: var(--color-steel-100); padding: 1em; border-radius: var(--radius-xs); overflow-x: auto; font-size: 0.875rem; }
+.article-content img { border-radius: var(--radius-xs); }
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #1a1a1a; }
-::-webkit-scrollbar-thumb { background: #444; border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+::-webkit-scrollbar-track { background: var(--color-tile); }
+::-webkit-scrollbar-thumb { background: var(--color-line-strong); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
 
 /* =========================================================
    BANNER SLIDER
+   Aktivna bodka sa stylizuje cez [aria-current="true"], ktory nastavuje banner-slider.js.
    ========================================================= */
-#banner-slider,
-#banner-slider .banner-slider-container {
-    background-color: #0f0f0f;
-}
-
-#banner-slider .banner-prev,
-#banner-slider .banner-next {
-    width: 74px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(15, 23, 42, .85);
-    transition: background-color .18s ease, transform .08s ease, color .18s ease;
-}
-
-#banner-slider .banner-prev { border-right: 1px solid rgba(148, 163, 184, .45); }
-
-#banner-slider .banner-prev:hover,
-#banner-slider .banner-next:hover {
-    background: rgba(241, 245, 249, .9);
-    color: rgba(15, 23, 42, 1);
-}
-
-#banner-slider .banner-prev:active,
-#banner-slider .banner-next:active {
-    transform: translateY(1px);
-    background: rgba(226, 232, 240, .95);
-}
-
-#banner-slider .banner-prev:focus-visible,
-#banner-slider .banner-next:focus-visible {
-    outline: 3px solid rgba(59, 130, 246, .35);
-    outline-offset: 2px;
-}
-
-#banner-slider .banner-dot {
+[data-banner-dot] {
     width: .5rem;
     height: .5rem;
     border-radius: 9999px;
-    background: rgba(15, 23, 42, .25);
+    background: rgb(255 255 255 / .4);
     transition: width .18s ease, background-color .18s ease, transform .12s ease;
 }
 
-#banner-slider .banner-dot[aria-current="true"] {
+[data-banner-dot][aria-current="true"] {
     width: 1.5rem;
-    background: rgba(15, 23, 42, .85);
+    background: var(--color-brand-500);
 }
 
-#banner-slider .banner-dot:hover { background: rgba(15, 23, 42, .55); }
-#banner-slider .banner-dot:active { transform: translateY(1px); }
-
-#banner-slider .banner-dot:focus-visible {
-    outline: 3px solid rgba(59, 130, 246, .35);
-    outline-offset: 2px;
-}
-
-@media (max-width: 640px) {
-    #banner-slider .banner-prev,
-    #banner-slider .banner-next { width: 64px; height: 50px; }
-}
-
-/* Desktop account dropdown musi byt nad kosikom */
-#account-wrapper {
-    position: relative;
-    z-index: 120;
-}
-
-#account-dropdown {
-    z-index: 130 !important;
-}
+[data-banner-dot]:hover { background: rgb(255 255 255 / .75); }
+[data-banner-dot]:active { transform: translateY(1px); }

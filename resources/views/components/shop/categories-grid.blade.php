@@ -1,41 +1,45 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{--
+    Mriezka kategorii (homepage). Karta = odkaz na vypis produktov s filtrom kategorie.
+    Vsetky fotky: rovnaky pomer 4:3, podklad tile, object-contain (nic sa neoreze).
+--}}
 @props(['categories'])
 
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+<ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
     @foreach($categories as $category)
-        <a
-            href="{{ route('products.index', ['category' => $category->slug]) }}"
-            class="card group rounded-xl border bg-white overflow-hidden hover:shadow-md transition-shadow"
-        >
-            <div class="aspect-[4/3] bg-gray-50 overflow-hidden">
-                @if($category->image_src)
-                    <img
-                        src="{{ $category->image_src }}"
-                        alt="{{ $category->name }}"
-                        class="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                        loading="lazy"
-                    >
-                @else
-                    <div class="h-full w-full flex items-center justify-center text-gray-400 text-sm">
-                        No image
-                    </div>
-                @endif
-            </div>
-
-            <div class="p-3">
-                <div class="font-semibold text-sm sm:text-base leading-tight line-clamp-2">
-                    {{ $category->name }}
+        <li>
+            <a
+                href="{{ route('products.index', ['category' => $category->slug]) }}"
+                class="card group flex h-full flex-col transition-colors hover:border-brand-600"
+            >
+                <div class="aspect-[4/3] overflow-hidden border-b border-line bg-tile">
+                    @if($category->image_src)
+                        <img
+                            src="{{ $category->image_src }}"
+                            alt=""
+                            class="h-full w-full object-contain p-4 mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.04] motion-reduce:transition-none"
+                            loading="lazy"
+                        >
+                    @else
+                        {{-- Placeholder rovnakej velkosti: iniciala kategorie v ramceku + ikona naradia --}}
+                        <span class="flex h-full w-full flex-col items-center justify-center gap-2 p-4" aria-hidden="true">
+                            <span class="grid size-20 place-items-center rounded-xs border-2 border-dashed border-line-strong font-display text-5xl font-bold uppercase text-line-strong">
+                                {{ mb_substr($category->name, 0, 1) }}
+                            </span>
+                            <span class="eyebrow">No image</span>
+                        </span>
+                    @endif
                 </div>
 
-                {{-- jemný „call to action“ --}}
-                <div class="mt-2 text-xs text-gray-600 flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1">
-                        View
-                        <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
+                <div class="flex flex-1 items-center justify-between gap-2 p-4">
+                    <span class="font-display text-lg font-semibold uppercase leading-tight tracking-wide group-hover:text-brand-600">
+                        {{ $category->name }}
                     </span>
+                    <svg class="size-5 shrink-0 text-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="square" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
                 </div>
-            </div>
-        </a>
+            </a>
+        </li>
     @endforeach
-</div>
+</ul>

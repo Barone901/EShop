@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): jednotny styl (readonly injekcia, data do view polom).
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -17,7 +19,7 @@ class PageController extends Controller
      * Injektuje sluzbu pre stranky.
      */
     public function __construct(
-        private PageService $pageService
+        private readonly PageService $pageService
     ) {}
 
     /**
@@ -25,9 +27,9 @@ class PageController extends Controller
      */
     public function index(): View
     {
-        $pages = $this->pageService->getPublishedPages();
-
-        return view('pages.articles.index', compact('pages'));
+        return view('pages.articles.index', [
+            'pages' => $this->pageService->getPublishedPages(),
+        ]);
     }
 
     /**
@@ -45,8 +47,9 @@ class PageController extends Controller
             $page->incrementViews();
         }
 
-        $relatedPages = $this->pageService->getRelatedPages($page);
-
-        return view('pages.articles.show', compact('page', 'relatedPages'));
+        return view('pages.articles.show', [
+            'page' => $page,
+            'relatedPages' => $this->pageService->getRelatedPages($page),
+        ]);
     }
 }

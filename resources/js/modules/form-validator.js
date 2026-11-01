@@ -13,6 +13,8 @@
  *
  * [AI] Rozšírené s pomocou AI (Claude): pravidlá z HTML atribútov, pattern, skryté polia,
  *      poradie submit handlerov, parametre pravidiel s dvojbodkou, mazanie chyby len daného poľa.
+ *
+ * [AI] Upravené s pomocou AI (Claude): chybový stav cez aria-invalid, hláška s triedou validation-error.
  */
 
 import Toast from './toast';
@@ -94,7 +96,7 @@ const FormValidator = {
             input.addEventListener('blur', () => this.validateField(input));
             input.addEventListener('input', () => {
                 // Pri písaní chybu skryjeme, znova sa overí pri blur/submit
-                if (input.classList.contains('border-red-500')) {
+                if (input.getAttribute('aria-invalid') === 'true') {
                     this.clearFieldError(input);
                 }
             });
@@ -108,7 +110,7 @@ const FormValidator = {
             e.preventDefault();
             e.stopImmediatePropagation();
             Toast.error('Please correct the errors in the form.');
-            form.querySelector('.border-red-500')?.focus();
+            form.querySelector('[aria-invalid="true"]')?.focus();
         }, { capture: true });
     },
 
@@ -217,12 +219,11 @@ const FormValidator = {
     showFieldError(input, message) {
         this.clearFieldError(input);
 
-        input.classList.add('border-red-500');
-        input.classList.remove('border-gray-300');
+        // Chybový stav (aj červený okraj cez CSS) nesie len aria-invalid
         input.setAttribute('aria-invalid', 'true');
 
         const errorEl = document.createElement('p');
-        errorEl.className = 'mt-1 text-sm text-red-400 validation-error';
+        errorEl.className = 'validation-error';
         errorEl.textContent = message;
 
         input.after(errorEl);
@@ -233,8 +234,6 @@ const FormValidator = {
      * Odstránenie chyby pri poli.
      */
     clearFieldError(input) {
-        input.classList.remove('border-red-500');
-        input.classList.add('border-gray-300');
         input.removeAttribute('aria-invalid');
 
         // Len chyba tohto poľa (viac polí môže mať spoločného rodiča)

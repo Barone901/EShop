@@ -1,16 +1,12 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene. --}}
-<section>
-    <div>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Update Password') }}
-        </h2>
+<section class="grid gap-6 lg:grid-cols-3 lg:gap-10">
+    <header>
+        <h3 class="text-xl">{{ __('Update Password') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ __('Ensure your account is using a long, random password to stay secure.') }}</p>
+    </header>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
-    </div>
-
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6" data-validate>
+    <form method="post" action="{{ route('password.update') }}" class="max-w-xl space-y-5 lg:col-span-2" data-validate>
         @csrf
         @method('put')
 
@@ -41,8 +37,9 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                    class="inline-flex items-center gap-1.5 text-sm font-medium text-ok-700"
+                    role="status"
+                >✓ {{ __('Saved.') }}</p>
             @endif
         </div>
     </form>

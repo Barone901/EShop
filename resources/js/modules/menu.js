@@ -10,9 +10,11 @@
  * Stav otvorenia drží aria-expanded na tlačidle.
  *
  * [AI] Upravené s pomocou AI (Claude): zjednotenie s dropdownom košíka, oprava animácie, zdieľané listenery.
+ *
+ * [AI] Upravené s pomocou AI (Claude): byId() zo spoločných utils.
  */
 import { showAnimated, hideAnimated } from '../utils/transition';
-import { onEscape, onOutsideClick } from '../utils/dom';
+import { byId, onEscape, onOutsideClick } from '../utils/dom';
 
 const CART_HOVER_HIDE_DELAY_MS = 150;
 
@@ -54,8 +56,6 @@ const Menu = {
     dropdowns: {},
 
     init() {
-        const byId = (id) => document.getElementById(id);
-
         this.initClickDropdown('account', {
             btn: byId('account-btn'),
             dropdown: byId('account-dropdown'),

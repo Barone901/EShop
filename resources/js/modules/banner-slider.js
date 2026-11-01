@@ -4,8 +4,14 @@
  * Automatické posúvanie bannerov s možnosťou manuálneho ovládania
  * (šípky, bodky, klávesnica, swipe). Pri hoveri sa autoplay pozastaví.
  *
+ * Prvky sa hľadajú cez data-banner-* atribúty (slides, slide, dot, prev, next), nie cez CSS triedy.
+ *
  * [AI] Upravené s pomocou AI (Claude): prepísané z triedy na modul s init() ako ostatné moduly.
+ *
+ * [AI] Upravené s pomocou AI (Claude): väzby cez data-banner-* atribúty, byId().
  */
+
+import { byId } from '../utils/dom';
 
 const AUTOPLAY_INTERVAL_MS = 5000;
 const SWIPE_THRESHOLD_PX = 50;
@@ -20,12 +26,12 @@ const BannerSlider = {
     isHovered: false,
 
     init() {
-        this.container = document.getElementById('banner-slider');
+        this.container = byId('banner-slider');
         if (!this.container) return;
 
-        this.slidesContainer = this.container.querySelector('.banner-slides');
-        this.dots = this.container.querySelectorAll('.banner-dot');
-        this.totalSlides = this.container.querySelectorAll('.banner-slide').length;
+        this.slidesContainer = this.container.querySelector('[data-banner-slides]');
+        this.dots = this.container.querySelectorAll('[data-banner-dot]');
+        this.totalSlides = this.container.querySelectorAll('[data-banner-slide]').length;
 
         if (this.totalSlides <= 1) return;
 
@@ -34,8 +40,8 @@ const BannerSlider = {
     },
 
     bindEvents() {
-        this.container.querySelector('.banner-prev')?.addEventListener('click', () => this.navigate(this.currentIndex - 1));
-        this.container.querySelector('.banner-next')?.addEventListener('click', () => this.navigate(this.currentIndex + 1));
+        this.container.querySelector('[data-banner-prev]')?.addEventListener('click', () => this.navigate(this.currentIndex - 1));
+        this.container.querySelector('[data-banner-next]')?.addEventListener('click', () => this.navigate(this.currentIndex + 1));
 
         this.dots.forEach((dot, index) => {
             dot.addEventListener('click', () => this.navigate(index));
@@ -88,7 +94,7 @@ const BannerSlider = {
 
         this.slidesContainer.style.transform = `translateX(${-this.currentIndex * 100}%)`;
 
-        // Aktívna bodka sa štýluje cez [aria-current="true"] (app.css)
+        // Aktívna bodka sa štýluje cez [data-banner-dot][aria-current="true"] (app.css)
         this.dots.forEach((dot, i) => {
             dot.setAttribute('aria-current', i === this.currentIndex ? 'true' : 'false');
         });

@@ -1,27 +1,23 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene. --}}
-<section>
-    <div>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </div>
+<section class="grid gap-6 lg:grid-cols-3 lg:gap-10">
+    <header>
+        <h3 class="text-xl">{{ __('Profile Information') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ __("Update your account's profile information and email address.") }}</p>
+    </header>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" data-validate>
+    <form method="post" action="{{ route('profile.update') }}" class="max-w-xl space-y-5 lg:col-span-2" data-validate>
         @csrf
         @method('patch')
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
                 <x-input-label for="first_name" :value="__('First Name')" />
-                <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full" :value="old('first_name', $user->first_name)" maxlength="100" :pattern="$profilePatterns['first_name']" autofocus autocomplete="given-name" />
+                <x-text-input id="first_name" name="first_name" type="text" class="mt-1 block w-full" :value="old('first_name', $user->first_name)" maxlength="100" :pattern="$profilePatterns['first_name']" autocomplete="given-name" />
                 <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
             </div>
 
@@ -45,16 +41,16 @@
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
-                    <p class="text-sm mt-2 text-gray-800">
+                    <p class="mt-2 border-l-3 border-warn-700 bg-warn-50 px-3 py-2 text-sm text-warn-700">
                         {{ __('Your email address is unverified.') }}
 
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button form="send-verification" class="font-semibold underline underline-offset-2 hover:no-underline">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
+                        <p class="mt-2 text-sm font-medium text-ok-700" role="status">
                             {{ __('A new verification link has been sent to your email address.') }}
                         </p>
                     @endif
@@ -77,8 +73,9 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                    class="inline-flex items-center gap-1.5 text-sm font-medium text-ok-700"
+                    role="status"
+                >✓ {{ __('Saved.') }}</p>
             @endif
         </div>
     </form>

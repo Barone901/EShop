@@ -4,17 +4,19 @@
  * Rýchly náhľad produktu v modálnom okne.
  *
  * [AI] Upravené s pomocou AI (Claude): reset obsahu pri otvorení, správa fokusu, aria-labelledby.
+ *
+ * [AI] Upravené s pomocou AI (Claude): redizajn (Tailwind triedy), stockBadge()/buttonClass()/spinner() zo šablón.
  */
 
-import ProductService from '../services/productService';
+import ProductService from '../services/product-service';
 import Toast from './toast';
-import escapeHtml from '../utils/escape-html';
+import { escapeHtml } from '../utils/escape-html';
 import { delegate, onEscape } from '../utils/dom';
-import { productImage } from '../utils/templates';
+import { buttonClass, productImage, spinner, stockBadge } from '../utils/templates';
 
 const LOADING_HTML = `
     <div class="flex items-center justify-center h-40">
-        <div class="animate-spin w-8 h-8 border-2 border-gray-300 border-t-black rounded-full"></div>
+        ${spinner()}
     </div>
 `;
 
@@ -41,11 +43,11 @@ const QuickView = {
     createModal() {
         this.modal = document.createElement('div');
         this.modal.id = 'quick-view-modal';
-        this.modal.className = 'fixed inset-0 z-50 hidden';
+        this.modal.className = 'fixed inset-0 z-[150] hidden';
         this.modal.innerHTML = `
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-close-modal></div>
-            <div role="dialog" aria-modal="true" aria-label="Product quick view" aria-labelledby="quick-view-title" class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
-                <button type="button" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100" data-close-modal aria-label="Close">
+            <div class="absolute inset-0 bg-ink-950/70" data-close-modal></div>
+            <div role="dialog" aria-modal="true" aria-label="Product quick view" aria-labelledby="quick-view-title" class="absolute inset-x-4 top-4 bottom-4 overflow-y-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl md:max-h-[90vh] bg-white text-text border-t-3 border-brand-600 rounded-xs shadow-2xl">
+                <button type="button" class="absolute top-3 right-3 z-10 size-11 flex items-center justify-center rounded-xs text-muted hover:bg-tile hover:text-text" data-close-modal aria-label="Close">
                     ✕
                 </button>
                 <div id="quick-view-content" class="p-6"></div>
@@ -85,31 +87,28 @@ const QuickView = {
     render(product) {
         this.content.innerHTML = `
             <div class="grid md:grid-cols-2 gap-6">
-                <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden">
-                    ${productImage(product, '<div class="w-full h-full flex items-center justify-center text-gray-400">No image</div>')}
+                <div class="aspect-square bg-tile border border-line rounded-xs overflow-hidden p-4">
+                    ${productImage(product, '<div class="size-full flex items-center justify-center text-subtle">No image</div>')}
                 </div>
                 <div>
-                    <div class="text-sm text-gray-500 mb-1">${escapeHtml(product.category?.name)}</div>
-                    <h2 id="quick-view-title" class="text-2xl font-bold mb-2">${escapeHtml(product.name)}</h2>
-                    <div class="text-2xl font-bold mb-4">${escapeHtml(product.formatted_price)}</div>
+                    <div class="eyebrow mb-2">${escapeHtml(product.category?.name)}</div>
+                    <h2 id="quick-view-title" class="text-2xl md:text-3xl mb-3 pr-10">${escapeHtml(product.name)}</h2>
+                    <div class="num text-3xl mb-4">${escapeHtml(product.formatted_price)}</div>
 
                     <div class="mb-4">
-                        ${product.in_stock
-                            ? `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700">In Stock: ${escapeHtml(product.stock)}</span>`
-                            : '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-50 text-red-700">Out of Stock</span>'
-                        }
+                        ${stockBadge(product)}
                     </div>
 
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-4">${escapeHtml(product.description)}</p>
+                    <p class="text-muted text-sm mb-6 line-clamp-4">${escapeHtml(product.description)}</p>
 
                     <div class="flex gap-3">
                         ${product.in_stock
-                            ? `<button type="button" data-add-to-cart="${product.id}" class="flex-1 bg-black text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity">
+                            ? `<button type="button" data-add-to-cart="${product.id}" class="${buttonClass('primary', 'md', 'flex-1')}">
                                 Add to Cart
                                </button>`
                             : ''
                         }
-                        <a href="${escapeHtml(product.url)}" class="px-4 py-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <a href="${escapeHtml(product.url)}" class="${buttonClass('secondary')}">
                             Details
                         </a>
                     </div>

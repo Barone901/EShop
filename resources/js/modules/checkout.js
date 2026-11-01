@@ -3,7 +3,10 @@
  *
  * Predvyplnenie adries z uložených adries, "rovnaká ako doručovacia"
  * a loading stav pri odoslaní objednávky.
+ *
+ * [AI] Upravené s pomocou AI (Claude): byId() zo spoločných utils namiesto vlastnej funkcie field().
  */
+import { byId } from '../utils/dom';
 
 const SHIPPING_FIELDS = {
     shipping_name: 'name',
@@ -30,21 +33,19 @@ const BILLING_FIELDS = {
 // Polia kopírované pri zaškrtnutí "Same as shipping"
 const COPIED_FIELDS = ['name', 'email', 'phone', 'address', 'city', 'postal_code', 'country'];
 
-const field = (id) => document.getElementById(id);
-
 const Checkout = {
     form: null,
     sameAsShipping: null,
     defaultCountry: '',
 
     init() {
-        this.form = field('checkout-form');
+        this.form = byId('checkout-form');
         if (!this.form) return;
 
         // Predvolená krajina z PHP (config/shop.php, default_country)
         this.defaultCountry = this.form.dataset.defaultCountry;
 
-        this.sameAsShipping = field('same-as-shipping');
+        this.sameAsShipping = byId('same-as-shipping');
 
         this.initAddressSelect('shipping-address-select', (option) => this.fillShippingFields(option));
         this.initAddressSelect('billing-address-select', (option) => this.fillBillingFields(option));
@@ -53,7 +54,7 @@ const Checkout = {
     },
 
     initAddressSelect(selectId, fill) {
-        const select = field(selectId);
+        const select = byId(selectId);
         if (!select) return;
 
         const selected = select.options[select.selectedIndex];
@@ -72,7 +73,7 @@ const Checkout = {
     initSameAsShipping() {
         if (!this.sameAsShipping) return;
 
-        const billingSelector = field('billing-address-selector');
+        const billingSelector = byId('billing-address-selector');
 
         this.sameAsShipping.addEventListener('change', () => {
             if (this.sameAsShipping.checked) {
@@ -87,7 +88,7 @@ const Checkout = {
             input.addEventListener('input', () => {
                 if (!this.sameAsShipping.checked) return;
 
-                const billingField = field(input.id.replace('shipping_', 'billing_'));
+                const billingField = byId(input.id.replace('shipping_', 'billing_'));
                 if (billingField) {
                     billingField.value = input.value;
                 }
@@ -97,21 +98,21 @@ const Checkout = {
 
     initSubmitLoading() {
         this.form.addEventListener('submit', () => {
-            field('submit-order-btn').disabled = true;
-            field('submit-text').classList.add('hidden');
-            field('submit-loading').classList.remove('hidden');
+            byId('submit-order-btn').disabled = true;
+            byId('submit-text').classList.add('hidden');
+            byId('submit-loading').classList.remove('hidden');
         });
     },
 
     fillFields(fieldMap, option) {
         Object.entries(fieldMap).forEach(([id, key]) => {
-            field(id).value = option.dataset[key] || '';
+            byId(id).value = option.dataset[key] || '';
         });
     },
 
     fillShippingFields(option) {
         this.fillFields(SHIPPING_FIELDS, option);
-        field('shipping_country').value = option.dataset.country || this.defaultCountry;
+        byId('shipping_country').value = option.dataset.country || this.defaultCountry;
 
         if (this.sameAsShipping?.checked) {
             this.copyShippingToBilling();
@@ -120,12 +121,12 @@ const Checkout = {
 
     fillBillingFields(option) {
         this.fillFields(BILLING_FIELDS, option);
-        field('billing_country').value = option.dataset.country || this.defaultCountry;
+        byId('billing_country').value = option.dataset.country || this.defaultCountry;
     },
 
     copyShippingToBilling() {
         COPIED_FIELDS.forEach((name) => {
-            field(`billing_${name}`).value = field(`shipping_${name}`).value;
+            byId(`billing_${name}`).value = byId(`shipping_${name}`).value;
         });
     },
 };

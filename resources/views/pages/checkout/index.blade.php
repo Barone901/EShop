@@ -1,280 +1,307 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{--
+    Pokladna. JS vazby (checkout.js + form-validator.js) - nemen ID, name ani data-* atributy:
+    #checkout-form[data-validate][data-default-country], #shipping-address-select, #billing-address-select
+    (option data-name/email/phone/address/city/postal/country/company/ico/dic/icdph), #same-as-shipping,
+    #billing-address-selector (JS prepina "hidden"), #billing-fields, polia shipping_* / billing_* (id = name),
+    #submit-order-btn, #submit-text, #submit-loading (JS prepina "hidden").
+--}}
+@php
+    // Hlavicka sekcie formulara: cislo kroku + nadpis
+    $sectionTitle = 'flex items-center gap-3 text-xl md:text-2xl';
+    $stepNumber = 'num grid size-8 shrink-0 place-items-center rounded-xs bg-ink-900 text-sm text-white';
+    $selectClasses = 'block min-h-11 w-full py-2.5 pl-3 pr-10 text-base';
+@endphp
+
 <x-layouts.default-layout title="Checkout">
 
-    <div>
+    <x-shop.checkout-steps :current="2" />
 
-        {{-- Page Header --}}
-        <x-ui.page-header title="Checkout" subtitle="Fill in your shipping and billing details to complete your order." />
+    <x-ui.page-header title="Checkout" subtitle="Fill in your shipping and billing details to complete your order." />
 
-        {{-- Guest Info Banner --}}
-        @if($isGuest)
-            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg flex items-center justify-between">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>You are checking out as a guest. <a href="{{ route('login') }}" class="font-semibold underline">Log in</a> or
-                        <a href="{{ route('register') }}" class="font-semibold underline">create an account</a> to save your addresses and track orders.</span>
-                </div>
-            </div>
-        @endif
+    {{-- Info pre hosta --}}
+    @if($isGuest)
+        <div class="mb-6 flex gap-3 border-l-3 border-brand-600 bg-white px-4 py-3 text-sm">
+            <svg class="mt-0.5 size-5 shrink-0 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="square" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p>
+                You are checking out as a guest.
+                <a href="{{ route('login') }}" class="font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-700">Log in</a> or
+                <a href="{{ route('register') }}" class="font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-700">create an account</a>
+                to save your addresses and track orders.
+            </p>
+        </div>
+    @endif
 
-        {{-- Flash Messages --}}
-        <x-ui.flash-messages :types="['error']" />
+    <x-ui.flash-messages :types="['error']" />
 
-        <form action="{{ route('orders.store') }}" method="POST" id="checkout-form" data-validate
-              data-default-country="{{ config('shop.default_country') }}">
-            @csrf
+    <form action="{{ route('orders.store') }}" method="POST" id="checkout-form" data-validate
+          data-default-country="{{ config('shop.default_country') }}">
+        @csrf
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {{-- Checkout Form --}}
-                <div class="lg:col-span-2 space-y-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+            <div class="space-y-6 lg:col-span-2">
 
-                    {{-- SHIPPING ADDRESS --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-indigo-400" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Shipping Address
+                {{-- 1. DORUCOVACIA ADRESA --}}
+                <x-ui.card padding="lg">
+                    <h2 class="{{ $sectionTitle }} mb-6">
+                        <span class="{{ $stepNumber }}" aria-hidden="true">1</span>
+                        Shipping Address
+                    </h2>
+
+                    {{-- Ulozene dorucovacie adresy (len prihlaseny) --}}
+                    @if(!$isGuest && $shippingAddresses->isNotEmpty())
+                        <div class="mb-6 border-b border-line pb-6">
+                            <label for="shipping-address-select" class="mb-1.5 block text-sm font-medium">Use saved shipping address</label>
+                            <select id="shipping-address-select" class="{{ $selectClasses }}">
+                                <option value="">-- Enter new address --</option>
+                                @foreach($shippingAddresses as $address)
+                                    <option value="{{ $address->id }}"
+                                            data-name="{{ $address->full_name }}"
+                                            data-email="{{ $address->email }}"
+                                            data-phone="{{ $address->phone }}"
+                                            data-address="{{ $address->street }}"
+                                            data-city="{{ $address->city }}"
+                                            data-postal="{{ $address->postal_code }}"
+                                            data-country="{{ $address->country }}"
+                                            {{ $address->is_default ? 'selected' : '' }}>
+                                        {{ $address->full_name }} - {{ $address->street }}, {{ $address->city }}
+                                        @if($address->is_default) (Default) @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <x-form.input name="shipping_name" label="Full Name" required placeholder="John Doe" maxlength="255"
+                                      autocomplete="shipping name"
+                                      :pattern="$patterns['shipping_name']"
+                                      :value="$defaultShippingAddress?->full_name ?? $user?->full_name" />
+
+                        <x-form.input name="shipping_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
+                                      autocomplete="email"
+                                      :value="$defaultShippingAddress?->email ?? $user?->email" />
+
+                        <x-form.input name="shipping_phone" type="tel" label="Phone" required placeholder="+421 XXX XXX XXX" maxlength="20"
+                                      autocomplete="shipping tel"
+                                      :pattern="$patterns['shipping_phone']"
+                                      :value="$defaultShippingAddress?->phone" />
+
+                        <x-form.input name="shipping_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                      autocomplete="shipping postal-code"
+                                      :pattern="$patterns['shipping_postal_code']"
+                                      :value="$defaultShippingAddress?->postal_code" />
+
+                        <x-form.input name="shipping_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                      autocomplete="shipping address-level2"
+                                      :pattern="$patterns['shipping_city']"
+                                      :value="$defaultShippingAddress?->city" />
+
+                        <x-form.input name="shipping_country" label="Country" maxlength="100"
+                                      autocomplete="shipping country-name"
+                                      :value="$defaultShippingAddress?->country ?? config('shop.default_country')" />
+
+                        <x-form.input name="shipping_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
+                                      autocomplete="shipping street-address"
+                                      class="md:col-span-2" :value="$defaultShippingAddress?->street" />
+                    </div>
+                </x-ui.card>
+
+                {{-- 2. FAKTURACNA ADRESA --}}
+                <x-ui.card padding="lg">
+                    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                        <h2 class="{{ $sectionTitle }}">
+                            <span class="{{ $stepNumber }}" aria-hidden="true">2</span>
+                            Billing Address
                         </h2>
-
-                        {{-- Saved Shipping Addresses Selection (only for authenticated users) --}}
-                        @if(!$isGuest && $shippingAddresses->isNotEmpty())
-                            <div class="mb-6 pb-6 border-b border-gray-200">
-                                <label for="shipping-address-select" class="block text-sm font-medium text-gray-700 mb-2">Use saved shipping address</label>
-                                <select id="shipping-address-select"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
-                                    <option value="">-- Enter new address --</option>
-                                    @foreach($shippingAddresses as $address)
-                                        <option value="{{ $address->id }}"
-                                                data-name="{{ $address->full_name }}"
-                                                data-email="{{ $address->email }}"
-                                                data-phone="{{ $address->phone }}"
-                                                data-address="{{ $address->street }}"
-                                                data-city="{{ $address->city }}"
-                                                data-postal="{{ $address->postal_code }}"
-                                                data-country="{{ $address->country }}"
-                                                {{ $address->is_default ? 'selected' : '' }}>
-                                            {{ $address->full_name }} - {{ $address->street }}, {{ $address->city }}
-                                            @if($address->is_default) (Default) @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @endif
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <x-form.input name="shipping_name" label="Full Name" required placeholder="John Doe" maxlength="255"
-                                          :pattern="$patterns['shipping_name']"
-                                          :value="$defaultShippingAddress?->full_name ?? $user?->full_name" />
-
-                            <x-form.input name="shipping_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
-                                          :value="$defaultShippingAddress?->email ?? $user?->email" />
-
-                            <x-form.input name="shipping_phone" type="tel" label="Phone" required placeholder="+421 XXX XXX XXX" maxlength="20"
-                                          :pattern="$patterns['shipping_phone']"
-                                          :value="$defaultShippingAddress?->phone" />
-
-                            <x-form.input name="shipping_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
-                                          :pattern="$patterns['shipping_postal_code']"
-                                          :value="$defaultShippingAddress?->postal_code" />
-
-                            <x-form.input name="shipping_city" label="City" required placeholder="Bratislava" maxlength="100"
-                                          :pattern="$patterns['shipping_city']"
-                                          :value="$defaultShippingAddress?->city" />
-
-                            <x-form.input name="shipping_country" label="Country" maxlength="100"
-                                          :value="$defaultShippingAddress?->country ?? config('shop.default_country')" />
-
-                            <x-form.input name="shipping_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
-                                          class="md:col-span-2" :value="$defaultShippingAddress?->street" />
-                        </div>
+                        <label for="same-as-shipping" class="inline-flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xs border border-line px-3 text-sm hover:border-line-strong">
+                            <input type="checkbox" id="same-as-shipping" class="size-5">
+                            Same as shipping
+                        </label>
                     </div>
 
-                    {{-- BILLING ADDRESS --}}
-                    <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                                <svg class="w-6 h-6 mr-2 text-green-600" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    {{-- Ulozene fakturacne adresy (len prihlaseny) --}}
+                    @if(!$isGuest && $billingAddresses->isNotEmpty())
+                        <div class="mb-6 border-b border-line pb-6" id="billing-address-selector">
+                            <label for="billing-address-select" class="mb-1.5 block text-sm font-medium">Use saved billing address</label>
+                            <select id="billing-address-select" class="{{ $selectClasses }}">
+                                <option value="">-- Enter new address --</option>
+                                @foreach($billingAddresses as $address)
+                                    <option value="{{ $address->id }}"
+                                            data-name="{{ $address->full_name }}"
+                                            data-email="{{ $address->email }}"
+                                            data-phone="{{ $address->phone }}"
+                                            data-address="{{ $address->street }}"
+                                            data-city="{{ $address->city }}"
+                                            data-postal="{{ $address->postal_code }}"
+                                            data-country="{{ $address->country }}"
+                                            data-company="{{ $address->company_name }}"
+                                            data-ico="{{ $address->ico }}"
+                                            data-dic="{{ $address->dic }}"
+                                            data-icdph="{{ $address->ic_dph }}"
+                                            {{ $address->is_default ? 'selected' : '' }}>
+                                        {{ $address->full_name }}@if($address->company_name) ({{ $address->company_name }})@endif - {{ $address->street }}, {{ $address->city }}
+                                        @if($address->is_default) (Default) @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
+                    <div id="billing-fields">
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <x-form.input name="billing_name" label="Full Name" required placeholder="John Doe" maxlength="255"
+                                          autocomplete="billing name"
+                                          :pattern="$patterns['billing_name']"
+                                          :value="$defaultBillingAddress?->full_name ?? $user?->full_name" />
+
+                            <x-form.input name="billing_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
+                                          autocomplete="email"
+                                          :value="$defaultBillingAddress?->email ?? $user?->email" />
+
+                            <x-form.input name="billing_phone" type="tel" label="Phone" placeholder="+421 XXX XXX XXX" maxlength="20"
+                                          autocomplete="billing tel"
+                                          :pattern="$patterns['billing_phone']"
+                                          :value="$defaultBillingAddress?->phone" />
+
+                            <x-form.input name="billing_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
+                                          autocomplete="billing postal-code"
+                                          :pattern="$patterns['billing_postal_code']"
+                                          :value="$defaultBillingAddress?->postal_code" />
+
+                            <x-form.input name="billing_city" label="City" required placeholder="Bratislava" maxlength="100"
+                                          autocomplete="billing address-level2"
+                                          :pattern="$patterns['billing_city']"
+                                          :value="$defaultBillingAddress?->city" />
+
+                            <x-form.input name="billing_country" label="Country" maxlength="100"
+                                          autocomplete="billing country-name"
+                                          :value="$defaultBillingAddress?->country ?? config('shop.default_country')" />
+
+                            <x-form.input name="billing_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
+                                          autocomplete="billing street-address"
+                                          class="md:col-span-2" :value="$defaultBillingAddress?->street" />
+                        </div>
+
+                        {{-- Firemne udaje (volitelne) --}}
+                        <fieldset class="mt-6 border-t border-line pt-6">
+                            <legend class="sr-only">Company Information</legend>
+                            <p class="mb-4 flex items-center gap-2">
+                                <span class="font-display text-lg font-semibold uppercase tracking-wide">Company Information</span>
+                                <x-ui.badge>Optional</x-ui.badge>
+                            </p>
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                <x-form.input name="billing_company_name" label="Company Name" placeholder="Your Company Ltd." maxlength="255"
+                                              autocomplete="billing organization"
+                                              class="md:col-span-2" :value="$defaultBillingAddress?->company_name" />
+
+                                <x-form.input name="billing_ico" label="Company ID (IČO)" placeholder="12345678" maxlength="20"
+                                              :pattern="$patterns['billing_ico']"
+                                              :value="$defaultBillingAddress?->ico" />
+
+                                <x-form.input name="billing_dic" label="Tax ID (DIČ)" placeholder="1234567890" maxlength="20"
+                                              :pattern="$patterns['billing_dic']"
+                                              :value="$defaultBillingAddress?->dic" />
+
+                                <x-form.input name="billing_ic_dph" label="VAT ID (IČ DPH)" placeholder="SK1234567890" maxlength="20"
+                                              :pattern="$patterns['billing_ic_dph']"
+                                              :value="$defaultBillingAddress?->ic_dph" />
+                            </div>
+                        </fieldset>
+                    </div>
+                </x-ui.card>
+
+                {{-- 3. POZNAMKA A PLATBA --}}
+                <x-ui.card padding="lg">
+                    <h2 class="{{ $sectionTitle }} mb-6">
+                        <span class="{{ $stepNumber }}" aria-hidden="true">3</span>
+                        Payment &amp; Notes
+                    </h2>
+
+                    <fieldset>
+                        <legend class="mb-3 text-sm font-medium">Payment Method</legend>
+                        <label class="flex min-h-11 cursor-pointer items-center gap-4 rounded-xs border-2 border-brand-600 bg-brand-50 p-4">
+                            <input type="radio" name="payment_method" value="cod" checked class="size-5">
+                            <span class="flex-1">
+                                <span class="block font-semibold">Cash on Delivery</span>
+                                <span class="block text-sm text-muted">Pay when you receive the package (+{{ $cart['formatted_shipping_cost'] }})</span>
+                            </span>
+                            <span class="num text-brand-600">{{ $cart['formatted_shipping_cost'] }}</span>
+                        </label>
+                    </fieldset>
+
+                    <x-form.input name="note" label="Order Notes" textarea rows="3" class="mt-6" maxlength="1000"
+                                  placeholder="Special requests, delivery instructions..." />
+
+                    {{-- Odoslanie: celkova suma priamo pri tlacidle --}}
+                    <div class="mt-8 border-t border-line pt-6">
+                        <div class="mb-4 flex items-baseline justify-between">
+                            <span class="font-display text-lg font-semibold uppercase tracking-wide">Total to pay</span>
+                            <span class="num text-2xl">{{ $cart['formatted_grand_total'] }}</span>
+                        </div>
+
+                        <x-button id="submit-order-btn" size="lg" class="w-full">
+                            <span id="submit-text">Place Order</span>
+                            <span id="submit-loading" class="hidden">
+                                <svg class="mr-2 inline-block size-5 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                                 </svg>
-                                Billing Address
-                            </h2>
-                            <label class="flex items-center text-sm text-gray-600 cursor-pointer">
-                                <input type="checkbox" id="same-as-shipping" class="mr-2 h-4 w-4 text-indigo-600 rounded">
-                                Same as shipping
-                            </label>
-                        </div>
-
-                        {{-- Saved Billing Addresses Selection (only for authenticated users) --}}
-                        @if(!$isGuest && $billingAddresses->isNotEmpty())
-                            <div class="mb-6 pb-6 border-b border-gray-200" id="billing-address-selector">
-                                <label for="billing-address-select" class="block text-sm font-medium text-gray-700 mb-2">Use saved billing address</label>
-                                <select id="billing-address-select"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
-                                    <option value="">-- Enter new address --</option>
-                                    @foreach($billingAddresses as $address)
-                                        <option value="{{ $address->id }}"
-                                                data-name="{{ $address->full_name }}"
-                                                data-email="{{ $address->email }}"
-                                                data-phone="{{ $address->phone }}"
-                                                data-address="{{ $address->street }}"
-                                                data-city="{{ $address->city }}"
-                                                data-postal="{{ $address->postal_code }}"
-                                                data-country="{{ $address->country }}"
-                                                data-company="{{ $address->company_name }}"
-                                                data-ico="{{ $address->ico }}"
-                                                data-dic="{{ $address->dic }}"
-                                                data-icdph="{{ $address->ic_dph }}"
-                                                {{ $address->is_default ? 'selected' : '' }}>
-                                            {{ $address->full_name }}@if($address->company_name) ({{ $address->company_name }})@endif - {{ $address->street }}, {{ $address->city }}
-                                            @if($address->is_default) (Default) @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @endif
-
-                        <div id="billing-fields">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <x-form.input name="billing_name" label="Full Name" required placeholder="John Doe" maxlength="255"
-                                              :pattern="$patterns['billing_name']"
-                                              :value="$defaultBillingAddress?->full_name ?? $user?->full_name" />
-
-                                <x-form.input name="billing_email" type="email" label="Email" required placeholder="john@example.com" maxlength="255"
-                                              :value="$defaultBillingAddress?->email ?? $user?->email" />
-
-                                <x-form.input name="billing_phone" type="tel" label="Phone" placeholder="+421 XXX XXX XXX" maxlength="20"
-                                              :pattern="$patterns['billing_phone']"
-                                              :value="$defaultBillingAddress?->phone" />
-
-                                <x-form.input name="billing_postal_code" label="Postal Code" required placeholder="XXX XX" maxlength="10"
-                                              :pattern="$patterns['billing_postal_code']"
-                                              :value="$defaultBillingAddress?->postal_code" />
-
-                                <x-form.input name="billing_city" label="City" required placeholder="Bratislava" maxlength="100"
-                                              :pattern="$patterns['billing_city']"
-                                              :value="$defaultBillingAddress?->city" />
-
-                                <x-form.input name="billing_country" label="Country" maxlength="100"
-                                              :value="$defaultBillingAddress?->country ?? config('shop.default_country')" />
-
-                                <x-form.input name="billing_address" label="Street Address" required placeholder="Main Street 123" maxlength="255"
-                                              class="md:col-span-2" :value="$defaultBillingAddress?->street" />
-                            </div>
-
-                            {{-- Company Info (optional) --}}
-                            <div class="mt-6 pt-6 border-t border-gray-200">
-                                <h3 class="text-sm font-medium text-gray-700 mb-4">Company Information (optional)</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <x-form.input name="billing_company_name" label="Company Name" placeholder="Your Company Ltd." maxlength="255"
-                                                  class="md:col-span-2" :value="$defaultBillingAddress?->company_name" />
-
-                                    <x-form.input name="billing_ico" label="Company ID (IČO)" placeholder="12345678" maxlength="20"
-                                                  :pattern="$patterns['billing_ico']"
-                                                  :value="$defaultBillingAddress?->ico" />
-
-                                    <x-form.input name="billing_dic" label="Tax ID (DIČ)" placeholder="1234567890" maxlength="20"
-                                                  :pattern="$patterns['billing_dic']"
-                                                  :value="$defaultBillingAddress?->dic" />
-
-                                    <x-form.input name="billing_ic_dph" label="VAT ID (IČ DPH)" placeholder="SK1234567890" maxlength="20"
-                                                  :pattern="$patterns['billing_ic_dph']"
-                                                  :value="$defaultBillingAddress?->ic_dph" />
-                                </div>
-                            </div>
-                        </div>
+                                Processing...
+                            </span>
+                        </x-button>
                     </div>
-
-                    {{-- ORDER NOTES & PAYMENT --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        {{-- Note --}}
-                        <x-form.input name="note" label="Order Notes" textarea rows="3" class="mb-6" maxlength="1000"
-                                      placeholder="Special requests, delivery instructions..." />
-
-                        {{-- Payment Method --}}
-                        <div class="pt-6 border-t border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
-                            <label class="flex items-center p-4 border-2 border-indigo-500 bg-indigo-500/10 rounded-lg cursor-pointer">
-                                <input type="radio" name="payment_method" value="cod" checked class="h-5 w-5 text-indigo-600">
-                                <div class="ml-4">
-                                    <span class="font-medium text-gray-900">Cash on Delivery</span>
-                                    <p class="text-sm text-gray-500">Pay when you receive the package (+{{ $cart['formatted_shipping_cost'] }})</p>
-                                </div>
-                                <span class="ml-auto font-semibold text-indigo-400">{{ $cart['formatted_shipping_cost'] }}</span>
-                            </label>
-                        </div>
-
-                        {{-- Submit Button --}}
-                        <div class="mt-8">
-                            <button type="submit" id="submit-order-btn"
-                                    class="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
-                                <span id="submit-text">Place Order</span>
-                                <span id="submit-loading" class="hidden">
-                                    <svg class="animate-spin inline-block w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                                    </svg>
-                                    Processing...
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Order Summary --}}
-                <div class="lg:col-span-1">
-                    <div class="card bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-32">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Summary</h2>
-
-                        {{-- Cart Items --}}
-                        <div class="space-y-4 max-h-80 overflow-y-auto">
-                            @foreach($cart['items'] as $item)
-                                <div class="flex items-center gap-4 pb-4 border-b border-gray-100 last:border-0">
-                                    @if($item['image_url'])
-                                        <img src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" class="w-16 h-16 object-cover rounded-lg">
-                                    @else
-                                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-gray-400" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                    @endif
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-medium text-gray-900 truncate">{{ $item['name'] }}</h4>
-                                        <p class="text-sm text-gray-500">{{ $item['quantity'] }}x {{ $item['formatted_price'] }}</p>
-                                    </div>
-                                    <span class="text-sm font-semibold text-gray-900">{{ $item['formatted_subtotal'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        {{-- Totals --}}
-                        <div class="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Subtotal</span>
-                                <span class="font-medium text-gray-900">{{ $cart['formatted_total'] }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Shipping (COD)</span>
-                                <span class="font-medium text-gray-900">{{ $cart['formatted_shipping_cost'] }}</span>
-                            </div>
-                            <div class="flex justify-between text-lg font-bold pt-3 border-t border-gray-200">
-                                <span class="text-gray-900">Total</span>
-                                <span class="text-indigo-400">{{ $cart['formatted_grand_total'] }}</span>
-                            </div>
-                        </div>
-
-                        {{-- Back to cart --}}
-                        <a href="{{ route('cart.index') }}" class="mt-6 block text-center text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-                            ← Back to Cart
-                        </a>
-                    </div>
-                </div>
+                </x-ui.card>
             </div>
-        </form>
-    </div>
+
+            {{-- SUHRN OBJEDNAVKY --}}
+            <aside class="lg:col-span-1" aria-labelledby="checkout-summary">
+                <div class="card border-t-3 border-t-brand-600 p-6 lg:sticky lg:top-36">
+                    <h2 id="checkout-summary" class="mb-4 text-xl">Order Summary</h2>
+
+                    <ul class="max-h-80 divide-y divide-line overflow-y-auto">
+                        @foreach($cart['items'] as $item)
+                            <li class="flex items-center gap-3 py-3">
+                                <div class="size-14 shrink-0 overflow-hidden rounded-xs border border-line bg-tile">
+                                    @if($item['image_url'])
+                                        <img src="{{ $item['image_url'] }}" alt="" class="h-full w-full object-contain p-1 mix-blend-multiply">
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-medium">{{ $item['name'] }}</p>
+                                    <p class="num text-xs text-subtle">{{ $item['quantity'] }}× {{ $item['formatted_price'] }}</p>
+                                </div>
+                                <span class="num text-sm">{{ $item['formatted_subtotal'] }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <dl class="mt-4 space-y-3 border-t border-line pt-4 text-sm">
+                        <div class="flex justify-between">
+                            <dt class="text-muted">Subtotal</dt>
+                            <dd class="num">{{ $cart['formatted_total'] }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-muted">Shipping (COD)</dt>
+                            <dd class="num">{{ $cart['formatted_shipping_cost'] }}</dd>
+                        </div>
+                        <div class="flex items-baseline justify-between border-t border-line pt-3">
+                            <dt class="font-display text-lg font-semibold uppercase tracking-wide">Total</dt>
+                            <dd class="num text-2xl">{{ $cart['formatted_grand_total'] }}</dd>
+                        </div>
+                    </dl>
+
+                    <x-button :href="route('cart.index')" variant="ghost" class="mt-4 w-full">
+                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="square" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Back to Cart
+                    </x-button>
+                </div>
+            </aside>
+        </div>
+    </form>
 
 </x-layouts.default-layout>
-

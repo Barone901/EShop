@@ -1,6 +1,7 @@
 <?php
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
+// [AI] Upravene s pomocou AI (Claude): presmerovanie cez redirect()->route() namiesto fasady Redirect.
 
 declare(strict_types=1);
 
@@ -10,7 +11,6 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 
 /**
  * Controller pre spravu profilu pouzivatela.
@@ -62,6 +62,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return redirect()->route('home');
     }
 }

@@ -5,7 +5,11 @@
  * registrujú svoje handlery (delegované akcie, Escape, klik mimo prvku).
  *
  * [AI] Vygenerované s pomocou AI (Claude).
+ *
+ * [AI] Upravené s pomocou AI (Claude): pridaná funkcia byId().
  */
+export const byId = (id) => document.getElementById(id);
+
 const handlers = {};
 
 const listen = (type, handler) => {

@@ -1,200 +1,165 @@
+{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
+{{--
+    Prehlad uctu + nastavenia profilu (Breeze partials). Kotva #profile = ciel presmerovania z profile.edit.
+--}}
+@php
+    $quickLinks = [
+        [route('orders.index'), 'My orders', 'Order history and status', 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+        [route('addresses.index'), 'My addresses', 'Shipping and billing addresses', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z'],
+        ['#profile', 'Profile settings', 'Personal data and password', 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z'],
+    ];
+
+    $cardTitle = 'text-xl';
+    $editLink = 'inline-flex min-h-11 items-center text-sm font-medium text-brand-600 hover:text-brand-700 hover:underline underline-offset-4';
+@endphp
+
 <x-layouts.default-layout title="My Profile" type="app">
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                My profile
-            </h2>
-        </div>
+        <span class="mb-4 block h-[3px] w-12 bg-brand-600" aria-hidden="true"></span>
+        <p class="eyebrow">My account</p>
+        <h1 class="mt-2 text-3xl md:text-4xl">Welcome, {{ $user->full_name }}!</h1>
+        <p class="mt-2 text-muted">Here you will find an overview of your orders, addresses, and account settings.</p>
     </x-slot>
 
-    <div>
-        <div>
-            {{-- Welcome Section --}}
-            <div class="card bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-2">Welcome, {{ $user->full_name }}!</h3>
-                    <p class="text-gray-600">Here you will find an overview of your orders, addresses, and account settings.</p>
-                </div>
-            </div>
-
-            {{-- Quick Actions --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <a href="{{ route('orders.index') }}" class="card bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow p-6 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-600" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    {{-- Rychle odkazy --}}
+    <ul class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        @foreach($quickLinks as [$url, $title, $text, $iconPath])
+            <li>
+                <a href="{{ $url }}" class="card group flex h-full items-center gap-4 p-5 transition-colors hover:border-brand-600">
+                    <span class="grid size-12 shrink-0 place-items-center rounded-xs bg-ink-900 text-brand-400" aria-hidden="true">
+                        <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="square" stroke-width="2" d="{{ $iconPath }}"/>
                         </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900">My orders</h4>
-                        <p class="text-sm text-gray-500">History</p>
-                    </div>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block font-display text-lg font-semibold uppercase tracking-wide group-hover:text-brand-600">{{ $title }}</span>
+                        <span class="block text-sm text-muted">{{ $text }}</span>
+                    </span>
                 </a>
+            </li>
+        @endforeach
+    </ul>
 
-                <a href="{{ route('addresses.index') }}" class="card bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow p-6 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-purple-600" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900">My addresses</h4>
-                        <p class="text-sm text-gray-500">Address management</p>
-                    </div>
-                </a>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
+        {{-- Posledne objednavky --}}
+        <section class="card lg:col-span-2" aria-labelledby="recent-orders">
+            <div class="flex items-center justify-between border-b border-line px-5 py-3 md:px-6">
+                <h2 id="recent-orders" class="{{ $cardTitle }}">Latest orders</h2>
+                <a href="{{ route('orders.index') }}" class="{{ $editLink }}">Show all →</a>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            @if($recentOrders->isEmpty())
+                <div class="px-6 py-12 text-center">
+                    <p class="mb-4 text-muted">You don't have any orders yet</p>
+                    <x-button :href="route('home')">Start shopping</x-button>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-paper">
+                            <tr>
+                                <th scope="col" class="eyebrow px-5 py-3 text-left md:px-6">Number</th>
+                                <th scope="col" class="eyebrow hidden px-4 py-3 text-left sm:table-cell">Date</th>
+                                <th scope="col" class="eyebrow px-4 py-3 text-left">Status</th>
+                                <th scope="col" class="eyebrow px-4 py-3 text-right">Sum</th>
+                                <th scope="col" class="px-5 py-3 md:px-6"><span class="sr-only">Action</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line">
+                            @foreach($recentOrders as $order)
+                                <tr class="hover:bg-paper">
+                                    <td class="num whitespace-nowrap px-5 py-3 md:px-6">{{ $order->order_number }}</td>
+                                    <td class="num hidden whitespace-nowrap px-4 py-3 text-subtle sm:table-cell">{{ $order->created_at->format('d.m.Y') }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3"><x-shop.order-status-badge :order="$order" /></td>
+                                    <td class="num whitespace-nowrap px-4 py-3 text-right">{{ $order->formatted_total }}</td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-right md:px-6">
+                                        <a href="{{ route('orders.show', $order->order_number) }}" class="{{ $editLink }}" aria-label="Order {{ $order->order_number }} detail">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </section>
 
-                <div class="lg:col-span-2 card bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900">Latest orders</h3>
-                            <a href="{{ route('orders.index') }}" class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-                                Show all →
-                            </a>
-                        </div>
+        {{-- Pravy stlpec: osobne udaje + predvolene adresy --}}
+        <div class="space-y-6">
+            <section class="card p-5 md:p-6" aria-labelledby="personal-data">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 id="personal-data" class="{{ $cardTitle }}">Personal data</h2>
+                    <a href="#profile" class="{{ $editLink }}">Edit</a>
+                </div>
+                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+                    <dt class="text-subtle">Name</dt><dd class="font-medium">{{ $user->first_name ?? '-' }}</dd>
+                    <dt class="text-subtle">Last Name</dt><dd class="font-medium">{{ $user->last_name ?? '-' }}</dd>
+                    <dt class="text-subtle">Email</dt><dd class="break-all font-medium">{{ $user->email }}</dd>
+                    <dt class="text-subtle">Phone</dt><dd class="num">{{ $user->phone ?? '-' }}</dd>
+                </dl>
+            </section>
 
-                        @if($recentOrders->isEmpty())
-                            <div class="text-center py-8">
-                                <p class="text-gray-500 mb-4">You don't have any orders yet</p>
-                                <a href="{{ route('home') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
-                                    Start shopping
-                                </a>
-                            </div>
-                        @else
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Number</th>
-                                            <th class="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sum</th>
-                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach($recentOrders as $order)
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                    <span class="font-medium text-indigo-400">{{ $order->order_number }}</span>
-                                                </td>
-                                                <td class="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $order->created_at->format('d.m.Y') }}
-                                                </td>
-                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                    <x-shop.order-status-badge :order="$order" />
-                                                </td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                    {{ $order->formatted_total }}
-                                                </td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-right text-sm">
-                                                    <a href="{{ route('orders.show', $order->order_number) }}" class="text-indigo-400 hover:text-indigo-300 font-medium">
-                                                        Detail
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
-                    </div>
+            {{-- Predvolena dorucovacia adresa --}}
+            <section class="card p-5 md:p-6" aria-labelledby="default-shipping">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 id="default-shipping" class="{{ $cardTitle }}">Shipping address</h2>
+                    <a href="{{ route('addresses.index') }}" class="{{ $editLink }}">Edit</a>
                 </div>
 
-                {{-- Pravý stĺpec: osobné info + adresy --}}
-                <div class="space-y-6">
-                    <div class="card bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Personal data</h3>
-                            <a href="#profile" class="text-sm text-indigo-400 hover:text-indigo-300">Edit</a>
-                        </div>
-                        <div class="space-y-2 text-sm">
-                            <p><span class="text-gray-500">Name:</span> <span class="font-medium text-gray-900">{{ $user->first_name ?? '-' }}</span></p>
-                            <p><span class="text-gray-500">Last Name:</span> <span class="font-medium text-gray-900">{{ $user->last_name ?? '-' }}</span></p>
-                            <p><span class="text-gray-500">Email:</span> <span class="font-medium text-gray-900">{{ $user->email }}</span></p>
-                            <p><span class="text-gray-500">Phone:</span> <span class="font-medium text-gray-900">{{ $user->phone ?? '-' }}</span></p>
-                        </div>
-                    </div>
+                @if($shippingAddress)
+                    <address class="text-sm not-italic leading-relaxed text-muted">
+                        <span class="block font-semibold text-text">{{ $shippingAddress->full_name }}</span>
+                        <span class="block">{{ $shippingAddress->street }}</span>
+                        <span class="block">{{ $shippingAddress->postal_code }} {{ $shippingAddress->city }}</span>
+                    </address>
+                @else
+                    <p class="text-sm text-muted">You have not set a delivery address</p>
+                    <a href="{{ route('addresses.create', ['type' => 'shipping']) }}" class="{{ $editLink }}">+ Add address</a>
+                @endif
+            </section>
 
-                    {{-- Default shipping --}}
-                    <div class="card bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Shipping address</h3>
-                            <a href="{{ route('addresses.index') }}" class="text-sm text-indigo-400 hover:text-indigo-300">Edit</a>
-                        </div>
-
-                        @if($shippingAddress)
-                            <div class="text-sm text-gray-600">
-                                <p class="font-medium text-gray-900">{{ $shippingAddress->full_name }}</p>
-                                <p>{{ $shippingAddress->street }}</p>
-                                <p>{{ $shippingAddress->postal_code }} {{ $shippingAddress->city }}</p>
-                            </div>
-                        @else
-                            <p class="text-gray-500 text-sm">You have not set a delivery address</p>
-                            <a href="{{ route('addresses.create', ['type' => 'shipping']) }}" class="inline-block mt-2 text-sm text-indigo-400 hover:text-indigo-300">
-                                + Add address
-                            </a>
-                        @endif
-                    </div>
-
-                    {{-- Default billing --}}
-                    <div class="card bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Billing address</h3>
-                            <a href="{{ route('addresses.index') }}" class="text-sm text-indigo-400 hover:text-indigo-300">Edit</a>
-                        </div>
-
-                        @if($billingAddress)
-                            <div class="text-sm text-gray-600">
-                                @if($billingAddress->company_name)
-                                    <p class="font-bold text-gray-900">{{ $billingAddress->company_name }}</p>
-                                @endif
-                                <p class="font-medium text-gray-900">{{ $billingAddress->full_name }}</p>
-                                <p>{{ $billingAddress->street }}</p>
-                                <p>{{ $billingAddress->postal_code }} {{ $billingAddress->city }}</p>
-                            </div>
-                        @else
-                            <p class="text-gray-500 text-sm">You do not have a billing address set up</p>
-                            <a href="{{ route('addresses.create', ['type' => 'billing']) }}" class="inline-block mt-2 text-sm text-indigo-400 hover:text-indigo-300">
-                                + Add address
-                            </a>
-                        @endif
-                    </div>
+            {{-- Predvolena fakturacna adresa --}}
+            <section class="card p-5 md:p-6" aria-labelledby="default-billing">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 id="default-billing" class="{{ $cardTitle }}">Billing address</h2>
+                    <a href="{{ route('addresses.index') }}" class="{{ $editLink }}">Edit</a>
                 </div>
-            </div>
 
-            {{-- =============== PROFIL (Breeze partials) =============== --}}
-            <div id="profile" class="mt-10">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Profile settings</h3>
-
-                <div class="space-y-6">
-                    <div class="card p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.update-profile-information-form')
-                        </div>
-                    </div>
-
-                    <div class="card p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.update-password-form')
-                        </div>
-                    </div>
-
-                    <div class="card p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                        <div class="max-w-xl">
-                            @include('profile.partials.delete-user-form')
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {{-- ========================================================= --}}
+                @if($billingAddress)
+                    <address class="text-sm not-italic leading-relaxed text-muted">
+                        @if($billingAddress->company_name)
+                            <span class="block font-bold text-text">{{ $billingAddress->company_name }}</span>
+                        @endif
+                        <span class="block font-semibold text-text">{{ $billingAddress->full_name }}</span>
+                        <span class="block">{{ $billingAddress->street }}</span>
+                        <span class="block">{{ $billingAddress->postal_code }} {{ $billingAddress->city }}</span>
+                    </address>
+                @else
+                    <p class="text-sm text-muted">You do not have a billing address set up</p>
+                    <a href="{{ route('addresses.create', ['type' => 'billing']) }}" class="{{ $editLink }}">+ Add address</a>
+                @endif
+            </section>
         </div>
     </div>
+
+    {{-- =============== NASTAVENIA PROFILU (Breeze partials) =============== --}}
+    <section id="profile" class="mt-12 scroll-mt-40" aria-labelledby="profile-settings">
+        <x-ui.section-header heading-id="profile-settings" eyebrow="Account" title="Profile settings" />
+
+        <div class="space-y-6">
+            <x-ui.card padding="lg">
+                @include('profile.partials.update-profile-information-form')
+            </x-ui.card>
+
+            <x-ui.card padding="lg">
+                @include('profile.partials.update-password-form')
+            </x-ui.card>
+
+            <x-ui.card padding="lg" class="border-l-3 border-l-danger-700">
+                @include('profile.partials.delete-user-form')
+            </x-ui.card>
+        </div>
+    </section>
 </x-layouts.default-layout>
