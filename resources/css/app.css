@@ -1,10 +1,3 @@
-/*
- * Styly obchodu. Subor ma dve casti:
- *   1. POVODNE PRAVIDLA AUTORA (spodna cast suboru) - napisane autorom projektu; pri redizajne AI (Claude)
- *      zmenilo len hodnoty farieb/zaoblenia na tokeny dizajnu (napr. #1a1a1a -> var(--color-ink-900)).
- *   2. [AI] Vygenerovane s pomocou AI (Claude): dizajnovy system "Workshop / Industrial" - tokeny (@theme),
- *      zakladne styly (@layer base) a komponenty (@layer components). Pravidla a tokeny su popisane v CLAUDE.md.
- */
 @import 'tailwindcss';
 
 /* Fonty (self-hosted cez @fontsource, len pouzivane rezy) */
@@ -21,7 +14,7 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-/* ===== [AI] Vygenerovane s pomocou AI (Claude): tokeny, base a components ===== */
+
 
 @theme {
     /* Typografia */
@@ -194,14 +187,6 @@
         margin-right: 0.375em;
     }
 }
-
-/* =====================================================================================
- * POVODNE PRAVIDLA AUTORA
- * Napisane autorom projektu (pred redizajnom). AI (Claude) pri redizajne zmenilo len hodnoty farieb
- * a zaoblenia na tokeny dizajnu; selektory, vlastnosti a ich ucel su povodne.
- * Vynimka: selektory bodiek slidera su presunute z .banner-dot na [data-banner-dot] (schvalena zmena,
- * JS sa viaze na data atributy), a pravidla oznacene [AI] su doplnene.
- * ===================================================================================== */
 
 /* footer */
 .site-footer {
