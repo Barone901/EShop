@@ -1,62 +1,195 @@
-Instalacia a spustenie projektu (Docker / Laravel Sail)
-==================================================
+Instalacia a spustenie projektu na Ubuntu (Docker / Laravel Sail)
+=================================================================
+
+[AI] Rozsirene s pomocou AI (Claude): instalacia Dockeru na Ubuntu, WSL2, kazdodenne
+spustanie, aktualizacia po git pull a riesenie castych problemov.
 
 Podrobny popis projektu, ukazkove ucty a prehlad poziadaviek su v README.md.
+Architektura kodu je popisana v app/README.md (a v README.md v jednotlivych priecinkoch).
 
-Poziadavky
-----------
-- Docker (s Docker Compose)
+Na pocitaci treba LEN Docker a git. PHP, Composer, Node.js ani MySQL sa na Ubuntu
+neinstaluju - vsetko bezi v kontajneroch:
 
-1) Spustenie
-------------
-git clone <adresa-repozitara> eShop
+  laravel.test  PHP 8.5 + Composer + Node.js (web na porte 80, Vite na 5173)
+  mysql         MySQL 8.4 (port 3306, databazy "eshop" a "testing")
+
+Testovane na Ubuntu 24.04 (aj vo WSL2 na Windows).
+
+
+0) Instalacia Dockeru na Ubuntu (jednorazovo)
+---------------------------------------------
+Ak uz "docker compose version" funguje, tento krok preskoc.
+
+Oficialny postup (https://docs.docker.com/engine/install/ubuntu/):
+
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl git
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+Docker bez sudo (potom sa odhlas a prihlas, alebo spusti "newgrp docker"):
+
+sudo usermod -aG docker $USER
+newgrp docker
+
+Kontrola:
+
+docker --version
+docker compose version
+docker run --rm hello-world
+
+Ak docker nebezi:  sudo systemctl start docker   (vo WSL bez systemd: sudo service docker start)
+
+WSL2 (Windows):
+- Moznost A: Docker Desktop pre Windows -> Settings -> Resources -> WSL integration -> zapnut
+  pre svoju Ubuntu distribuciu. Vtedy krok 0 vo WSL netreba.
+- Moznost B: Docker Engine priamo vo WSL podla krokov vyssie.
+- Projekt klonuj do linuxoveho priecinka (napr. ~/LaravelProjects), NIE do /mnt/c/...
+  Na /mnt/c je aplikacia velmi pomala a mozu byt problemy s pravami suborov.
+- Web sa otvara v prehliadaci vo Windows na http://localhost.
+
+
+1) Prve spustenie
+-----------------
+git clone https://github.com/Barone901/EShop.git eShop
 cd eShop
-docker compose up -d
+
+Ak tvoj pouzivatel na Ubuntu NEMA UID 1000 (zisti: id -u), pred prvym spustenim:
+
+cp .env.example .env
+sed -i "s/^WWWUSER=.*/WWWUSER=$(id -u)/; s/^WWWGROUP=.*/WWWGROUP=$(id -g)/" .env
+
+(inak budu subory vytvorene v kontajneri patrit inemu pouzivatelovi.)
+
+Spustenie:
+
+docker compose up -d --build
 
 Pri prvom spusteni kontajner automaticky (skript docker/8.5/init-app):
-- vytvori .env z .env.example
+- vytvori .env z .env.example (ak este nie je)
 - nainstaluje PHP zavislosti (composer install)
 - vygeneruje APP_KEY
 - spusti migracie a naimportuje ukazkove data (len do prazdnej databazy)
-- vytvori storage link pre obrazky
+- vytvori storage link pre obrazky (public/storage)
 - zbuildi frontend (npm ci, npm run build)
 
-Priebeh: docker compose logs -f laravel.test
-Hotovo je, ked sa v logu objavi "[init] Hotovo". Prve spustenie trva niekolko minut.
+Priebeh:
+
+docker compose logs -f laravel.test
+
+Hotovo je, ked sa v logu objavi "[init] Hotovo". Prve spustenie trva niekolko minut
+(stahuje sa image, composer a npm balicky). Sledovanie logu ukonci Ctrl+C - kontajnery bezia dalej.
+
 
 2) Otvorenie aplikacie
 ----------------------
 http://localhost        e-shop
 http://localhost/admin  administracia (admin@admin.com / admin123)
 
-Ukazkove ucty a ich hesla su v README.md. Hesla su slabe a verejne,
+Zakaznik: customer@example.com / password (ma adresy a objednavky).
+Vsetky ukazkove ucty su v README.md. Hesla su slabe a verejne,
 sluzia len na lokalne vyskusanie (pozri upozornenie v README.md).
 
-Ak je port 80 alebo 3306 obsadeny: pred spustenim cp .env.example .env
-a v .env nastav APP_PORT a FORWARD_DB_PORT.
 
-Uzitocne prikazy
-----------------
-Zastavenie kontajnerov:
-docker compose down
+3) Kazdodenna praca
+-------------------
+Po prvom spusteni existuje ./vendor/bin/sail (skratka pre "docker compose exec ...").
+Volitelne si nastav alias (napr. do ~/.bashrc):
+
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+
+Zapnutie / vypnutie:
+
+./vendor/bin/sail up -d        (alebo: docker compose up -d)
+./vendor/bin/sail stop         (alebo: docker compose stop)
+./vendor/bin/sail down         (zastavi a odstrani kontajnery, databaza ostane)
+
+Frontend (CSS a JS z resources/):
+Prehliadac nenacitava resources/css/app.css priamo, ale zbuildeny subor public/build/.
+Zmena v CSS/JS sa preto prejavi az po builde alebo pri beziacom dev serveri.
+
+./vendor/bin/sail npm run build    jednorazovy build (pouzi pred odovzdanim / po zmenach)
+./vendor/bin/sail npm run dev      dev server s hot reloadom (zmeny hned), ukoncit Ctrl+C
+
+Dalsie prikazy:
+
+./vendor/bin/sail artisan test             testy (58)
+./vendor/bin/sail artisan migrate          nove migracie
+./vendor/bin/sail artisan optimize:clear   vycistenie cache (config, routy, views)
+./vendor/bin/sail artisan route:list       zoznam rout
+./vendor/bin/sail shell                    terminal v kontajneri
+./vendor/bin/sail mysql                    MySQL konzola (databaza eshop)
 
 Zmazanie databazy a novy import ukazkovych dat:
-docker compose down -v
+
+./vendor/bin/sail down -v
+./vendor/bin/sail up -d
+
+
+4) Po "git pull" (aktualizacia projektu)
+----------------------------------------
+./vendor/bin/sail up -d
+./vendor/bin/sail composer install         ak sa zmenil composer.lock
+./vendor/bin/sail npm ci                   ak sa zmenil package-lock.json
+./vendor/bin/sail artisan migrate          ak pribudli migracie
+./vendor/bin/sail npm run build
+./vendor/bin/sail artisan optimize:clear
+
+Ak sa zmenil priecinok docker/ (Dockerfile, init-app):
+
+docker compose build --no-cache
 docker compose up -d
 
-Testy:
-docker compose exec laravel.test php artisan test
 
-Vyvoj s Vite dev serverom (hot reload):
-docker compose exec laravel.test npm run dev
+5) Najcastejsie problemy
+------------------------
+Port 80 je obsadeny ("address already in use", casto Apache alebo nginx na Ubuntu):
+  zisti:   sudo ss -ltnp | grep ':80 '
+  vypni:   sudo systemctl stop apache2    (alebo nginx)
+  alebo v .env nastav APP_PORT=8080 -> web bude na http://localhost:8080
 
-Vycistenie cache:
-docker compose exec laravel.test php artisan optimize:clear
+Port 3306 je obsadeny (lokalna MySQL):
+  v .env nastav FORWARD_DB_PORT=3307   (aplikacia v kontajneri to nepotrebuje,
+  je to len port pre pristup z Ubuntu)
 
-Najcastejsie problemy
----------------------
-- Permissions error:
-  docker compose exec laravel.test chmod -R 775 storage bootstrap/cache
+Port 5173 (Vite) je obsadeny (tyka sa len "npm run dev"):
+  v .env nastav VITE_PORT=5174, potom: ./vendor/bin/sail up -d
+  a dev server spusti na rovnakom porte: ./vendor/bin/sail npm run dev -- --port 5174
 
-- Kontajner sa po starte ukonci:
-  docker compose logs laravel.test   (posledny riadok [init] ukaze krok, ktory zlyhal)
+"Vite manifest not found at public/build/manifest.json":
+  ./vendor/bin/sail npm ci
+  ./vendor/bin/sail npm run build
+
+Stranka nema styly / CSS a JS sa nenacitaju (v zdrojovom kode stranky je localhost:5173):
+  ostal subor public/hot po prerusenom "npm run dev". Zmaz ho alebo spusti build:
+  rm -f public/hot
+  ./vendor/bin/sail npm run build
+
+Permission denied (storage, bootstrap/cache, logy, views):
+  ./vendor/bin/sail root-shell -c "chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache"
+  ./vendor/bin/sail artisan optimize:clear
+  (trvale riesenie: WWWUSER/WWWGROUP v .env podla "id -u" a "id -g", pozri krok 1)
+
+Kontajner sa po starte ukonci alebo v logu chyba "[init]":
+  docker compose logs laravel.test     (posledny riadok [init] ukaze krok, ktory zlyhal)
+  Ak v logu nie je ziadny riadok "[init]", bezi stary image bez skriptu init-app:
+  docker compose build --no-cache
+  docker compose up -d
+
+Chyba databazy po starte ("Connection refused", "SQLSTATE[HY000] [2002]"):
+  MySQL este startuje, pockaj chvilu. Stav: docker compose ps (mysql musi byt "healthy").
+
+Obrazky produktov sa nezobrazuju:
+  ./vendor/bin/sail artisan storage:link
+
+Testy hlasia chybajucu databazu "testing":
+  databaza sa vytvara len pri prvom vytvoreni MySQL volume. Riesenie:
+  ./vendor/bin/sail down -v
+  ./vendor/bin/sail up -d
+
+Docker: "permission denied while trying to connect to the Docker daemon socket":
+  pouzivatel nie je v skupine docker - pozri krok 0 (usermod -aG docker, potom newgrp docker).
