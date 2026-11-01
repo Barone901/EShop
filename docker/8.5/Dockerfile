@@ -1,5 +1,4 @@
 # Prevzate z Laravel Sail (vendor/laravel/sail/runtimes/8.5), zdroj: https://github.com/laravel/sail
-# Upravene s pomocou AI (Claude): pridany skript init-app pre prvotnu inicializaciu aplikacie.
 FROM ubuntu:24.04
 
 LABEL maintainer="Taylor Otwell"

@@ -2,10 +2,6 @@
  * Search Module
  *
  * Vyhľadávanie produktov s autocomplete (desktop aj mobilné pole v hlavičke).
- *
- * [AI] Upravené s pomocou AI (Claude): rušenie zastaraných requestov (výsledky starého dotazu neprepíšu nový).
- *
- * [AI] Upravené s pomocou AI (Claude): redizajn (Tailwind triedy), onEscape() a byId() zo spoločných utils.
  */
 
 import ProductService from '../services/product-service';

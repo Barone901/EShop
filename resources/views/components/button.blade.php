@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Tlacidlo dizajnoveho systemu (nahradza Breeze primary/secondary/danger-button).
     - variant: primary | secondary | ghost | danger (obrysove, tmava cervena) | dark (obrysove na tmavom pozadi)

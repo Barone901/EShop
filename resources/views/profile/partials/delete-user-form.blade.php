@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene. --}}
 <section class="grid gap-6 lg:grid-cols-3 lg:gap-10">
     <header>

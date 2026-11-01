@@ -18,8 +18,6 @@ use Illuminate\Support\Str;
 /**
  * Model objednavky.
  * Relacie: User (N:1), OrderItem (1:N), OrderAddress (1:N)
- *
- * [AI] Upravene s pomocou AI (Claude): enumy pre stavy, unikatne cislo objednavky.
  */
 class Order extends Model
 {

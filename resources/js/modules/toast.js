@@ -2,8 +2,6 @@
  * Toast Module
  *
  * Zobrazuje notifikácie (success, error, info).
- *
- * [AI] Upravené s pomocou AI (Claude): Tailwind triedy pri redizajne (pozícia, farby).
  */
 import { escapeHtml } from '../utils/escape-html';
 

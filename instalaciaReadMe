@@ -1,9 +1,6 @@
 Instalacia a spustenie projektu na Ubuntu (Docker / Laravel Sail)
 =================================================================
 
-[AI] Rozsirene s pomocou AI (Claude): instalacia Dockeru na Ubuntu, WSL2, kazdodenne
-spustanie, aktualizacia po git pull a riesenie castych problemov.
-
 Podrobny popis projektu, ukazkove ucty a prehlad poziadaviek su v README.md.
 Architektura kodu je popisana v app/README.md (a v README.md v jednotlivych priecinkoch).
 

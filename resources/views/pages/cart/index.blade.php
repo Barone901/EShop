@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Kosik. Obsah #cart-page-content vykresluje cart.js (renderCartPage) - ID nemen.
 --}}

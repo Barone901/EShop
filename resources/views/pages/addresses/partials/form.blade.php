@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Spoločné polia formulára adresy (create + edit).
     Premenné: $type (App\Enums\AddressType), $values (predvolené hodnoty), $submitLabel,

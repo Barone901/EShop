@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Hlavicka stranky (h1). Volitelne: eyebrow (technicky popis nad nadpisom), slot $actions vpravo.
 --}}

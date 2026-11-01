@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Pokladna. JS vazby (checkout.js + form-validator.js) - nemen ID, name ani data-* atributy:
     #checkout-form[data-validate][data-default-country], #shipping-address-select, #billing-address-select

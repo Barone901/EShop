@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- O nas. Texty su povodne; cisla vo faktoch su prevzate z textu stranky. --}}
 @php
     $facts = [

@@ -1,8 +1,6 @@
 /**
  * CartService
  * - API volania pre košík
- *
- * [AI] Upravené s pomocou AI (Claude): súbor premenovaný z cartService.js (kebab-case).
  */
 import ApiService from './api';
 

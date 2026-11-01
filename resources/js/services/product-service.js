@@ -1,8 +1,6 @@
 /**
  * ProductService
  * - API volania pre produkty
- *
- * [AI] Upravené s pomocou AI (Claude): súbor premenovaný z productService.js (kebab-case).
  */
 import ApiService from './api';
 

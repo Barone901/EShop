@@ -1,7 +1,6 @@
 <?php
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
-// [AI] Upravene s pomocou AI (Claude): presmerovanie cez redirect()->route() namiesto fasady Redirect.
 
 declare(strict_types=1);
 

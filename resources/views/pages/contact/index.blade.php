@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Kontakt. Formular: data-validate (form-validator.js), action contact.send (throttle 5/min) - nemen.
     Kontaktne udaje su povodne (pozor: nezhoduju sa s udajmi v hlavicke/paticke).

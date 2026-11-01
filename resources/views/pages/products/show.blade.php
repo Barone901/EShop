@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Detail produktu.
     JS: [data-add-to-cart] + data-quantity-input="#quantity" (cart.js) cita mnozstvo z inputu #quantity - nemen.

@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Model produktu v eshope.
  * Relacie: Category (N:1), OrderItem (1:N)
- *
- * [AI] Upravene s pomocou AI (Claude): viditelnost podla aktivnej kategorie, escapovanie LIKE.
  */
 class Product extends Model
 {

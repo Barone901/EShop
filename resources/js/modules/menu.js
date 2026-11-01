@@ -8,10 +8,6 @@
  *
  * Otvorenie jedného prvku zatvorí ostatné, Escape a klik mimo prvku ho zatvorí.
  * Stav otvorenia drží aria-expanded na tlačidle.
- *
- * [AI] Upravené s pomocou AI (Claude): zjednotenie s dropdownom košíka, oprava animácie, zdieľané listenery.
- *
- * [AI] Upravené s pomocou AI (Claude): byId() zo spoločných utils.
  */
 import { showAnimated, hideAnimated } from '../utils/transition';
 import { byId, onEscape, onOutsideClick } from '../utils/dom';

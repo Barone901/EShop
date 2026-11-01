@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Hlavicka (tmava zona). JS vazby - nemen ID, aria-* ani pociatocne triedy dropdownov:
     - menu.js: #mobile-menu-btn/#mobile-nav, #mobile-profile-btn/-dropdown/-arrow, #cart-wrapper/#cart-btn/#cart-dropdown

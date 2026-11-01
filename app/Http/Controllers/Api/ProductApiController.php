@@ -1,7 +1,5 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude): validacia presunuta do FormRequest (Api/ProductSearchRequest).
-
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;

@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Banner slider (sucast hero na homepage, sirku urcuje rodic).
     JS (banner-slider.js) sa viaze na #banner-slider a data-banner-* atributy - nemen ich.

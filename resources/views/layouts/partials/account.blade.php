@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Ucet v hlavicke (desktop).
     - prihlaseny: dropdown (menu.js: #account-btn, #account-dropdown, #account-arrow - nemen ID ani

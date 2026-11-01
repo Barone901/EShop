@@ -2,10 +2,6 @@
  * ApiService
  * - jednotný wrapper pre všetky API volania (/api/...)
  * - CSRF sa berie z meta tagu
- *
- * [AI] Upravené s pomocou AI (Claude): odolnosť voči odpovediam, ktoré nie sú JSON, hláška pri 419, AbortSignal.
- *
- * [AI] Upravené s pomocou AI (Claude): post() prijíma options ako get().
  */
 const API_BASE_URL = '/api';
 

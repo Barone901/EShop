@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Vypis produktov s filtrom kategorie, vyhladavanim a radenim (GET parametre category, search, sort).
     JS: select #sort [data-navigate-on-change] (page-actions.js) - hodnota option = URL.

@@ -10,11 +10,6 @@
  *
  * Validuje sa pri opustení poľa (blur) a pri odoslaní formulára.
  * Skryté a vypnuté polia sa preskakujú.
- *
- * [AI] Rozšírené s pomocou AI (Claude): pravidlá z HTML atribútov, pattern, skryté polia,
- *      poradie submit handlerov, parametre pravidiel s dvojbodkou, mazanie chyby len daného poľa.
- *
- * [AI] Upravené s pomocou AI (Claude): chybový stav cez aria-invalid, hláška s triedou validation-error.
  */
 
 import Toast from './toast';

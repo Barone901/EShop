@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Mriezka kategorii (homepage). Karta = odkaz na vypis produktov s filtrom kategorie.
     Vsetky fotky: rovnaky pomer 4:3, podklad tile, object-contain (nic sa neoreze).

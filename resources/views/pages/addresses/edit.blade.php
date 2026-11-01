@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 <x-layouts.default-layout title="Edit {{ $address->type_label }} Address">
 
     @include('pages.addresses.partials.breadcrumb', ['current' => "Edit {$address->type_label} Address"])

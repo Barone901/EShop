@@ -5,8 +5,6 @@
  * - <form data-confirm="...">       potvrdenie pred odoslaním
  * - <select data-navigate-on-change> presmerovanie na URL vybranej option
  * - <button data-copy-url="...">    skopírovanie URL do schránky
- *
- * [AI] Upravené s pomocou AI (Claude): kopírovanie cez await + Toast namiesto alert.
  */
 import Toast from './toast';
 import { delegate } from '../utils/dom';

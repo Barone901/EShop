@@ -3,10 +3,6 @@
  *
  * Správa nákupného košíka - pridávanie, odoberanie, aktualizácia.
  * Otváranie dropdownu košíka v hlavičke rieši menu.js.
- *
- * [AI] Upravené s pomocou AI (Claude): limit množstva, obnova košíka po chybe, spoločné šablóny.
- *
- * [AI] Upravené s pomocou AI (Claude): redizajn (Tailwind triedy), buttonClass() a byId() zo spoločných utils.
  */
 
 import CartService from '../services/cart-service';

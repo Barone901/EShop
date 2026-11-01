@@ -1,7 +1,5 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude): opravy typov a anotacii (upozornenia PhpStorm/PHPStan).
-
 declare(strict_types=1);
 
 namespace App\Services;
@@ -22,9 +20,6 @@ use Illuminate\Support\Str;
 
 /**
  * Sluzba pre spravu objednavok.
- *
- * [AI] Upravene s pomocou AI (Claude): medzisucet z cien v DB, zamok objednavky pri ruseni,
- *      spolocne rusenie pre zakaznika aj admina, vyhladanie objednavky zakaznika/hosta.
  */
 class OrderService
 {

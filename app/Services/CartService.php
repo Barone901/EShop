@@ -1,7 +1,5 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude): opravy typov a anotacii (upozornenia PhpStorm/PHPStan).
-
 declare(strict_types=1);
 
 namespace App\Services;
@@ -16,8 +14,6 @@ use Illuminate\Support\Collection;
  *
  * V session je len "id produktu => mnozstvo". Nazov, cena a obrazok sa vzdy nacitaju
  * z databazy, takze kosik ukazuje aktualnu cenu a nedostupne produkty z neho zmiznu.
- *
- * [AI] Upravene s pomocou AI (Claude): kosik bez snapshotu produktu, kontrola celkoveho mnozstva.
  */
 class CartService
 {

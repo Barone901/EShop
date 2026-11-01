@@ -1,7 +1,5 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude): opravy typov, readonly injekcia, jednotne 404 cez ?? abort(404).
-
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -18,8 +16,6 @@ use Illuminate\View\View;
 
 /**
  * Controller pre spracovanie objednavok a checkout procesu.
- *
- * [AI] Upravene s pomocou AI (Claude): spolocne vyhladanie objednavky (cudzia/neexistujuca = 404).
  */
 class OrderController extends Controller
 {

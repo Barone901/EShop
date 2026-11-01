@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{--
     Detail objednavky.
     JS: formulare zrusenia/zmazania maju data-confirm (page-actions.js) - nemen.

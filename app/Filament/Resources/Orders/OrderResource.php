@@ -1,7 +1,5 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude): opravy typov a anotacii (upozornenia PhpStorm/PHPStan).
-
 namespace App\Filament\Resources\Orders;
 
 use App\Enums\OrderStatus;

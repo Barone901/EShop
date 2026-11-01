@@ -1,4 +1,3 @@
-{{-- [AI] Upravene s pomocou AI (Claude): redizajn vzhladu (Tailwind triedy, rozlozenie, pristupnost); logika, routy, formulare a name atributy su povodne. --}}
 {{-- Karta clanku (vypis clankov aj suvisiace clanky). headingLevel = uroven nadpisu (h2 vo vypise, h3 pri suvisiacich). --}}
 @props(['page', 'headingLevel' => 2])
 

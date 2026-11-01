@@ -1,7 +1,5 @@
 /**
  * Escapuje hodnotu pred vložením do HTML šablóny (innerHTML).
- *
- * [AI] Upravené s pomocou AI (Claude): pomenovaný export ako ostatné utils.
  */
 const HTML_ENTITIES = {
     '&': '&amp;',

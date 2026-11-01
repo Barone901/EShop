@@ -2,10 +2,6 @@
  * Quick View Module
  *
  * Rýchly náhľad produktu v modálnom okne.
- *
- * [AI] Upravené s pomocou AI (Claude): reset obsahu pri otvorení, správa fokusu, aria-labelledby.
- *
- * [AI] Upravené s pomocou AI (Claude): redizajn (Tailwind triedy), stockBadge()/buttonClass()/spinner() zo šablón.
  */
 
 import ProductService from '../services/product-service';
