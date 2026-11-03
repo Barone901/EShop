@@ -79,4 +79,3 @@ Aplikácia beží na <http://localhost>, administrácia na <http://localhost/adm
 Pri práci bol použitý nástroj generatívnej AI **Claude (Anthropic) cez Claude Code**.
 Súbory, ktoré AI vytvorila, majú v hlavičke značku **`[AI]`** (napr. `app/Support/*`, `app/Exceptions/*`,
 seedery, `docker/8.5/init-app`, testy `ShopTest`, `AdminPanelTest`, `InputValidationTest`, `DemoDataTest`).
-Zoznam takto označených súborov vypíše príkaz `git grep -l "\[AI\]"`.
