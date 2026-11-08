@@ -18,7 +18,7 @@ enum PaymentMethod: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::CashOnDelivery => 'Cash on Delivery',
+            self::CashOnDelivery => __('Cash on Delivery'),
         };
     }
 }

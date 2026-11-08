@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Enums\OrderStatus;
@@ -17,82 +19,82 @@ class OrderForm
     {
         return $schema
             ->components([
-                Section::make('Basic information')
+                Section::make(__('Basic information'))
                     ->schema([
                         TextInput::make('order_number')
-                            ->label('Order number')
+                            ->label(__('Order number'))
                             ->disabled(),
                         Select::make('status')
-                            ->label('Order status')
+                            ->label(__('Order status'))
                             ->options(OrderStatus::class)
-                            ->required(),
+                            // Stav sa meni len tlacidlami na stranke (OrderService) - pravidla prechodov a sklad
+                            ->disabled(),
                         Select::make('payment_status')
-                            ->label('Payment status')
+                            ->label(__('Payment status'))
                             ->options(PaymentStatus::class)
-                            ->required(),
+                            // Stav sa meni len tlacidlami na stranke (OrderService) - pravidla prechodov a sklad
+                            ->disabled(),
                         Select::make('payment_method')
-                            ->label('Payment method')
+                            ->label(__('Payment method'))
                             ->options(PaymentMethod::class)
                             ->disabled(),
                     ])->columns(2),
 
-                Section::make('Delivery details')
+                Section::make(__('Delivery details'))
                     ->relationship('shippingAddress')
                     ->schema([
-                        TextInput::make('first_name')->label('First name')->disabled(),
-                        TextInput::make('last_name')->label('Last name')->disabled(),
-                        TextInput::make('email')->label('Email')->disabled(),
-                        TextInput::make('phone')->label('Phone')->disabled(),
-                        TextInput::make('street')->label('Address')->disabled(),
-                        TextInput::make('city')->label('City')->disabled(),
-                        TextInput::make('postal_code')->label('Postal code')->disabled(),
-                        TextInput::make('country')->label('Country')->disabled(),
+                        TextInput::make('first_name')->label(__('First name'))->disabled(),
+                        TextInput::make('last_name')->label(__('Last name'))->disabled(),
+                        TextInput::make('email')->label(__('Email'))->disabled(),
+                        TextInput::make('phone')->label(__('Phone'))->disabled(),
+                        TextInput::make('street')->label(__('Address'))->disabled(),
+                        TextInput::make('city')->label(__('City'))->disabled(),
+                        TextInput::make('postal_code')->label(__('Postal code'))->disabled(),
+                        TextInput::make('country')->label(__('Country'))->disabled(),
                     ])
                     ->columns(2),
 
-
-                Section::make('Billing details')
+                Section::make(__('Billing details'))
                     ->relationship('billingAddress')
                     ->schema([
-                        TextInput::make('first_name')->label('First name')->disabled(),
-                        TextInput::make('last_name')->label('Last name')->disabled(),
-                        TextInput::make('email')->label('Email')->disabled(),
-                        TextInput::make('phone')->label('Phone')->disabled(),
-                        TextInput::make('street')->label('Address')->disabled(),
-                        TextInput::make('city')->label('City')->disabled(),
-                        TextInput::make('postal_code')->label('Postal code')->disabled(),
-                        TextInput::make('country')->label('Country')->disabled(),
+                        TextInput::make('first_name')->label(__('First name'))->disabled(),
+                        TextInput::make('last_name')->label(__('Last name'))->disabled(),
+                        TextInput::make('email')->label(__('Email'))->disabled(),
+                        TextInput::make('phone')->label(__('Phone'))->disabled(),
+                        TextInput::make('street')->label(__('Address'))->disabled(),
+                        TextInput::make('city')->label(__('City'))->disabled(),
+                        TextInput::make('postal_code')->label(__('Postal code'))->disabled(),
+                        TextInput::make('country')->label(__('Country'))->disabled(),
 
-                        TextInput::make('company_name')->label('Company')->disabled(),
-                        TextInput::make('ico')->label('IČO')->disabled(),
-                        TextInput::make('dic')->label('DIČ')->disabled(),
-                        TextInput::make('ic_dph')->label('IČ DPH')->disabled(),
+                        TextInput::make('company_name')->label(__('Company'))->disabled(),
+                        TextInput::make('ico')->label(__('Company ID'))->disabled(),
+                        TextInput::make('dic')->label(__('Tax ID'))->disabled(),
+                        TextInput::make('ic_dph')->label(__('VAT ID'))->disabled(),
                     ])
                     ->columns(2),
-                Section::make('Price data')
+                Section::make(__('Price data'))
                     ->schema([
                         TextInput::make('subtotal')
-                            ->label('Subtotal')
+                            ->label(__('Subtotal'))
                             ->disabled()
                             ->suffix('€'),
                         TextInput::make('shipping_cost')
-                            ->label('Shipping')
+                            ->label(__('Shipping'))
                             ->disabled()
                             ->suffix('€'),
                         TextInput::make('total')
-                            ->label('Total')
+                            ->label(__('Total'))
                             ->disabled()
                             ->suffix('€'),
                     ])->columns(3),
 
-                Section::make('Note')
+                Section::make(__('Note'))
                     ->schema([
                         Textarea::make('note')
-                            ->label('Note to the order')
+                            ->label(__('Note to the order'))
                             ->disabled()
                             ->columnSpanFull(),
-                    ])
+                    ]),
             ]);
     }
 }
-

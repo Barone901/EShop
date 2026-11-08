@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Pages;
 
 use App\Filament\Resources\Pages\Pages\CreatePage;
@@ -27,10 +29,6 @@ class PageResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static ?string $modelLabel = 'Site';
-
-    protected static ?string $pluralModelLabel = 'Sites';
-
     public static function form(Schema $schema): Schema
     {
         return PageForm::configure($schema);
@@ -56,5 +54,14 @@ class PageResource extends Resource
             'edit' => EditPage::route('/{record}/edit'),
         ];
     }
-}
 
+    public static function getModelLabel(): string
+    {
+        return __('Article');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Articles');
+    }
+}

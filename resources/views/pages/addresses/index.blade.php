@@ -2,20 +2,20 @@
 {{-- Ulozene adresy pouzivatela (dorucovacie a fakturacne). --}}
 @php
     $groups = [
-        ['shipping', 'Shipping Addresses', $shippingAddresses, "You don't have any shipping addresses yet", 'Add shipping address',
+        ['shipping', __('Shipping Addresses'), $shippingAddresses, __("You don't have any shipping addresses yet"), __('Add shipping address'),
             'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z'],
-        ['billing', 'Billing Addresses', $billingAddresses, "You don't have any billing addresses yet", 'Add billing address',
+        ['billing', __('Billing Addresses'), $billingAddresses, __("You don't have any billing addresses yet"), __('Add billing address'),
             'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
     ];
 @endphp
 
-<x-layouts.default-layout title="My Addresses">
+<x-layouts.default-layout :title="__('My Addresses')">
 
-    <x-ui.page-header eyebrow="My account" title="My Addresses" subtitle="Manage your shipping and billing addresses.">
+    <x-ui.page-header :eyebrow="__('My account')" :title="__('My Addresses')" :subtitle="__('Manage your shipping and billing addresses.')">
         <x-slot name="actions">
             <x-button :href="route('dashboard')" variant="ghost">
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                Back to Dashboard
+                {{ __('Back to Dashboard') }}
             </x-button>
         </x-slot>
     </x-ui.page-header>
@@ -35,7 +35,7 @@
                     </h2>
                     <x-button :href="route('addresses.create', ['type' => $type])" size="sm" aria-label="{{ $addText }}">
                         <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                        Add
+                        {{ __('Add') }}
                     </x-button>
                 </div>
 

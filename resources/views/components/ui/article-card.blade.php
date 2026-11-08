@@ -28,7 +28,7 @@
                 <time class="eyebrow" datetime="{{ $page->published_at->toDateString() }}">{{ $page->published_at->format('d.m.Y') }}</time>
             @endif
             @if($page->is_featured)
-                <x-ui.badge variant="dark">Recommended</x-ui.badge>
+                <x-ui.badge variant="dark">{{ __('Recommended') }}</x-ui.badge>
             @endif
         </div>
 
@@ -42,8 +42,8 @@
 
         <a href="{{ route('pages.show', $page->slug) }}"
            class="mt-auto inline-flex min-h-11 items-center gap-1 pt-3 font-display text-base font-semibold uppercase tracking-wider text-brand-600 hover:text-brand-700"
-           aria-label="Read more: {{ $page->title }}">
-            Read more
+           aria-label="{{ __('Read more: :value', ['value' => $page->title]) }}">
+            {{ __('Read more') }}
             <svg class="size-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
     </div>

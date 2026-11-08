@@ -1,41 +1,36 @@
 {{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{--
     Vypis produktov s filtrom kategorie, vyhladavanim a radenim (GET parametre category, search, sort).
+    Data od ProductController: $products, $categories, $activeCategory, $filters (overene filtre),
+    $sorts (ProductSort::cases()), $activeSort - sablona necita request().
     JS: select #sort [data-navigate-on-change] (page-actions.js) - hodnota option = URL.
 --}}
 @php
-    $activeCategory = $categories->firstWhere('slug', request('category'));
-    $search = request('search');
+    $search = $filters['search'] ?? null;
+    $withoutFilter = fn (string $key) => collect($filters)->except($key)->all();
 
-    // Odkazy kategorii (rovnake pre sidebar aj mobilne "chipy")
-    $categoryLinks = collect([['All Categories', route('products.index', request()->except('category', 'page')), !request('category')]])
+    // Odkazy kategorii (rovnake pre sidebar aj mobilne "chipy"); strankovanie sa pri zmene filtra zrusi
+    $categoryLinks = collect([[__('All Categories'), route('products.index', $withoutFilter('category')), !isset($filters['category'])]])
         ->concat($categories->map(fn ($category) => [
             $category->name,
-            route('products.index', array_merge(request()->except('page'), ['category' => $category->slug])),
-            request('category') === $category->slug,
+            route('products.index', [...$filters, 'category' => $category->slug]),
+            $activeCategory?->is($category) ?? false,
         ]));
-
-    $sorts = [
-        'newest' => 'Newest',
-        'price_asc' => 'Price: Low to High',
-        'price_desc' => 'Price: High to Low',
-        'name' => 'Name: A-Z',
-    ];
 @endphp
 
-<x-layouts.default-layout title="Products">
+<x-layouts.default-layout :title="__('Products')">
 
     <x-ui.page-header
-        eyebrow="Catalog"
+        :eyebrow="__('Catalog')"
         :title="$activeCategory?->name ?? 'All Products'"
-        subtitle="Browse our complete collection of products."
+        :subtitle="__('Browse our complete collection of products.')"
     />
 
     <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
         {{-- Sidebar: kategorie (desktop) --}}
-        <aside class="hidden w-64 shrink-0 lg:block" aria-label="Categories">
+        <aside class="hidden w-64 shrink-0 lg:block" aria-label="{{ __('Categories') }}">
             <nav class="card sticky top-36">
-                <h2 class="border-b border-line px-4 py-3 text-lg">Categories</h2>
+                <h2 class="border-b border-line px-4 py-3 text-lg">{{ __('Categories') }}</h2>
                 <ul class="py-2">
                     @foreach($categoryLinks as [$label, $url, $active])
                         <li>
@@ -54,7 +49,7 @@
 
         <div class="min-w-0 flex-1">
             {{-- Kategorie (mobil): vodorovne posuvne "chipy" --}}
-            <nav class="-mx-4 mb-4 overflow-x-auto px-4 lg:hidden" aria-label="Categories">
+            <nav class="-mx-4 mb-4 overflow-x-auto px-4 lg:hidden" aria-label="{{ __('Categories') }}">
                 <ul class="flex gap-2 pb-1">
                     @foreach($categoryLinks as [$label, $url, $active])
                         <li class="shrink-0">
@@ -74,34 +69,34 @@
             <div class="mb-6 flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <p class="text-sm text-muted" role="status">
-                        Showing <span class="num text-text">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }}</span>
-                        of <span class="num text-text">{{ $products->total() }}</span> products
+                        {{ __('Showing') }} <span class="num text-text">{{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }}</span>
+                        {{ __('of') }} <span class="num text-text">{{ $products->total() }}</span> {{ __('products') }}
                     </p>
 
                     @if($search)
-                        <a href="{{ route('products.index', request()->except('search', 'page')) }}"
+                        <a href="{{ route('products.index', $withoutFilter('search')) }}"
                            class="inline-flex min-h-8 items-center gap-1.5 rounded-xs border border-line bg-white px-2.5 text-xs hover:border-danger-700 hover:text-danger-700"
-                           aria-label="Remove search filter: {{ $search }}">
+                           aria-label="{{ __('Remove search filter: :value', ['value' => $search]) }}">
                             Search: <span class="font-semibold">{{ $search }}</span>
                             <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </a>
                     @endif
 
-                    @if(request()->hasAny(['category', 'search', 'sort']))
+                    @if($filters !== [])
                         <a href="{{ route('products.index') }}" class="text-sm font-medium text-brand-600 underline-offset-4 hover:underline">
-                            Clear all filters
+                            {{ __('Clear all filters') }}
                         </a>
                     @endif
                 </div>
 
                 <div class="flex shrink-0 items-center gap-2">
-                    <label for="sort" class="shrink-0 text-sm text-muted">Sort by</label>
+                    <label for="sort" class="shrink-0 text-sm text-muted">{{ __('Sort by') }}</label>
                     <select id="sort" data-navigate-on-change class="block min-h-11 w-full py-2 pl-3 pr-9 text-sm sm:w-auto">
-                        @foreach($sorts as $value => $label)
+                        @foreach($sorts as $sort)
                             <option
-                                value="{{ route('products.index', array_merge(request()->except('sort'), ['sort' => $value])) }}"
-                                @selected(request('sort', 'newest') === $value)
-                            >{{ $label }}</option>
+                                value="{{ route('products.index', [...$filters, 'sort' => $sort->value]) }}"
+                                @selected($activeSort === $sort)
+                            >{{ $sort->label() }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -122,9 +117,9 @@
                     <svg class="mx-auto mb-4 size-14 text-line-strong" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="square" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <h2 class="text-2xl">No products found</h2>
-                    <p class="mx-auto mt-2 max-w-sm text-muted">Try adjusting your search or filter criteria.</p>
-                    <x-button :href="route('products.index')" class="mt-6">View all products</x-button>
+                    <h2 class="text-2xl">{{ __('No products found') }}</h2>
+                    <p class="mx-auto mt-2 max-w-sm text-muted">{{ __('Try adjusting your search or filter criteria.') }}</p>
+                    <x-button :href="route('products.index')" class="mt-6">{{ __('View all products') }}</x-button>
                 </x-ui.card>
             @endif
         </div>

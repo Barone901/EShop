@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Enums\PageStatus;
@@ -23,12 +25,12 @@ class PageForm
             ->columns(3)
             ->components([
                 // Hlavný obsah - 2 stĺpce
-                Section::make('Content')
+                Section::make(__('Content'))
                     ->columnSpan(2)
                     ->columns(1)
                     ->schema([
                         TextInput::make('title')
-                            ->label('Title')
+                            ->label(__('Title'))
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
@@ -39,16 +41,14 @@ class PageForm
                             }),
 
                         TextInput::make('slug')
-                            ->label('URL slug')
+                            ->label(__('URL slug'))
                             ->required()
                             ->maxLength(255)
                             ->unique(Page::class, 'slug', ignoreRecord: true)
-                            ->helperText('Automaticly generated from the title'),
-
-
+                            ->helperText(__('Automatically generated from the title')),
 
                         RichEditor::make('content')
-                            ->label('Obsah')
+                            ->label(__('Content'))
                             ->columnSpanFull()
                             ->toolbarButtons([
                                 'attachFiles',
@@ -70,7 +70,7 @@ class PageForm
                             ->fileAttachmentsDirectory('page-attachments'),
 
                         FileUpload::make('featured_image')
-                            ->label('Hlavný obrázok')
+                            ->label(__('Featured image'))
                             ->image()
                             ->disk('public')
                             ->directory('pages')
@@ -81,50 +81,50 @@ class PageForm
                     ]),
 
                 // Sidebar - 1 stĺpec
-                Section::make('Nastavenia')
+                Section::make(__('Settings'))
                     ->columnSpan(1)
                     ->schema([
                         Select::make('status')
-                            ->label('Stav')
+                            ->label(__('Status'))
                             ->options(PageStatus::class)
                             ->default(PageStatus::Draft)
                             ->required(),
 
                         DateTimePicker::make('published_at')
-                            ->label('Dátum publikovania')
-                            ->helperText('Nechajte prázdne pre okamžité publikovanie'),
+                            ->label(__('Publish date'))
+                            ->helperText(__('Leave empty to publish immediately')),
 
                         Toggle::make('is_featured')
-                            ->label('Zvýraznená stránka')
-                            ->helperText('Zobrazí sa na hlavnej stránke'),
+                            ->label(__('Featured article'))
+                            ->helperText(__('Shown among related articles')),
 
                         TextInput::make('sort_order')
-                            ->label('Poradie')
+                            ->label(__('Sort order'))
                             ->numeric()
                             ->minValue(0)
                             ->default(0),
                     ]),
 
                 // SEO sekcia
-                Section::make('SEO nastavenia')
+                Section::make(__('SEO settings'))
                     ->columnSpanFull()
                     ->collapsed()
                     ->schema([
                         TextInput::make('meta_title')
-                            ->label('Meta Title')
+                            ->label(__('Meta Title'))
                             ->maxLength(70)
-                            ->helperText('Ak je prázdne, použije sa názov stránky'),
+                            ->helperText(__('If empty, the article title is used')),
 
                         Textarea::make('meta_description')
-                            ->label('Meta Description')
+                            ->label(__('Meta Description'))
                             ->rows(2)
                             ->maxLength(160)
-                            ->helperText('Krátky popis pre vyhľadávače (max 160 znakov)'),
+                            ->helperText(__('Short description for search engines (max 160 characters)')),
 
                         TextInput::make('meta_keywords')
-                            ->label('Meta Keywords')
+                            ->label(__('Meta Keywords'))
                             ->maxLength(255)
-                            ->helperText('Kľúčové slová oddelené čiarkou'),
+                            ->helperText(__('Keywords separated by commas')),
                     ]),
             ]);
     }

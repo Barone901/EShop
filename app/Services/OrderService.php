@@ -12,24 +12,20 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Exceptions\OrderException;
 use App\Models\Order;
-use App\Models\OrderAddress;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
  * Sluzba pre spravu objednavok.
+ *
+ * Nepracuje s HTTP vrstvou (Auth, session) - pouzivatela dostane ako parameter od controllera
+ * a token hosta ulozi do session az controller. Da sa tak volat z webu, adminu aj testu.
  */
 class OrderService
 {
-    /**
-     * Relacie potrebne pre detail objednavky.
-     */
-    private const DETAIL_RELATIONS = ['items.product', 'shippingAddress', 'billingAddress'];
-
     /**
      * Injektuje sluzbu pre kosik.
      */
@@ -39,21 +35,26 @@ class OrderService
 
     /**
      * Vytvori novu objednavku v transakcii s kontrolou skladu.
+     * Pre hosta ($user = null) vygeneruje guest_token - controller ho ulozi do session,
+     * aby host videl potvrdenie len svojej objednavky.
+     *
+     * @param array{email: string, note: ?string, addresses: array<string, array<string, mixed>>} $orderData
+     *                                                                                                       data pripravene CheckoutRequest::orderData() (adresy podla AddressType)
      *
      * @throws OrderException ak objednavku nie je mozne vytvorit (sprava je pre zakaznika)
      */
-    public function createOrder(array $orderData): Order
+    public function createOrder(array $orderData, ?User $user): Order
     {
         $cart = $this->cartService->getCart();
 
         if ($cart['count'] === 0) {
-            throw new OrderException('Your cart is empty.');
+            throw new OrderException(__('Your cart is empty.'));
         }
 
-        $guestToken = Auth::check() ? null : Str::random(64);
+        $guestToken = $user ? null : Str::random(64);
 
         try {
-            $order = DB::transaction(function () use ($orderData, $cart, $guestToken) {
+            $order = DB::transaction(function () use ($orderData, $cart, $guestToken, $user) {
                 // 1) Produkty zamkneme jednym dotazom (lockForUpdate), aby sa sklad
                 //    neprebil so suzbeznymi objednavkami, a skontrolujeme dostupnost
                 $items = collect($cart['items']);
@@ -70,11 +71,11 @@ class OrderService
                     $product = $products->get($cartItem['id']);
 
                     if (!$product || !$product->isVisible()) {
-                        throw new OrderException("Product \"{$cartItem['name']}\" is no longer available.");
+                        throw new OrderException(__('Product ":name" is no longer available.', ['name' => $cartItem['name']]));
                     }
 
                     if ($product->stock < $quantity) {
-                        throw new OrderException("Not enough stock for \"{$product->name}\". Available: {$product->stock}.");
+                        throw new OrderException(__('Not enough stock for ":name". Available: :stock.', ['name' => $product->name, 'stock' => $product->stock]));
                     }
 
                     // Cenu berieme z DB (zamknuty riadok), nie z kosika
@@ -94,9 +95,9 @@ class OrderService
 
                 $order = Order::create([
                     'order_number' => Order::generateOrderNumber(),
-                    'user_id' => Auth::id(),
+                    'user_id' => $user?->id,
                     'guest_token' => $guestToken,
-                    'guest_email' => Auth::check() ? null : ($orderData['shipping_email'] ?? null),
+                    'guest_email' => $user ? null : $orderData['email'],
 
                     'status' => OrderStatus::Pending,
                     'payment_method' => PaymentMethod::CashOnDelivery,
@@ -109,9 +110,12 @@ class OrderService
                     'note' => $orderData['note'] ?? null,
                 ]);
 
-                // 3) Snapshot adries
+                // 3) Snapshot adries (dorucovacia + fakturacna)
                 foreach (AddressType::cases() as $type) {
-                    $order->addresses()->create(OrderAddress::attributesFromCheckout($orderData, $type));
+                    $order->addresses()->create([
+                        'type' => $type,
+                        ...$orderData['addresses'][$type->value],
+                    ]);
                 }
 
                 // 4) Polozky + odpocet skladu
@@ -135,15 +139,11 @@ class OrderService
             // Interne detaily (napr. SQL chyba) zalogujeme, zakaznikovi ich neukazujeme
             report($e);
 
-            throw new OrderException('An error occurred while creating the order. Please try again.', previous: $e);
+            throw new OrderException(__('An error occurred while creating the order. Please try again.'), previous: $e);
         }
 
-        // Az po uspesnom commite: vyprazdnit kosik a ulozit token hosta
+        // Az po uspesnom commite vyprazdnime kosik
         $this->cartService->clear();
-
-        if ($guestToken) {
-            session(['guest_order_token' => $guestToken]);
-        }
 
         return $order;
     }
@@ -160,33 +160,14 @@ class OrderService
     }
 
     /**
-     * Najde objednavku prihlaseneho pouzivatela podla cisla (cudziu objednavku nevrati).
+     * Ziska poslednych N objednavok pouzivatela (prehlad uctu).
      */
-    public function findUserOrder(User $user, string $orderNumber): ?Order
+    public function getRecentUserOrders(User $user, int $limit = 5): Collection
     {
         return $user->orders()
-            ->with(self::DETAIL_RELATIONS)
-            ->where('order_number', $orderNumber)
-            ->first();
-    }
-
-    /**
-     * Najde objednavku hosta podla cisla, len ak sedi token ulozeny v jeho session.
-     */
-    public function findGuestOrder(string $orderNumber, mixed $guestToken): ?Order
-    {
-        if (!is_string($guestToken)) {
-            return null;
-        }
-
-        $order = Order::with(self::DETAIL_RELATIONS)
-            ->where('order_number', $orderNumber)
-            ->whereNotNull('guest_token')
-            ->first();
-
-        return $order !== null && is_string($order->guest_token) && hash_equals($order->guest_token, $guestToken)
-            ? $order
-            : null;
+            ->latest()
+            ->take($limit)
+            ->get();
     }
 
     /**
@@ -205,7 +186,7 @@ class OrderService
                 $locked = Order::query()->lockForUpdate()->findOrFail((int) $order->getKey());
 
                 if ($locked->isCancelled()) {
-                    throw new OrderException('Order is already cancelled.');
+                    throw new OrderException(__('Order is already cancelled.'));
                 }
 
                 $cancellable = $byAdmin
@@ -213,7 +194,7 @@ class OrderService
                     : $locked->status->isCancellableByCustomer();
 
                 if (!$cancellable) {
-                    throw new OrderException('This order can no longer be cancelled.');
+                    throw new OrderException(__('This order can no longer be cancelled.'));
                 }
 
                 $items = $locked->items()->get();
@@ -238,8 +219,39 @@ class OrderService
         } catch (\Throwable $e) {
             report($e);
 
-            throw new OrderException('Failed to cancel the order. Please try again.', previous: $e);
+            throw new OrderException(__('Failed to cancel the order. Please try again.'), previous: $e);
         }
+
+        $order->refresh();
+    }
+
+    /**
+     * Posunie objednavku na dalsi stav spracovania (admin). Povolene prechody urcuje OrderStatus::nextStatuses().
+     * Pri doruceni dobierky sa platba oznaci ako zaplatena (platba prebehla pri prevzati).
+     *
+     * @throws OrderException ak prechod nie je povoleny
+     */
+    public function advanceStatus(Order $order, OrderStatus $status): void
+    {
+        DB::transaction(function () use ($order, $status) {
+            // Stav overime pod zamkom - dvaja admini naraz nesmu preskocit krok
+            $locked = Order::query()->lockForUpdate()->findOrFail((int) $order->getKey());
+
+            if (!$locked->status->canAdvanceTo($status)) {
+                throw new OrderException(__('Order cannot be changed from :from to :to.', [
+                    'from' => $locked->status->getLabel(),
+                    'to' => $status->getLabel(),
+                ]));
+            }
+
+            $paidOnDelivery = $status === OrderStatus::Delivered
+                && $locked->payment_method === PaymentMethod::CashOnDelivery;
+
+            $locked->update([
+                'status' => $status,
+                ...($paidOnDelivery ? ['payment_status' => PaymentStatus::Paid] : []),
+            ]);
+        });
 
         $order->refresh();
     }
@@ -253,7 +265,7 @@ class OrderService
     public function deleteOrder(Order $order): void
     {
         if (!$order->isDeletable()) {
-            throw new OrderException('Only cancelled orders can be deleted.');
+            throw new OrderException(__('Only cancelled orders can be deleted.'));
         }
 
         $order->delete();

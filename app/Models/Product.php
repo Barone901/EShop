@@ -7,9 +7,12 @@ namespace App\Models;
 use App\Support\MediaUrl;
 use App\Support\Price;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * Model produktu v eshope.
@@ -19,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Product extends Model
 {
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
+    use HasFactory;
+
     // Do tohto poctu kusov sa produkt zobrazuje ako "Last items"
     public const LOW_STOCK_THRESHOLD = 5;
 
@@ -123,33 +129,41 @@ class Product extends Model
     /**
      * Vrati formatovanu cenu s menou.
      */
-    public function getFormattedPriceAttribute(): string
+    protected function formattedPrice(): Attribute
     {
-        return Price::format($this->price);
+        return Attribute::get(fn (): string => Price::format($this->price));
     }
 
     /**
      * Vrati verejnu URL obrazku (stlpec image_url obsahuje cestu alebo absolutnu URL).
      */
-    public function getImageSrcAttribute(): ?string
+    protected function imageSrc(): Attribute
     {
-        return MediaUrl::from($this->image_url);
+        return Attribute::get(fn (): ?string => MediaUrl::from($this->image_url));
     }
 
     /**
      * Skontroluje ci je produkt na sklade.
      */
-    public function getIsInStockAttribute(): bool
+    protected function isInStock(): Attribute
     {
-        return $this->stock > 0;
+        return Attribute::get(fn (): bool => $this->stock > 0);
     }
 
     /**
      * Skontroluje ci zostava uz len par kusov.
      */
-    public function getIsLowStockAttribute(): bool
+    protected function isLowStock(): Attribute
     {
-        return $this->is_in_stock && $this->stock <= self::LOW_STOCK_THRESHOLD;
+        return Attribute::get(fn (): bool => $this->is_in_stock && $this->stock <= self::LOW_STOCK_THRESHOLD);
+    }
+
+    /**
+     * Katalogove cislo produktu pre zakaznika, napr. "00042".
+     */
+    protected function catalogNumber(): Attribute
+    {
+        return Attribute::get(fn (): string => Str::padLeft((string) $this->id, 5, '0'));
     }
 
     /**

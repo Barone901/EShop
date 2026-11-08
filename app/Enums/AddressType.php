@@ -17,8 +17,8 @@ enum AddressType: string
     public function label(): string
     {
         return match ($this) {
-            self::Shipping => 'Shipping',
-            self::Billing => 'Billing',
+            self::Shipping => __('Shipping'),
+            self::Billing => __('Billing'),
         };
     }
 }

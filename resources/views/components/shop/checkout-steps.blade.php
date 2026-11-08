@@ -7,13 +7,13 @@
 
 @php
     $steps = [
-        1 => ['Cart', route('cart.index')],
-        2 => ['Checkout', null],
-        3 => ['Confirmation', null],
+        1 => [__('Cart'), route('cart.index')],
+        2 => [__('Checkout'), null],
+        3 => [__('Confirmation'), null],
     ];
 @endphp
 
-<nav aria-label="Checkout progress" {{ $attributes->class(['mb-6']) }}>
+<nav aria-label="{{ __('Checkout progress') }}" {{ $attributes->class(['mb-6']) }}>
     <ol class="grid grid-cols-3 border border-line bg-white">
         @foreach($steps as $number => [$label, $url])
             @php $state = $number < $current ? 'done' : ($number === $current ? 'current' : 'upcoming'); @endphp
@@ -46,7 +46,7 @@
                     <span class="{{ $labelClass }}" @if($state === 'current') aria-current="step" @endif>{{ $label }}</span>
                 @endif
 
-                @if($state === 'done')<span class="sr-only">(completed)</span>@endif
+                @if($state === 'done')<span class="sr-only">{{ __('(completed)') }}</span>@endif
             </li>
         @endforeach
     </ol>

@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -9,28 +11,38 @@ use App\Http\Requests\UserAddressRequest;
 use App\Models\UserAddress;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
 /**
  * Controller pre spravu adries pouzivatela (dorucenie a fakturacia).
- * Vlastnictvo adresy kontroluje UserAddressPolicy.
+ * Vlastnictvo adresy kontroluje UserAddressPolicy cez middleware "can" (cudzia adresa = 403).
  */
-class UserAddressController extends Controller
+class UserAddressController extends Controller implements HasMiddleware
 {
+    /**
+     * Autorizacia akcii nad konkretnou adresou (UserAddressPolicy).
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:update,address', only: ['edit', 'update', 'setDefault']),
+            new Middleware('can:delete,address', only: ['destroy']),
+        ];
+    }
+
     /**
      * Zobrazi zoznam vsetkych adries pouzivatela.
      */
     public function index(Request $request): View
     {
-        $addresses = $request->user()->addresses()
-            ->orderByDesc('is_default')
-            ->latest()
-            ->get();
+        $user = $request->user();
 
+        // Predvolena adresa prva, potom od najnovsej (User::addressesOfType)
         return view('pages.addresses.index', [
-            'shippingAddresses' => $addresses->where('type', AddressType::Shipping),
-            'billingAddresses' => $addresses->where('type', AddressType::Billing),
+            'shippingAddresses' => $user->addressesOfType(AddressType::Shipping),
+            'billingAddresses' => $user->addressesOfType(AddressType::Billing),
         ]);
     }
 
@@ -71,7 +83,7 @@ class UserAddressController extends Controller
         }
 
         return redirect()->route('addresses.index')
-            ->with('success', "{$address->type_label} address has been successfully added.");
+            ->with('success', __(':type address has been successfully added.', ['type' => $address->type_label]));
     }
 
     /**
@@ -79,8 +91,6 @@ class UserAddressController extends Controller
      */
     public function edit(UserAddress $address): View
     {
-        Gate::authorize('update', $address);
-
         return view('pages.addresses.edit', [
             'address' => $address,
             'patterns' => UserAddressRequest::PATTERNS,
@@ -92,8 +102,6 @@ class UserAddressController extends Controller
      */
     public function update(UserAddressRequest $request, UserAddress $address): RedirectResponse
     {
-        Gate::authorize('update', $address);
-
         $address->update([
             ...$request->addressData(),
             'is_default' => $request->wantsDefault(),
@@ -104,7 +112,7 @@ class UserAddressController extends Controller
         }
 
         return redirect()->route('addresses.index')
-            ->with('success', "{$address->type_label} address has been successfully updated.");
+            ->with('success', __(':type address has been successfully updated.', ['type' => $address->type_label]));
     }
 
     /**
@@ -112,12 +120,10 @@ class UserAddressController extends Controller
      */
     public function destroy(UserAddress $address): RedirectResponse
     {
-        Gate::authorize('delete', $address);
-
         $address->delete();
 
         return redirect()->route('addresses.index')
-            ->with('success', "{$address->type_label} address has been successfully deleted.");
+            ->with('success', __(':type address has been successfully deleted.', ['type' => $address->type_label]));
     }
 
     /**
@@ -125,11 +131,9 @@ class UserAddressController extends Controller
      */
     public function setDefault(UserAddress $address): RedirectResponse
     {
-        Gate::authorize('update', $address);
-
         $address->makeDefault();
 
         return redirect()->route('addresses.index')
-            ->with('success', "{$address->type_label} address has been set as default.");
+            ->with('success', __(':type address has been set as default.', ['type' => $address->type_label]));
     }
 }

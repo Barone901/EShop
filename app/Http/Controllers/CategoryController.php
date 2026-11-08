@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Services\BannerService;
 use App\Services\CategoryService;
+use App\Support\Price;
 use Illuminate\View\View;
 
 /**
@@ -35,6 +36,7 @@ class CategoryController extends Controller
             'category' => $category,
             'categories' => $this->categoryService->getParentCategories(),
             'banners' => $this->bannerService->getActiveBanners(),
+            'shippingCost' => Price::format((float) config('shop.shipping_cost')),
         ]);
     }
 }

@@ -1,10 +1,10 @@
 {{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Zalozene na Laravel Breeze (https://github.com/laravel/breeze). Reset hesla neexistuje - nepridavaj odkaz "Forgot password". --}}
-<x-layouts.default-layout title="Log in" type="guest">
+<x-layouts.default-layout :title="__('Log in')" type="guest">
     <div class="mb-6">
-        <p class="eyebrow">Customer account</p>
-        <h1 class="mt-2 text-3xl">Log in</h1>
-        <p class="mt-1 text-sm text-muted">Welcome back! Log in to see your orders and saved addresses.</p>
+        <p class="eyebrow">{{ __('Customer account') }}</p>
+        <h1 class="mt-2 text-3xl">{{ __('Log in') }}</h1>
+        <p class="mt-1 text-sm text-muted">{{ __('Welcome back! Log in to see your orders and saved addresses.') }}</p>
     </div>
 
     {{-- Session Status --}}
@@ -44,18 +44,18 @@
         {{-- Remember Me --}}
         <label for="remember_me" class="inline-flex min-h-11 cursor-pointer items-center gap-2.5">
             <input id="remember_me" type="checkbox" class="size-5" name="remember">
-            <span class="text-sm">Remember me</span>
+            <span class="text-sm">{{ __('Remember me') }}</span>
         </label>
 
         <x-button variant="primary" size="lg" class="w-full">
-            Log in
+            {{ __('Log in') }}
         </x-button>
     </form>
 
     <div class="mt-8 border-t border-line pt-6 text-center">
-        <p class="text-sm text-muted">Don't have an account?</p>
+        <p class="text-sm text-muted">{{ __('Don\'t have an account?') }}</p>
         <x-button :href="route('register')" variant="secondary" class="mt-3 w-full">
-            Sign up
+            {{ __('Sign up') }}
         </x-button>
     </div>
 </x-layouts.default-layout>

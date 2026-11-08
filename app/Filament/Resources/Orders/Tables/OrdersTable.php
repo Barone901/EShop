@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
@@ -19,43 +21,43 @@ class OrdersTable
         return $table
             ->columns([
                 TextColumn::make('order_number')
-                    ->label('Number')
+                    ->label(__('Number'))
                     ->searchable()
                     ->sortable()
                     ->copyable()
                     ->weight('bold')
                     ->color('primary'),
                 TextColumn::make('user.name')
-                    ->label('Customer')
+                    ->label(__('Customer'))
                     ->searchable()
                     ->sortable(),
                 // Popisok a farbu badge berie Filament z enumu (HasLabel, HasColor)
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label(__('Status'))
                     ->badge(),
                 TextColumn::make('payment_status')
-                    ->label('Payment')
+                    ->label(__('Payment'))
                     ->badge(),
                 TextColumn::make('total')
-                    ->label('Total')
+                    ->label(__('Total'))
                     ->money('EUR')
                     ->sortable()
                     ->weight('bold'),
                 TextColumn::make('items_count')
-                    ->label('Items')
+                    ->label(__('Items'))
                     ->counts('items'),
                 TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('Created'))
                     ->dateTime('M d, Y H:i')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
-                    ->label('Status')
+                    ->label(__('Status'))
                     ->options(OrderStatus::class),
                 SelectFilter::make('payment_status')
-                    ->label('Payment Status')
+                    ->label(__('Payment Status'))
                     ->options(PaymentStatus::class),
             ])
             ->recordActions([

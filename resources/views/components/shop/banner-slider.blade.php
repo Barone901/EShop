@@ -8,7 +8,7 @@
 @props(['banners' => null])
 
 @if($banners && $banners->isNotEmpty())
-    <section id="banner-slider" class="relative overflow-hidden rounded-xs bg-ink-950" aria-roledescription="carousel" aria-label="Featured">
+    <section id="banner-slider" class="relative overflow-hidden rounded-xs bg-ink-950" aria-roledescription="carousel" aria-label="{{ __('Featured') }}">
         <div class="relative aspect-[671/375] w-full">
             <div data-banner-slides class="flex h-full transition-transform duration-500 ease-in-out motion-reduce:transition-none">
                 @foreach($banners as $banner)
@@ -40,7 +40,7 @@
                             <button
                                 type="button"
                                 data-banner-dot
-                                aria-label="Go to slide {{ $index + 1 }}"
+                                aria-label="{{ __('Go to slide :value', ['value' => $index + 1]) }}"
                                 aria-current="{{ $index === 0 ? 'true' : 'false' }}"
                             ></button>
                         @endforeach
@@ -49,7 +49,7 @@
                     <button
                         type="button"
                         data-banner-prev
-                        aria-label="Previous slide"
+                        aria-label="{{ __('Previous slide') }}"
                         class="grid size-10 place-items-center border-l border-white/15 text-steel-100 transition-colors hover:bg-ink-800 sm:size-11"
                     >
                         <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -60,7 +60,7 @@
                     <button
                         type="button"
                         data-banner-next
-                        aria-label="Next slide"
+                        aria-label="{{ __('Next slide') }}"
                         class="grid size-10 place-items-center border-l border-white/15 text-steel-100 transition-colors hover:bg-ink-800 sm:size-11"
                     >
                         <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

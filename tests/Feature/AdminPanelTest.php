@@ -4,8 +4,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderStatus;
 use App\Enums\PageStatus;
+use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Pages\Pages\CreatePage;
+use App\Models\Order;
 use App\Models\Page;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -71,5 +74,22 @@ class AdminPanelTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('pages', ['slug' => 'new-article']);
+    }
+
+    public function test_admin_changes_order_status_only_through_actions(): void
+    {
+        $this->actingAs($this->admin());
+        $order = Order::factory()->create();
+
+        $this->get("/admin/orders/{$order->getRouteKey()}/edit")->assertOk();
+
+        Livewire::test(EditOrder::class, ['record' => $order->getRouteKey()])
+            ->assertFormFieldIsDisabled('status')
+            ->assertFormFieldIsDisabled('payment_status')
+            ->assertActionHidden('deliver')
+            ->callAction('confirm')
+            ->assertHasNoActionErrors();
+
+        $this->assertSame(OrderStatus::Confirmed, $order->fresh()->status);
     }
 }

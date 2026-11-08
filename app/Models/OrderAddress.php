@@ -1,11 +1,14 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Enums\AddressType;
 use App\Models\Concerns\HasAddressFormatting;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,7 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderAddress extends Model
 {
-    use HasAddressFormatting;
+    /** @use HasFactory<\Database\Factories\OrderAddressFactory> */
+    use HasAddressFormatting, HasFactory;
 
     /**
      * Polia povolene pre hromadne priradenie.
@@ -53,32 +57,5 @@ class OrderAddress extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
-    }
-
-    /**
-     * Vytvori atributy adresy z checkout formulara.
-     */
-    public static function attributesFromCheckout(array $data, AddressType $type): array
-    {
-        $prefix = $type->value;
-        $nameParts = explode(' ', trim((string) ($data["{$prefix}_name"] ?? '')), 2);
-
-        return [
-            'type' => $type,
-            'first_name' => $nameParts[0] ?? '',
-            'last_name' => $nameParts[1] ?? '',
-            'email' => (string) ($data["{$prefix}_email"] ?? ''),
-            'phone' => $data["{$prefix}_phone"] ?? null,
-
-            'street' => (string) ($data["{$prefix}_address"] ?? ''),
-            'city' => (string) ($data["{$prefix}_city"] ?? ''),
-            'postal_code' => (string) ($data["{$prefix}_postal_code"] ?? ''),
-            'country' => (string) ($data["{$prefix}_country"] ?? config('shop.default_country')),
-
-            'company_name' => $data["{$prefix}_company_name"] ?? null,
-            'ico' => $data["{$prefix}_ico"] ?? null,
-            'dic' => $data["{$prefix}_dic"] ?? null,
-            'ic_dph' => $data["{$prefix}_ic_dph"] ?? null,
-        ];
     }
 }

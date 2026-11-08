@@ -18,12 +18,12 @@
         @if ($paginator->onFirstPage())
             <span class="{{ $disabled }} gap-1" aria-disabled="true">
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                <span class="font-display font-semibold uppercase tracking-wider">Previous</span>
+                <span class="font-display font-semibold uppercase tracking-wider">{{ __('Previous') }}</span>
             </span>
         @else
             <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="{{ $link }} gap-1">
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                <span class="font-display font-semibold uppercase tracking-wider">Previous</span>
+                <span class="font-display font-semibold uppercase tracking-wider">{{ __('Previous') }}</span>
             </a>
         @endif
 
@@ -55,12 +55,12 @@
         {{-- Dalsia --}}
         @if ($paginator->hasMorePages())
             <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="{{ $link }} gap-1">
-                <span class="font-display font-semibold uppercase tracking-wider">Next</span>
+                <span class="font-display font-semibold uppercase tracking-wider">{{ __('Next') }}</span>
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
         @else
             <span class="{{ $disabled }} gap-1" aria-disabled="true">
-                <span class="font-display font-semibold uppercase tracking-wider">Next</span>
+                <span class="font-display font-semibold uppercase tracking-wider">{{ __('Next') }}</span>
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </span>
         @endif

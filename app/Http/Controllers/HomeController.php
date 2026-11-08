@@ -8,6 +8,7 @@ namespace App\Http\Controllers;
 
 use App\Services\BannerService;
 use App\Services\CategoryService;
+use App\Support\Price;
 use Illuminate\View\View;
 
 /**
@@ -31,6 +32,7 @@ class HomeController extends Controller
         return view('pages.home', [
             'categories' => $this->categoryService->getParentCategories(),
             'banners' => $this->bannerService->getActiveBanners(),
+            'shippingCost' => Price::format((float) config('shop.shipping_cost')),
         ]);
     }
 }

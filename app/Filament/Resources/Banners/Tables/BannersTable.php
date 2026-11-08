@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Banners\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -18,29 +20,29 @@ class BannersTable
         return $table
             ->columns([
                 ImageColumn::make('image_path')
-                    ->label('Image')
+                    ->label(__('Image'))
                     ->disk('public')
                     ->height(60)
                     ->width(100),
                 TextColumn::make('name')
-                    ->label('Title')
+                    ->label(__('Title'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('link_url')
-                    ->label('Link')
+                    ->label(__('Link'))
                     ->limit(30)
                     ->url(fn ($record) => $record->link_url, shouldOpenInNewTab: true)
                     ->placeholder('—'),
                 IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label(__('Active'))
                     ->boolean()
                     ->sortable(),
                 TextColumn::make('sort_order')
-                    ->label('Order')
+                    ->label(__('Order'))
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('Created'))
                     ->dateTime('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -48,10 +50,10 @@ class BannersTable
             ->defaultSort('sort_order', 'asc')
             ->filters([
                 TernaryFilter::make('is_active')
-                    ->label('Status')
+                    ->label(__('Status'))
                     ->trueLabel('Active')
                     ->falseLabel('Unactive')
-                    ->placeholder('All'),
+                    ->placeholder(__('All')),
             ])
             ->recordActions([
                 EditAction::make(),

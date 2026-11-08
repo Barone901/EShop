@@ -10,7 +10,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * Stav stranky/clanku. Popisky su po slovensky ako zvysok formulara stranok v admine.
+ * Stav stranky/clanku (popisky sa prekladaju cez __()).
  */
 enum PageStatus: string implements HasColor, HasLabel
 {
@@ -21,9 +21,9 @@ enum PageStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Draft => 'Koncept',
-            self::Published => 'Publikované',
-            self::Archived => 'Archivované',
+            self::Draft => __('Draft'),
+            self::Published => __('Published'),
+            self::Archived => __('Archived'),
         };
     }
 

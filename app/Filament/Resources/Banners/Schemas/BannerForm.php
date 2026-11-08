@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Banners\Schemas;
 
 use Filament\Forms\Components\FileUpload;
@@ -15,30 +17,30 @@ class BannerForm
     {
         return $schema
             ->components([
-                Section::make('Basic information')
+                Section::make(__('Basic information'))
                     ->schema([
                         TextInput::make('name')
-                            ->label('Title')
+                            ->label(__('Title'))
                             ->required()
                             ->maxLength(255),
                         TextInput::make('link_url')
-                            ->label('URL link')
+                            ->label(__('URL link'))
                             ->url()
-                            ->placeholder('https://...')
+                            ->placeholder(__('https://...'))
                             ->maxLength(255)
-                            ->helperText('If filled in, it takes precedence over the page.'),
+                            ->helperText(__('If filled in, it takes precedence over the page.')),
                         Select::make('page_id')
-                            ->label('Link to page')
+                            ->label(__('Link to page'))
                             ->relationship('page', 'title')
                             ->searchable()
                             ->preload()
-                            ->helperText('Select the page to which the banner will link'),
+                            ->helperText(__('Select the page to which the banner will link')),
                     ])->columns(2),
 
-                Section::make('Image')
+                Section::make(__('Image'))
                     ->schema([
                         FileUpload::make('image_path')
-                            ->label('Banner image')
+                            ->label(__('Banner image'))
                             ->image()
                             ->required()
                             ->disk('public')
@@ -49,18 +51,18 @@ class BannerForm
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
                     ]),
 
-                Section::make('Settings')
+                Section::make(__('Settings'))
                     ->schema([
                         Toggle::make('is_active')
-                            ->label('Active')
+                            ->label(__('Active'))
                             ->default(true)
-                            ->helperText('Inactive banners are not displayed on the website'),
+                            ->helperText(__('Inactive banners are not displayed on the website')),
                         TextInput::make('sort_order')
-                            ->label('Order')
+                            ->label(__('Order'))
                             ->numeric()
                             ->minValue(0)
                             ->default(0)
-                            ->helperText('Lower number = higher in the list'),
+                            ->helperText(__('Lower number = higher in the list')),
                     ])->columns(2),
             ]);
     }

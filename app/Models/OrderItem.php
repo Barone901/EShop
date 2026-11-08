@@ -1,10 +1,14 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Support\Price;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,6 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderItem extends Model
 {
+    /** @use HasFactory<\Database\Factories\OrderItemFactory> */
+    use HasFactory;
+
     /**
      * Polia povolene pre hromadne priradenie.
      */
@@ -65,16 +72,16 @@ class OrderItem extends Model
     /**
      * Vrati formatovanu jednotkovu cenu.
      */
-    public function getFormattedPriceAttribute(): string
+    protected function formattedPrice(): Attribute
     {
-        return Price::format($this->price);
+        return Attribute::get(fn (): string => Price::format($this->price));
     }
 
     /**
      * Vrati formatovany medzisucet polozky.
      */
-    public function getFormattedSubtotalAttribute(): string
+    protected function formattedSubtotal(): Attribute
     {
-        return Price::format($this->subtotal);
+        return Attribute::get(fn (): string => Price::format($this->subtotal));
     }
 }

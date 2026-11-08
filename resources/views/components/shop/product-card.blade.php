@@ -34,7 +34,7 @@
         <button
             type="button"
             data-quick-view="{{ $product->slug }}"
-            aria-label="Quick view: {{ $product->name }}"
+            aria-label="{{ __('Quick view: :value', ['value' => $product->name]) }}"
             class="absolute right-2 top-2 grid size-10 place-items-center rounded-xs border border-line bg-white text-muted transition-colors hover:border-brand-600 hover:text-brand-600"
         >
             <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -46,7 +46,7 @@
 
     <div class="flex flex-1 flex-col p-4">
         <p class="eyebrow truncate">
-            @if($categoryName){{ $categoryName }} · @endif No. {{ str_pad((string) $product->id, 5, '0', STR_PAD_LEFT) }}
+            @if($categoryName){{ $categoryName }} · @endif No. {{ $product->catalog_number }}
         </p>
 
         <h3 class="mt-1.5 font-sans text-base font-semibold normal-case tracking-normal leading-snug">
@@ -66,11 +66,11 @@
 
             @if($product->is_in_stock)
                 <x-button type="button" class="mt-3 w-full" data-add-to-cart="{{ $product->id }}">
-                    Add to Cart
+                    {{ __('Add to Cart') }}
                 </x-button>
             @else
                 <x-button variant="secondary" class="mt-3 w-full" disabled>
-                    Unavailable
+                    {{ __('Unavailable') }}
                 </x-button>
             @endif
         </div>

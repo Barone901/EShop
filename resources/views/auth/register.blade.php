@@ -1,10 +1,10 @@
 {{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Zalozene na Laravel Breeze (https://github.com/laravel/breeze). --}}
-<x-layouts.default-layout title="Registration" type="guest">
+<x-layouts.default-layout :title="__('Registration')" type="guest">
     <div class="mb-6">
-        <p class="eyebrow">Customer account</p>
-        <h1 class="mt-2 text-3xl">Registration</h1>
-        <p class="mt-1 text-sm text-muted">Create your profile to save addresses and track your orders.</p>
+        <p class="eyebrow">{{ __('Customer account') }}</p>
+        <h1 class="mt-2 text-3xl">{{ __('Registration') }}</h1>
+        <p class="mt-1 text-sm text-muted">{{ __('Create your profile to save addresses and track your orders.') }}</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" data-validate class="space-y-5">
@@ -57,7 +57,7 @@
             />
             <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
             <p id="password-hint" class="mt-1.5 text-xs text-subtle">
-                The password must be at least 8 characters long and contain upper and lower case letters and numbers.
+                {{ __('The password must be at least 8 characters long and contain upper and lower case letters and numbers.') }}
             </p>
         </div>
 
@@ -76,14 +76,14 @@
         </div>
 
         <x-button variant="primary" size="lg" class="w-full">
-            Register
+            {{ __('Register') }}
         </x-button>
     </form>
 
     <div class="mt-8 border-t border-line pt-6 text-center">
-        <p class="text-sm text-muted">Already have an account?</p>
+        <p class="text-sm text-muted">{{ __('Already have an account?') }}</p>
         <x-button :href="route('login')" variant="secondary" class="mt-3 w-full">
-            Log in
+            {{ __('Log in') }}
         </x-button>
     </div>
 </x-layouts.default-layout>

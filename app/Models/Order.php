@@ -9,6 +9,8 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Support\Price;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +25,9 @@ use Illuminate\Support\Str;
  */
 class Order extends Model
 {
+    /** @use HasFactory<\Database\Factories\OrderFactory> */
+    use HasFactory;
+
     /**
      * Polia povolene pre hromadne priradenie.
      */
@@ -60,6 +65,27 @@ class Order extends Model
             'shipping_cost' => 'decimal:2',
             'total' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Relacie potrebne pre detail objednavky (polozky a adresy).
+     */
+    public const DETAIL_RELATIONS = ['items.product', 'shippingAddress', 'billingAddress'];
+
+    /**
+     * Route model binding v URL pouziva cislo objednavky (/orders/ORD-...).
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'order_number';
+    }
+
+    /**
+     * Nacita relacie pre detail objednavky (jeden dotaz na kazdu relaciu).
+     */
+    public function loadDetails(): static
+    {
+        return $this->loadMissing(self::DETAIL_RELATIONS);
     }
 
     /**
@@ -162,24 +188,24 @@ class Order extends Model
     /**
      * Vrati formatovanu celkovu sumu.
      */
-    public function getFormattedTotalAttribute(): string
+    protected function formattedTotal(): Attribute
     {
-        return Price::format($this->total);
+        return Attribute::get(fn (): string => Price::format($this->total));
     }
 
     /**
      * Vrati formatovanu cenu dopravy.
      */
-    public function getFormattedShippingCostAttribute(): string
+    protected function formattedShippingCost(): Attribute
     {
-        return Price::format($this->shipping_cost);
+        return Attribute::get(fn (): string => Price::format($this->shipping_cost));
     }
 
     /**
      * Vrati formatovany medzisucet.
      */
-    public function getFormattedSubtotalAttribute(): string
+    protected function formattedSubtotal(): Attribute
     {
-        return Price::format($this->subtotal);
+        return Attribute::get(fn (): string => Price::format($this->subtotal));
     }
 }

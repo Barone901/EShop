@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Services;
@@ -21,6 +23,16 @@ class CategoryService
             ->active()
             ->ordered()
             ->with(['children' => fn ($q) => $q->active()])
+            ->get();
+    }
+
+    /**
+     * Ziska aktivne kategorie zoradene podla nazvu (filter vo vypise produktov).
+     */
+    public function getActiveCategories(): Collection
+    {
+        return Category::active()
+            ->orderBy('name')
             ->get();
     }
 }

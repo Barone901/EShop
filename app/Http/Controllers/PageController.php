@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
 use App\Services\PageService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -35,9 +36,10 @@ class PageController extends Controller
     /**
      * Zobrazi detail clanku podla slug a zvysi pocitadlo zobrazeni.
      */
-    public function show(Request $request, string $slug): View
+    public function show(Request $request, Page $page): View
     {
-        $page = $this->pageService->findBySlug($slug) ?? abort(404);
+        // Clanok najde route model binding podla slugu; koncept alebo buduci clanok nie je verejny
+        abort_unless($page->isPublished(), 404);
 
         // Zobrazenie pocitame raz za session, nie pri kazdom obnoveni stranky
         $viewedKey = "viewed_pages.{$page->id}";

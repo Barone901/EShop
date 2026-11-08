@@ -24,12 +24,12 @@ enum OrderStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Pending => 'Pending',
-            self::Confirmed => 'Confirmed',
-            self::Processing => 'Processing',
-            self::Shipped => 'Shipped',
-            self::Delivered => 'Delivered',
-            self::Cancelled => 'Cancelled',
+            self::Pending => __('Pending'),
+            self::Confirmed => __('Confirmed'),
+            self::Processing => __('Processing'),
+            self::Shipped => __('Shipped'),
+            self::Delivered => __('Delivered'),
+            self::Cancelled => __('Cancelled'),
         };
     }
 
@@ -87,5 +87,27 @@ enum OrderStatus: string implements HasColor, HasLabel
     public function isCancellableByAdmin(): bool
     {
         return in_array($this, [self::Pending, self::Confirmed, self::Processing], true);
+    }
+
+    /**
+     * Povolene posuny objednavky dopredu (spracovanie v admine).
+     * Zrusenie sem nepatri - ma vlastne pravidla a vracia tovar na sklad (OrderService::cancelOrder).
+     *
+     * @return list<self>
+     */
+    public function nextStatuses(): array
+    {
+        return match ($this) {
+            self::Pending => [self::Confirmed],
+            self::Confirmed => [self::Processing, self::Shipped],
+            self::Processing => [self::Shipped],
+            self::Shipped => [self::Delivered],
+            self::Delivered, self::Cancelled => [],
+        };
+    }
+
+    public function canAdvanceTo(self $status): bool
+    {
+        return in_array($status, $this->nextStatuses(), true);
     }
 }

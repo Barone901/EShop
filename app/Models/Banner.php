@@ -1,11 +1,15 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,6 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Banner extends Model
 {
+    /** @use HasFactory<\Database\Factories\BannerFactory> */
+    use HasFactory;
+
     /**
      * Polia povolene pre hromadne priradenie.
      */
@@ -49,18 +56,20 @@ class Banner extends Model
     /**
      * Vrati finalny odkaz bannera (link_url alebo route na stranku).
      */
-    public function getLinkAttribute(): ?string
+    protected function link(): Attribute
     {
-        if (!empty($this->link_url)) {
-            return (string) $this->link_url;
-        }
+        return Attribute::get(function (): ?string {
+            if (!empty($this->link_url)) {
+                return (string) $this->link_url;
+            }
 
-        // Na nepublikovanu stranku neodkazujeme (skoncilo by to 404)
-        if ($this->page?->isPublished()) {
-            return $this->page->url;
-        }
+            // Na nepublikovanu stranku neodkazujeme (skoncilo by to 404)
+            if ($this->page?->isPublished()) {
+                return $this->page->url;
+            }
 
-        return null;
+            return null;
+        });
     }
 
     /**
@@ -82,8 +91,8 @@ class Banner extends Model
     /**
      * Vrati URL obrazku bannera.
      */
-    public function getImageUrlAttribute(): ?string
+    protected function imageUrl(): Attribute
     {
-        return MediaUrl::from($this->image_path);
+        return Attribute::get(fn (): ?string => MediaUrl::from($this->image_path));
     }
 }

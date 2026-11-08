@@ -11,6 +11,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,7 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * Polia povolene pre hromadne priradenie.
@@ -89,13 +90,15 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Vrati cele meno (krstne + priezvisko alebo username).
      */
-    public function getFullNameAttribute(): string
+    protected function fullName(): Attribute
     {
-        if (!empty($this->first_name) || !empty($this->last_name)) {
-            return trim("{$this->first_name} {$this->last_name}");
-        }
+        return Attribute::get(function (): string {
+            if (!empty($this->first_name) || !empty($this->last_name)) {
+                return trim("{$this->first_name} {$this->last_name}");
+            }
 
-        return (string) $this->name;
+            return (string) $this->name;
+        });
     }
 
     /**
@@ -108,24 +111,24 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->addresses
             ->where('type', $type)
-            ->sortByDesc('is_default')
+            ->sortBy([['is_default', 'desc'], ['created_at', 'desc']])
             ->values();
     }
 
     /**
      * Vrati predvolenu dorucovaciu adresu (alebo prvu dorucovaciu, ak ziadna nie je predvolena).
      */
-    public function getDefaultShippingAddressAttribute(): ?UserAddress
+    protected function defaultShippingAddress(): Attribute
     {
-        return $this->addressesOfType(AddressType::Shipping)->first();
+        return Attribute::get(fn (): ?UserAddress => $this->addressesOfType(AddressType::Shipping)->first());
     }
 
     /**
      * Vrati predvolenu fakturacnu adresu (alebo prvu fakturacnu, ak ziadna nie je predvolena).
      */
-    public function getDefaultBillingAddressAttribute(): ?UserAddress
+    protected function defaultBillingAddress(): Attribute
     {
-        return $this->addressesOfType(AddressType::Billing)->first();
+        return Attribute::get(fn (): ?UserAddress => $this->addressesOfType(AddressType::Billing)->first());
     }
 
     // =========================================================================

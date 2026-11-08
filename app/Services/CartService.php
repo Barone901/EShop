@@ -51,7 +51,6 @@ class CartService
                 'image_url' => $product->image_src,
                 'subtotal' => $subtotal,
                 'formatted_subtotal' => Price::format($subtotal),
-                'url' => route('product.show', $product),
             ];
         })->values();
 
@@ -68,6 +67,7 @@ class CartService
             'grand_total' => $grandTotal,
             'formatted_grand_total' => Price::format($grandTotal),
             'count' => $items->sum('quantity'),
+            'max_quantity' => (int) config('shop.max_cart_quantity'),
         ];
     }
 
@@ -155,10 +155,10 @@ class CartService
     /**
      * Viditelne produkty podla ID, klucovane podla ID (jeden dotaz pre cely kosik).
      *
-     * @param  list<int>  $ids
+     * @param list<int> $ids
      */
     /**
-     * @param  array<int, int>  $ids
+     * @param  array<int, int>          $ids
      * @return Collection<int, Product> produkty indexovane podla id
      */
     private function visibleProducts(array $ids): Collection
@@ -183,7 +183,7 @@ class CartService
     }
 
     /**
-     * @param  array<int, int>  $cart
+     * @param array<int, int> $cart
      */
     private function save(array $cart): void
     {

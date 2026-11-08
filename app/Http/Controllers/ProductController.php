@@ -1,15 +1,18 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude).
+// [AI] Upravene s pomocou AI (Claude): kategorie zo CategoryService, filtre, radenia a doprava
+// sa posielaju do view (sablona necita request ani config).
 
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProductSort;
 use App\Http\Requests\ProductIndexRequest;
-use App\Models\Category;
 use App\Models\Product;
+use App\Services\CategoryService;
 use App\Services\ProductService;
+use App\Support\Price;
 use Illuminate\View\View;
 
 /**
@@ -18,10 +21,11 @@ use Illuminate\View\View;
 class ProductController extends Controller
 {
     /**
-     * Injektuje sluzbu pre produkty.
+     * Injektuje sluzby pre produkty a kategorie.
      */
     public function __construct(
-        private readonly ProductService $productService
+        private readonly ProductService $productService,
+        private readonly CategoryService $categoryService
     ) {}
 
     /**
@@ -29,13 +33,25 @@ class ProductController extends Controller
      */
     public function index(ProductIndexRequest $request): View
     {
+        // Len overene a vyplnene filtre - z nich view sklada odkazy (kategoria, radenie, zrusenie filtra)
+        $filters = array_filter(
+            $request->safe()->only(['category', 'search', 'sort']),
+            fn ($value) => $value !== null && $value !== ''
+        );
+
+        $categories = $this->categoryService->getActiveCategories();
+
         return view('pages.products.index', [
             'products' => $this->productService->getProducts(
-                $request->validated('search'),
-                $request->validated('category'),
-                $request->validated('sort'),
+                $filters['search'] ?? null,
+                $filters['category'] ?? null,
+                $filters['sort'] ?? null,
             ),
-            'categories' => Category::active()->orderBy('name')->get(),
+            'categories' => $categories,
+            'activeCategory' => $categories->firstWhere('slug', $filters['category'] ?? null),
+            'filters' => $filters,
+            'sorts' => ProductSort::cases(),
+            'activeSort' => ProductSort::tryFrom($filters['sort'] ?? '') ?? ProductSort::Newest,
         ]);
     }
 
@@ -51,6 +67,7 @@ class ProductController extends Controller
 
         return view('pages.products.show', [
             'product' => $product,
+            'shippingCost' => Price::format((float) config('shop.shipping_cost')),
         ]);
     }
 }

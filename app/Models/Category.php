@@ -1,11 +1,15 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Category extends Model
 {
+    /** @use HasFactory<\Database\Factories\CategoryFactory> */
+    use HasFactory;
+
     /**
      * Polia povolene pre hromadne priradenie.
      */
@@ -111,8 +118,8 @@ class Category extends Model
     /**
      * Vrati verejnu URL obrazku (stlpec image_url obsahuje cestu alebo absolutnu URL).
      */
-    public function getImageSrcAttribute(): ?string
+    protected function imageSrc(): Attribute
     {
-        return MediaUrl::from($this->image_url);
+        return Attribute::get(fn (): ?string => MediaUrl::from($this->image_url));
     }
 }

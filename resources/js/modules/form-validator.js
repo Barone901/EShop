@@ -219,8 +219,11 @@ const FormValidator = {
         // Chybový stav (aj červený okraj cez CSS) nesie len aria-invalid
         input.setAttribute('aria-invalid', 'true');
 
-        const errorEl = document.createElement('p');
-        errorEl.className = 'validation-error';
+        // Vzhľad hlášky je v Blade (layouts/default: template#validation-error-template)
+        const template = document.getElementById('validation-error-template');
+        if (!template) return;
+
+        const errorEl = template.content.firstElementChild.cloneNode(true);
         errorEl.textContent = message;
 
         input.after(errorEl);

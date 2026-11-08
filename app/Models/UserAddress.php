@@ -1,11 +1,15 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Enums\AddressType;
 use App\Models\Concerns\HasAddressFormatting;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +20,8 @@ use Illuminate\Support\Facades\DB;
  */
 class UserAddress extends Model
 {
-    use HasAddressFormatting;
+    /** @use HasFactory<\Database\Factories\UserAddressFactory> */
+    use HasAddressFormatting, HasFactory;
 
     /**
      * Polia povolene pre hromadne priradenie.
@@ -61,9 +66,9 @@ class UserAddress extends Model
     /**
      * Vrati nazov typu adresy pre UI ("Shipping" / "Billing").
      */
-    public function getTypeLabelAttribute(): string
+    protected function typeLabel(): Attribute
     {
-        return $this->type->label();
+        return Attribute::get(fn (): string => $this->type->label());
     }
 
     /**

@@ -30,10 +30,6 @@ class OrderResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'order_number';
 
-    protected static ?string $modelLabel = 'Order';
-
-    protected static ?string $pluralModelLabel = 'Orders';
-
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         // Zoznam potrebuje len zakaznika; adresy si formular nacita cez relationship()
@@ -77,5 +73,14 @@ class OrderResource extends Resource
     {
         return 'warning';
     }
-}
 
+    public static function getModelLabel(): string
+    {
+        return __('Order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Orders');
+    }
+}

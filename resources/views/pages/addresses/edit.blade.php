@@ -4,9 +4,9 @@
     @include('pages.addresses.partials.breadcrumb', ['current' => "Edit {$address->type_label} Address"])
 
     <x-ui.page-header
-        eyebrow="My addresses"
+        :eyebrow="__('My addresses')"
         title="Edit {{ $address->type_label }} Address"
-        subtitle="Update your address details."
+        :subtitle="__('Update your address details.')"
     />
 
     <x-ui.card padding="lg" class="max-w-3xl">
@@ -20,7 +20,7 @@
                     'first_name', 'last_name', 'phone', 'email', 'street', 'city',
                     'postal_code', 'country', 'company_name', 'ico', 'dic', 'ic_dph', 'is_default',
                 ]),
-                'submitLabel' => 'Save Changes',
+                'submitLabel' => __('Save Changes'),
             ])
         </form>
     </x-ui.card>

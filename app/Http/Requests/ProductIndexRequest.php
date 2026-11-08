@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Services\ProductService;
+use App\Enums\ProductSort;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +25,7 @@ class ProductIndexRequest extends FormRequest
         return [
             'category' => ['nullable', 'string', 'max:255', 'regex:/^[a-z0-9\-]+$/'],
             'search' => ['nullable', 'string', 'max:255'],
-            'sort' => ['nullable', Rule::in(ProductService::SORTS)],
+            'sort' => ['nullable', Rule::enum(ProductSort::class)],
         ];
     }
 }

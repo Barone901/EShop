@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\PageStatus;
 use App\Support\MediaUrl;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,7 +22,8 @@ use Illuminate\Support\Str;
  */
 class Page extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<\Database\Factories\PageFactory> */
+    use HasFactory, SoftDeletes;
 
     /**
      * Polia povolene pre hromadne priradenie.
@@ -162,18 +165,18 @@ class Page extends Model
     /**
      * Vrati URL hlavneho obrazku stranky.
      */
-    public function getFeaturedImageUrlAttribute(): ?string
+    protected function featuredImageUrl(): Attribute
     {
-        return MediaUrl::from($this->featured_image);
+        return Attribute::get(fn (): ?string => MediaUrl::from($this->featured_image));
     }
 
     /**
      * Vrati HTML obsah bez nebezpecnych prvkov (script, on* atributy...).
      * Obsah pise redaktor v admine, preto ho pred vypisom cez {!! !!} sanitizujeme.
      */
-    public function getSafeContentAttribute(): string
+    protected function safeContent(): Attribute
     {
-        return Str::sanitizeHtml((string) $this->content);
+        return Attribute::get(fn (): string => Str::sanitizeHtml((string) $this->content));
     }
 
     /**
@@ -187,8 +190,8 @@ class Page extends Model
     /**
      * Vrati URL stranky.
      */
-    public function getUrlAttribute(): string
+    protected function url(): Attribute
     {
-        return route('pages.show', (string) $this->slug);
+        return Attribute::get(fn (): string => route('pages.show', (string) $this->slug));
     }
 }

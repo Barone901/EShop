@@ -15,7 +15,7 @@
             class="inline-flex min-h-11 items-center gap-2.5 rounded-xs px-2 text-sm text-steel-100 transition-colors hover:bg-ink-800"
         >
             <span class="grid size-8 place-items-center rounded-xs bg-ink-700 font-display text-base font-bold uppercase" aria-hidden="true">
-                {{ mb_substr(Auth::user()->name, 0, 1) }}
+                {{ Str::substr(Auth::user()->name, 0, 1) }}
             </span>
 
             <span class="max-w-40 truncate font-medium">{{ Auth::user()->name }}</span>
@@ -35,15 +35,15 @@
             </div>
 
             <div class="py-1">
-                <a href="{{ route('dashboard') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">My profile</a>
-                <a href="{{ route('orders.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">My Orders</a>
-                <a href="{{ route('addresses.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">Addresses</a>
+                <a href="{{ route('dashboard') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('My profile') }}</a>
+                <a href="{{ route('orders.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('My Orders') }}</a>
+                <a href="{{ route('addresses.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('Addresses') }}</a>
             </div>
 
             <form method="POST" action="{{ route('logout') }}" class="border-t border-line py-1">
                 @csrf
                 <button type="submit" class="flex min-h-11 w-full items-center px-4 text-left text-sm hover:bg-tile hover:text-brand-600">
-                    Logout
+                    {{ __('Logout') }}
                 </button>
             </form>
         </div>
@@ -52,8 +52,8 @@
     <div class="flex items-center gap-2">
         <a href="{{ route('login') }}"
            class="inline-flex min-h-11 items-center px-3 font-display text-base font-semibold uppercase tracking-wider text-steel-100 hover:text-brand-400">
-            Log in
+            {{ __('Log in') }}
         </a>
-        <x-button :href="route('register')" variant="dark">Register</x-button>
+        <x-button :href="route('register')" variant="dark">{{ __('Register') }}</x-button>
     </div>
 @endauth

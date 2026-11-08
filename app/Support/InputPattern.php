@@ -35,7 +35,7 @@ final class InputPattern
     /** ICO, DIC, IC DPH: pismena a cislice bez medzier (2 - 20 znakov), napr. SK2023456789. */
     public const COMPANY_ID = "[A-Za-z0-9]{2,20}";
 
-    /** Chybove hlasky pre jednotlive vzory (server aj klient). */
+    /** Chybove hlasky pre jednotlive vzory (server aj klient); prekladaju sa cez __() v message(). */
     private const MESSAGES = [
         self::USERNAME => 'The name may only contain letters, spaces and hyphens.',
         self::PERSON_NAME => 'Please use only letters, spaces, hyphens and apostrophes.',
@@ -58,14 +58,14 @@ final class InputPattern
      */
     public static function message(string $pattern): string
     {
-        return self::MESSAGES[$pattern] ?? 'The value has an invalid format.';
+        return __(self::MESSAGES[$pattern] ?? 'The value has an invalid format.');
     }
 
     /**
      * Doplni do validacnych pravidiel FormRequestu pravidlo regex pre polia so vzorom.
      *
-     * @param  array<string, array<int, mixed>>  $rules
-     * @param  array<string, string>  $fields  nazov pola => vzor
+     * @param  array<string, array<int, mixed>> $rules
+     * @param  array<string, string>            $fields nazov pola => vzor
      * @return array<string, array<int, mixed>>
      */
     public static function applyTo(array $rules, array $fields): array
@@ -80,7 +80,7 @@ final class InputPattern
     /**
      * Hlasky pre FormRequest::messages() - kluc "pole.regex" => hlaska.
      *
-     * @param  array<string, string>  $fields  nazov pola => vzor
+     * @param  array<string, string> $fields nazov pola => vzor
      * @return array<string, string>
      */
     public static function messagesFor(array $fields): array

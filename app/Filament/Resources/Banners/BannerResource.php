@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Banners;
 
 use App\Filament\Resources\Banners\Pages\CreateBanner;
@@ -27,10 +29,6 @@ class BannerResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?string $modelLabel = 'Banner';
-
-    protected static ?string $pluralModelLabel = 'Banners';
-
     public static function form(Schema $schema): Schema
     {
         return BannerForm::configure($schema);
@@ -55,5 +53,15 @@ class BannerResource extends Resource
             'create' => CreateBanner::route('/create'),
             'edit' => EditBanner::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Banner');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Banners');
     }
 }

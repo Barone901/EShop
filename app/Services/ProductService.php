@@ -1,9 +1,12 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ProductSort;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -13,11 +16,6 @@ use Illuminate\Support\Collection;
  */
 class ProductService
 {
-    /**
-     * Povolene sposoby radenia zoznamu produktov.
-     */
-    public const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
-
     /**
      * Minimalna dlzka vyrazu pre autocomplete (rovnaka ako v search.js).
      */
@@ -54,10 +52,10 @@ class ProductService
             $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
         }
 
-        match ($sort) {
-            'price_asc' => $query->orderBy('price'),
-            'price_desc' => $query->orderByDesc('price'),
-            'name' => $query->orderBy('name'),
+        match (ProductSort::tryFrom((string) $sort)) {
+            ProductSort::PriceAsc => $query->orderBy('price'),
+            ProductSort::PriceDesc => $query->orderByDesc('price'),
+            ProductSort::Name => $query->orderBy('name'),
             default => $query->latest(),
         };
 

@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Pages\Tables;
 
 use App\Enums\PageStatus;
@@ -22,54 +24,54 @@ class PagesTable
         return $table
             ->columns([
                 ImageColumn::make('featured_image')
-                    ->label('Image')
+                    ->label(__('Image'))
                     ->disk('public')
                     ->height(50)
                     ->width(80)
                     ->placeholder('—'),
 
                 TextColumn::make('title')
-                    ->label('Title')
+                    ->label(__('Title'))
                     ->searchable()
                     ->sortable()
                     ->limit(40),
 
                 TextColumn::make('slug')
-                    ->label('URL')
+                    ->label(__('URL'))
                     ->searchable()
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 // Popisok a farbu badge berie Filament z enumu PageStatus
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label(__('Status'))
                     ->badge()
                     ->sortable(),
 
                 TextColumn::make('author.name')
-                    ->label('Autor')
+                    ->label(__('Author'))
                     ->placeholder('—')
                     ->toggleable(),
 
                 IconColumn::make('is_featured')
-                    ->label('Highlighted')
+                    ->label(__('Highlighted'))
                     ->boolean()
                     ->sortable(),
 
                 TextColumn::make('views_count')
-                    ->label('Display')
+                    ->label(__('Display'))
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('published_at')
-                    ->label('Published')
+                    ->label(__('Published'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
-                    ->placeholder('Unpublished'),
+                    ->placeholder(__('Unpublished')),
 
                 TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('Created'))
                     ->dateTime('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -77,14 +79,14 @@ class PagesTable
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
-                    ->label('Status')
+                    ->label(__('Status'))
                     ->options(PageStatus::class),
 
                 TernaryFilter::make('is_featured')
-                    ->label('Highlighted')
+                    ->label(__('Highlighted'))
                     ->trueLabel('Yes')
                     ->falseLabel('No')
-                    ->placeholder('All'),
+                    ->placeholder(__('All')),
 
                 TrashedFilter::make(),
             ])
@@ -99,4 +101,3 @@ class PagesTable
             ]);
     }
 }
-

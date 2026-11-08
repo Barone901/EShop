@@ -31,7 +31,7 @@
         </p>
 
         @if($address->is_default)
-            <x-ui.badge variant="dark">✓ Default</x-ui.badge>
+            <x-ui.badge variant="dark">{{ __('✓ Default') }}</x-ui.badge>
         @endif
     </div>
 
@@ -47,37 +47,37 @@
         @if($isBilling)
             @if($address->ico || $address->dic || $address->ic_dph)
                 <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">
-                    @if($address->ico)<dt class="text-subtle">Company ID</dt><dd class="num text-text">{{ $address->ico }}</dd>@endif
-                    @if($address->dic)<dt class="text-subtle">Tax ID</dt><dd class="num text-text">{{ $address->dic }}</dd>@endif
-                    @if($address->ic_dph)<dt class="text-subtle">VAT ID</dt><dd class="num text-text">{{ $address->ic_dph }}</dd>@endif
+                    @if($address->ico)<dt class="text-subtle">{{ __('Company ID') }}</dt><dd class="num text-text">{{ $address->ico }}</dd>@endif
+                    @if($address->dic)<dt class="text-subtle">{{ __('Tax ID') }}</dt><dd class="num text-text">{{ $address->dic }}</dd>@endif
+                    @if($address->ic_dph)<dt class="text-subtle">{{ __('VAT ID') }}</dt><dd class="num text-text">{{ $address->ic_dph }}</dd>@endif
                 </dl>
             @endif
         @elseif($address->phone)
-            <span class="mt-2 block text-sm">Phone: <span class="num text-text">{{ $address->phone }}</span></span>
+            <span class="mt-2 block text-sm">{{ __('Phone:') }} <span class="num text-text">{{ $address->phone }}</span></span>
         @endif
     </address>
 
     <div class="-mx-2 mt-4 flex flex-wrap items-center gap-1 border-t border-line pt-3">
         <a href="{{ route('addresses.edit', $address) }}" class="{{ $action }} text-brand-600 hover:bg-brand-50 hover:text-brand-700">
             <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            Edit
+            {{ __('Edit') }}
         </a>
 
         @if(!$address->is_default)
             <form action="{{ route('addresses.setDefault', $address) }}" method="POST">
                 @csrf
                 <button type="submit" class="{{ $action }} text-muted hover:bg-tile hover:text-text">
-                    Set as default
+                    {{ __('Set as default') }}
                 </button>
             </form>
         @endif
 
-        <form action="{{ route('addresses.destroy', $address) }}" method="POST" class="ml-auto" data-confirm="Are you sure you want to delete this address?">
+        <form action="{{ route('addresses.destroy', $address) }}" method="POST" class="ml-auto" data-confirm="{{ __('Are you sure you want to delete this address?') }}">
             @csrf
             @method('DELETE')
             <button type="submit" class="{{ $action }} text-danger-700 hover:bg-danger-50">
                 <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="square" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                Delete
+                {{ __('Delete') }}
             </button>
         </form>
     </div>

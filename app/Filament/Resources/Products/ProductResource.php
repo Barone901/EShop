@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Products;
 
 use App\Filament\Resources\Products\Pages\CreateProduct;
@@ -27,10 +29,6 @@ class ProductResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?string $modelLabel = 'Product';
-
-    protected static ?string $pluralModelLabel = 'Products';
-
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);
@@ -55,5 +53,15 @@ class ProductResource extends Resource
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Product');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Products');
     }
 }

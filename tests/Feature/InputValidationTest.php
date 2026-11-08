@@ -4,7 +4,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\InputPattern;
@@ -44,8 +43,7 @@ class InputValidationTest extends TestCase
 
     public function test_checkout_rejects_invalid_phone_and_postal_code(): void
     {
-        $category = Category::create(['name' => 'Tools', 'slug' => 'tools']);
-        $product = Product::create(['name' => 'Hammer', 'slug' => 'hammer', 'price' => 10, 'stock' => 5, 'category_id' => $category->id]);
+        $product = Product::factory()->create(['price' => 10, 'stock' => 5]);
         $this->postJson('/api/cart/add', ['product_id' => $product->id, 'quantity' => 1]);
 
         $this->get('/checkout')

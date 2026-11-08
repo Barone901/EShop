@@ -1,6 +1,7 @@
 <?php
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -30,6 +31,6 @@ Route::middleware('auth')->group(function () {
         ->name('verification.verify');
 
     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware('throttle:verification')
         ->name('verification.send');
 });

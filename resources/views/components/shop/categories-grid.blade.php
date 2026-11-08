@@ -24,9 +24,9 @@
                         {{-- Placeholder rovnakej velkosti: iniciala kategorie v ramceku + ikona naradia --}}
                         <span class="flex h-full w-full flex-col items-center justify-center gap-2 p-4" aria-hidden="true">
                             <span class="grid size-20 place-items-center rounded-xs border-2 border-dashed border-line-strong font-display text-5xl font-bold uppercase text-line-strong">
-                                {{ mb_substr($category->name, 0, 1) }}
+                                {{ Str::substr($category->name, 0, 1) }}
                             </span>
-                            <span class="eyebrow">No image</span>
+                            <span class="eyebrow">{{ __('No image') }}</span>
                         </span>
                     @endif
                 </div>

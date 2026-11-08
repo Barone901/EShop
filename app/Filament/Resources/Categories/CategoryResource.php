@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 namespace App\Filament\Resources\Categories;
 
 use App\Filament\Resources\Categories\Pages\CreateCategory;
@@ -27,10 +29,6 @@ class CategoryResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static ?string $modelLabel = 'Category';
-
-    protected static ?string $pluralModelLabel = 'Category';
-
     public static function form(Schema $schema): Schema
     {
         return CategoryForm::configure($schema);
@@ -55,5 +53,15 @@ class CategoryResource extends Resource
             'create' => CreateCategory::route('/create'),
             'edit' => EditCategory::route('/{record}/edit'),
         ];
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Category');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Categories');
     }
 }

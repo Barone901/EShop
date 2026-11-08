@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 declare(strict_types=1);
 
 namespace App\Services;
@@ -21,16 +23,6 @@ class PageService
         return Page::published()
             ->ordered()
             ->paginate($perPage);
-    }
-
-    /**
-     * Najde publikovanu stranku podla slug.
-     */
-    public function findBySlug(string $slug): ?Page
-    {
-        return Page::where('slug', $slug)
-            ->published()
-            ->first();
     }
 
     /**

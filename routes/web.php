@@ -1,5 +1,7 @@
 <?php
 
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
+
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\CategoryController;
@@ -27,16 +29,16 @@ Route::view('/cart', 'pages.cart.index')->name('cart.index');
 
 Route::controller(ContactController::class)->group(function () {
     Route::get('/contact', 'index')->name('contact');
-    Route::post('/contact', 'send')->middleware('throttle:5,1')->name('contact.send');
+    Route::post('/contact', 'send')->middleware('throttle:contact')->name('contact.send');
 });
 
 Route::controller(PageController::class)->group(function () {
     Route::get('/pages', 'index')->name('pages.index');
-    Route::get('/pages/{slug}', 'show')->name('pages.show');
+    Route::get('/pages/{page:slug}', 'show')->name('pages.show');
 });
 
-// API pre JS (web middleware kvôli session/CSRF pre košík; limit 60 požiadaviek za minútu)
-Route::prefix('api')->name('api.')->middleware('throttle:60,1')->group(function () {
+// API pre JS (web middleware kvôli session/CSRF pre košík; limit "shop-api" v AppServiceProvider)
+Route::prefix('api')->name('api.')->middleware('throttle:shop-api')->group(function () {
 
     Route::prefix('products')->name('products.')->controller(ProductApiController::class)->group(function () {
         Route::get('/search', 'search')->name('search');
@@ -56,7 +58,7 @@ Route::prefix('api')->name('api.')->middleware('throttle:60,1')->group(function 
 Route::controller(OrderController::class)->group(function () {
     Route::get('/checkout', 'checkout')->name('checkout');
     Route::post('/orders', 'store')->name('orders.store');
-    Route::get('/orders/confirmation/{orderNumber}', 'confirmation')->name('orders.confirmation');
+    Route::get('/orders/confirmation/{order}', 'confirmation')->name('orders.confirmation');
 });
 
 // Prihlásený používateľ
@@ -72,9 +74,9 @@ Route::middleware('auth')->group(function () {
     Route::controller(OrderController::class)->group(function () {
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/{orderNumber}', 'show')->name('show');
-            Route::post('/{orderNumber}/cancel', 'cancel')->name('cancel');
-            Route::delete('/{orderNumber}', 'destroy')->name('destroy');
+            Route::get('/{order}', 'show')->name('show');
+            Route::post('/{order}/cancel', 'cancel')->name('cancel');
+            Route::delete('/{order}', 'destroy')->name('destroy');
         });
     });
 

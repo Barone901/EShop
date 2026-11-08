@@ -1,6 +1,7 @@
 <?php
 
 // Prevzate z Laravel Breeze (https://github.com/laravel/breeze), upravene.
+// [AI] Upravene s pomocou AI (Claude): MVC a Laravel standard (preklady __(), Attribute accessory, factories, policies...).
 
 declare(strict_types=1);
 
@@ -81,7 +82,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             ...InputPattern::messagesFor(self::PATTERNS),
-            'email.unique' => 'This email is already used by another account.',
+            'email.unique' => __('This email is already used by another account.'),
         ];
     }
 }

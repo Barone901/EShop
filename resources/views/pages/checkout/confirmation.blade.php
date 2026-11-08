@@ -1,6 +1,6 @@
 {{-- [AI] Upravene s pomocou AI (Claude). --}}
 {{-- Potvrdenie objednavky (krok 3 nakupu). --}}
-<x-layouts.default-layout title="Order Confirmed">
+<x-layouts.default-layout :title="__('Order Confirmed')">
 
     <x-shop.checkout-steps :current="3" />
 
@@ -14,9 +14,9 @@
                 </svg>
             </span>
             <div>
-                <h1 class="text-3xl md:text-4xl">Order Received!</h1>
+                <h1 class="text-3xl md:text-4xl">{{ __('Order Received!') }}</h1>
                 <p class="mt-2 text-muted">
-                    Thank you for your order. A confirmation has been sent to
+                    {{ __('Thank you for your order. A confirmation has been sent to') }}
                     <strong class="font-semibold text-text">{{ $order->shippingAddress?->email }}</strong>.
                 </p>
             </div>
@@ -27,18 +27,18 @@
             {{-- Hlavicka: cislo a datum (tmavy pruh) --}}
             <div class="theme-dark flex flex-wrap items-center justify-between gap-4 bg-ink-900 px-6 py-4 text-steel-100">
                 <div>
-                    <p class="eyebrow text-steel-300">Order Number</p>
+                    <p class="eyebrow text-steel-300">{{ __('Order Number') }}</p>
                     <p class="num mt-1 text-xl text-white">{{ $order->order_number }}</p>
                 </div>
                 <div class="sm:text-right">
-                    <p class="eyebrow text-steel-300">Date</p>
+                    <p class="eyebrow text-steel-300">{{ __('Date') }}</p>
                     <p class="num mt-1 text-white">{{ $order->created_at->format('M d, Y H:i') }}</p>
                 </div>
             </div>
 
             {{-- Polozky --}}
             <div class="p-6">
-                <h2 class="mb-2 text-xl">Order Items</h2>
+                <h2 class="mb-2 text-xl">{{ __('Order Items') }}</h2>
                 <ul class="divide-y divide-line">
                     @foreach($order->items as $item)
                         <li class="flex items-baseline justify-between gap-4 py-3">
@@ -53,7 +53,7 @@
 
                 <dl class="mt-4 space-y-2 border-t border-line pt-4 text-sm">
                     <div class="flex justify-between">
-                        <dt class="text-muted">Subtotal</dt>
+                        <dt class="text-muted">{{ __('Subtotal') }}</dt>
                         <dd class="num">{{ $order->formatted_subtotal }}</dd>
                     </div>
                     <div class="flex justify-between">
@@ -61,7 +61,7 @@
                         <dd class="num">{{ $order->formatted_shipping_cost }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between border-t border-line pt-3">
-                        <dt class="font-display text-lg font-semibold uppercase tracking-wide">Total</dt>
+                        <dt class="font-display text-lg font-semibold uppercase tracking-wide">{{ __('Total') }}</dt>
                         <dd class="num text-2xl">{{ $order->formatted_total }}</dd>
                     </div>
                 </dl>
@@ -70,21 +70,21 @@
             {{-- Adresa + platba --}}
             <div class="grid gap-6 border-t border-line bg-paper p-6 sm:grid-cols-2">
                 <div>
-                    <h2 class="eyebrow mb-2">Shipping Address</h2>
+                    <h2 class="eyebrow mb-2">{{ __('Shipping Address') }}</h2>
                     <x-shop.order-address :address="$order->shippingAddress" />
                 </div>
 
                 <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-1">
                     <div>
-                        <dt class="eyebrow">Payment Method</dt>
+                        <dt class="eyebrow">{{ __('Payment Method') }}</dt>
                         <dd class="mt-1 font-medium">{{ $order->payment_method->getLabel() }}</dd>
                     </div>
                     <div>
-                        <dt class="eyebrow">Payment Status</dt>
+                        <dt class="eyebrow">{{ __('Payment Status') }}</dt>
                         <dd class="mt-1 font-medium">{{ $order->payment_status->getLabel() }}</dd>
                     </div>
                     <div class="col-span-2 sm:col-span-1">
-                        <dt class="eyebrow">Order Status</dt>
+                        <dt class="eyebrow">{{ __('Order Status') }}</dt>
                         <dd class="mt-1.5"><x-shop.order-status-badge :order="$order" size="sm" /></dd>
                     </div>
                 </dl>
@@ -98,11 +98,11 @@
                     <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="square" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
-                    My Orders
+                    {{ __('My Orders') }}
                 </x-button>
             @endauth
             <x-button :href="route('home')" variant="secondary" size="lg">
-                Continue Shopping
+                {{ __('Continue Shopping') }}
             </x-button>
         </div>
     </div>
