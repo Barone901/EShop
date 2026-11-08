@@ -14,8 +14,6 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-
-
 @theme {
     /* Typografia */
     --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -188,7 +186,6 @@
     }
 }
 
-/* footer */
 .site-footer {
     background: var(--color-ink-900);
     border-top: 1px solid var(--color-ink-700);

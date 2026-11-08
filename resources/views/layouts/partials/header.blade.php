@@ -3,18 +3,18 @@
     Hlavicka (tmava zona). JS vazby - nemen ID, aria-* ani pociatocne triedy dropdownov:
     - menu.js: #mobile-menu-btn/#mobile-nav, #mobile-profile-btn/-dropdown/-arrow, #cart-wrapper/#cart-btn/#cart-dropdown
       (dropdowny zacinaju zatvorene: "hidden opacity-0 translate-y-2", stav v aria-expanded)
-    - cart.js: #cart-count (trieda hidden), #cart-dropdown-content, data-*-url na #cart-wrapper
+    - cart.js: #cart-count (trieda hidden), #cart-dropdown-content (obsah = HTML zo servera, x-shop.cart-dropdown)
     - search.js: #search-input/#search-results, #search-input-mobile/#search-results-mobile
     Desktop ucet (#account-*) je v partials/account.
 --}}
 @php
     // Hlavne menu (desktop aj mobil): route => [text odkazu, vzor rout pre aktivny stav]
     $navLinks = [
-        'home' => ['Home', 'home'],
-        'products.index' => ['Products', ['products.*', 'product.*']],
-        'pages.index' => ['Articles', 'pages.*'],
-        'about' => ['About us', 'about'],
-        'contact' => ['Contact', 'contact'],
+        'home' => [__('Home'), 'home'],
+        'products.index' => [__('Products'), ['products.*', 'product.*']],
+        'pages.index' => [__('Articles'), 'pages.*'],
+        'about' => [__('About us'), 'about'],
+        'contact' => [__('Contact'), 'contact'],
     ];
 
     // Spolocne triedy dropdown panelov (svetly panel pod tmavou hlavickou)
@@ -39,7 +39,7 @@
                 <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="square" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
-                <span class="sr-only sm:not-sr-only sm:font-display sm:text-base sm:font-semibold sm:uppercase sm:tracking-wider">Menu</span>
+                <span class="sr-only sm:not-sr-only sm:font-display sm:text-base sm:font-semibold sm:uppercase sm:tracking-wider">{{ __('Menu') }}</span>
             </button>
 
             {{-- Logo (cervene na priehladnom pozadi) priamo na tmavej hlavicke --}}
@@ -55,8 +55,8 @@
                 <input
                     type="text"
                     id="search-input"
-                    placeholder="Search products..."
-                    aria-label="Search products"
+                    placeholder="{{ __('Search products...') }}"
+                    aria-label="{{ __('Search products') }}"
                     autocomplete="off"
                     class="{{ $searchClasses }}"
                 />
@@ -78,7 +78,7 @@
                         type="button"
                         aria-expanded="false"
                         aria-controls="mobile-profile-dropdown"
-                        aria-label="My account"
+                        aria-label="{{ __('My account') }}"
                         class="inline-flex min-h-11 items-center gap-1 rounded-xs px-2 text-steel-100 hover:bg-ink-800"
                     >
                         <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -96,30 +96,27 @@
                                 <p class="truncate text-xs text-subtle">{{ Auth::user()->email }}</p>
                             </div>
                             <div class="py-1">
-                                <a href="{{ route('profile.edit') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">My profile</a>
-                                <a href="{{ route('orders.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">Orders</a>
-                                <a href="{{ route('addresses.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">Addresses</a>
+                                <a href="{{ route('profile.edit') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('My profile') }}</a>
+                                <a href="{{ route('orders.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('Orders') }}</a>
+                                <a href="{{ route('addresses.index') }}" class="flex min-h-11 items-center px-4 text-sm hover:bg-tile hover:text-brand-600">{{ __('Addresses') }}</a>
                             </div>
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-line py-1">
                                 @csrf
                                 <button type="submit" class="flex min-h-11 w-full items-center px-4 text-left text-sm hover:bg-tile hover:text-brand-600">
-                                    Logout
+                                    {{ __('Logout') }}
                                 </button>
                             </form>
                         @else
                             <div class="space-y-2 p-3">
-                                <x-button :href="route('login')" class="w-full">Log in</x-button>
-                                <x-button :href="route('register')" variant="secondary" class="w-full">Register</x-button>
+                                <x-button :href="route('login')" class="w-full">{{ __('Log in') }}</x-button>
+                                <x-button :href="route('register')" variant="secondary" class="w-full">{{ __('Register') }}</x-button>
                             </div>
                         @endauth
                     </div>
                 </div>
 
                 {{-- Kosik: hover otvori nahlad (menu.js), klik vedie na stranku kosika --}}
-                <div id="cart-wrapper" class="static sm:relative"
-                     data-cart-url="{{ route('cart.index') }}"
-                     data-checkout-url="{{ route('checkout') }}"
-                     data-home-url="{{ route('home') }}">
+                <div id="cart-wrapper" class="static sm:relative">
                     <a
                         href="{{ route('cart.index') }}"
                         id="cart-btn"
@@ -132,7 +129,7 @@
                                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
 
-                        <span class="hidden sm:inline">Cart</span>
+                        <span class="hidden sm:inline">{{ __('Cart') }}</span>
 
                         <span id="cart-count"
                               class="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 font-sans text-xs font-bold text-white ring-2 ring-ink-900 hidden">0</span>
@@ -140,12 +137,12 @@
 
                     <div id="cart-dropdown" class="{{ $panelClasses }} left-4 right-4 sm:left-auto sm:right-0 sm:w-96">
                         <div class="flex items-center justify-between border-b border-line px-4 py-3">
-                            <h3 class="text-lg">Cart</h3>
+                            <h3 class="text-lg">{{ __('Cart') }}</h3>
                         </div>
 
                         <div id="cart-dropdown-content">
                             <div class="p-6 text-center text-sm text-subtle">
-                                <div class="animate-pulse">Loading...</div>
+                                <div class="animate-pulse">{{ __('Loading...') }}</div>
                             </div>
                         </div>
                     </div>
@@ -161,8 +158,8 @@
             <input
                 type="text"
                 id="search-input-mobile"
-                placeholder="Search products..."
-                aria-label="Search products"
+                placeholder="{{ __('Search products...') }}"
+                aria-label="{{ __('Search products') }}"
                 autocomplete="off"
                 class="{{ $searchClasses }}"
             />
@@ -175,7 +172,7 @@
     {{-- RIADOK 2 (desktop): navigacia + kontakt --}}
     <div class="hidden border-t border-ink-700 bg-ink-950 lg:block">
         <div class="mx-auto flex h-12 max-w-7xl items-stretch justify-between px-4 sm:px-6 lg:px-8">
-            <nav class="flex items-stretch gap-8" aria-label="Main">
+            <nav class="flex items-stretch gap-8" aria-label="{{ __('Main') }}">
                 @foreach($navLinks as $route => [$label, $pattern])
                     @php $active = request()->routeIs($pattern); @endphp
                     <a href="{{ route($route) }}"
@@ -192,7 +189,7 @@
     </div>
 
     {{-- Mobilna navigacia (menu.js prepina triedu hidden) --}}
-    <nav id="mobile-nav" class="hidden border-t border-ink-700 bg-ink-900 lg:hidden" aria-label="Main">
+    <nav id="mobile-nav" class="hidden border-t border-ink-700 bg-ink-900 lg:hidden" aria-label="{{ __('Main') }}">
         <div class="mx-auto max-w-7xl px-4 py-2 sm:px-6">
             @foreach($navLinks as $route => [$label, $pattern])
                 @php $active = request()->routeIs($pattern); @endphp

@@ -5,7 +5,7 @@
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
-use App\Enums\PageStatus;
+use App\Mail\ContactMessage;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Page;
@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -25,17 +26,16 @@ class ShopTest extends TestCase
 
     private function createProduct(array $attributes = []): Product
     {
-        $category = Category::create(['name' => 'Tools', 'slug' => 'tools']);
-
-        return Product::create([
-            'name' => 'Hammer',
-            'slug' => 'hammer',
-            'description' => 'Steel hammer',
-            'price' => 10.50,
-            'stock' => 5,
-            'category_id' => $category->id,
-            ...$attributes,
-        ]);
+        return Product::factory()
+            ->for(Category::factory()->create(['name' => 'Tools', 'slug' => 'tools']))
+            ->create([
+                'name' => 'Hammer',
+                'slug' => 'hammer',
+                'description' => 'Steel hammer',
+                'price' => 10.50,
+                'stock' => 5,
+                ...$attributes,
+            ]);
     }
 
     private function checkoutData(): array
@@ -77,13 +77,17 @@ class ShopTest extends TestCase
         $this->get('/products?category=tools&sort=price_asc&search=ham')->assertOk()->assertSee('Hammer');
         $this->get(route('product.show', $product))->assertOk()->assertSee('Steel hammer');
         $this->get(route('category.show', 'tools'))->assertOk();
-        $this->getJson('/api/products/search?q=ham')->assertOk()->assertJsonPath('0.name', 'Hammer');
-        $this->getJson('/api/products/hammer')->assertOk()->assertJsonPath('name', 'Hammer');
+        $search = $this->getJson('/api/products/search?q=ham')->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Hammer', $search->json('html'));
+
+        $detail = $this->getJson('/api/products/hammer')->assertOk();
+        $this->assertStringContainsString('id="quick-view-title"', $detail->json('html'));
+        $this->assertStringContainsString('Hammer', $detail->json('html'));
     }
 
     public function test_inactive_categories_are_hidden(): void
     {
-        Category::create(['name' => 'Hidden category', 'slug' => 'hidden', 'is_active' => false]);
+        Category::factory()->inactive()->create(['name' => 'Hidden category', 'slug' => 'hidden']);
 
         $this->get('/')->assertOk()->assertDontSee('Hidden category');
         $this->get('/products')->assertOk()->assertDontSee('Hidden category');
@@ -99,7 +103,9 @@ class ShopTest extends TestCase
             ->assertJsonPath('cart.count', 2)
             ->assertJsonPath('cart.formatted_total', '€21.00')
             ->assertJsonPath('cart.formatted_shipping_cost', '€3.00')
-            ->assertJsonPath('cart.formatted_grand_total', '€24.00');
+            ->assertJsonPath('cart.formatted_grand_total', '€24.00')
+            ->assertJsonPath('html.dropdown', fn (string $html) => str_contains($html, '€21.00'))
+            ->assertJsonPath('html.page', fn (string $html) => str_contains($html, '€24.00') && str_contains($html, 'data-cart-quantity'));
     }
 
     public function test_updating_product_not_in_cart_returns_404(): void
@@ -167,13 +173,7 @@ class ShopTest extends TestCase
 
     public function test_guest_cannot_view_confirmation_of_foreign_order(): void
     {
-        $order = Order::create([
-            'order_number' => 'ORD-TEST-0002',
-            'user_id' => User::factory()->create()->id,
-            'subtotal' => 10,
-            'shipping_cost' => 3,
-            'total' => 13,
-        ]);
+        $order = Order::factory()->create();
 
         $this->get(route('orders.confirmation', $order->order_number))
             ->assertNotFound();
@@ -182,14 +182,7 @@ class ShopTest extends TestCase
     public function test_processing_order_cannot_be_cancelled(): void
     {
         $user = User::factory()->create();
-        $order = Order::create([
-            'order_number' => 'ORD-TEST-0001',
-            'user_id' => $user->id,
-            'status' => OrderStatus::Processing,
-            'subtotal' => 10,
-            'shipping_cost' => 3,
-            'total' => 13,
-        ]);
+        $order = Order::factory()->for($user)->status(OrderStatus::Processing)->create();
 
         $this->actingAs($user)
             ->get(route('orders.show', $order->order_number))
@@ -258,7 +251,7 @@ class ShopTest extends TestCase
             ->assertRedirect('/addresses');
         $this->assertSame('Zilina', $address->fresh()->city);
 
-        $second = UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Second 2']));
+        $second = UserAddress::factory()->for($user)->create(['street' => 'Second 2']);
         $this->post(route('addresses.setDefault', $second))->assertRedirect('/addresses');
         $this->assertTrue($second->fresh()->is_default);
 
@@ -271,9 +264,9 @@ class ShopTest extends TestCase
     public function test_default_addresses_are_prefilled_on_checkout_and_dashboard(): void
     {
         $user = User::factory()->create();
-        UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Other Street 9']));
-        UserAddress::create($this->addressData(['user_id' => $user->id, 'street' => 'Default Street 5', 'is_default' => true]));
-        UserAddress::create($this->addressData(['user_id' => $user->id, 'type' => 'billing', 'company_name' => 'ACME s.r.o.']));
+        UserAddress::factory()->for($user)->create(['street' => 'Other Street 9']);
+        UserAddress::factory()->for($user)->create(['street' => 'Default Street 5', 'is_default' => true]);
+        UserAddress::factory()->for($user)->billing()->create(['company_name' => 'ACME s.r.o.']);
 
         $product = $this->createProduct();
         $this->actingAs($user)->postJson('/api/cart/add', ['product_id' => $product->id]);
@@ -292,7 +285,7 @@ class ShopTest extends TestCase
     public function test_user_cannot_touch_foreign_address(): void
     {
         $owner = User::factory()->create();
-        $address = UserAddress::create($this->addressData(['user_id' => $owner->id]));
+        $address = UserAddress::factory()->for($owner)->create();
 
         $this->actingAs(User::factory()->create());
 
@@ -304,11 +297,9 @@ class ShopTest extends TestCase
 
     public function test_article_content_is_sanitized(): void
     {
-        Page::create([
+        Page::factory()->create([
             'title' => 'News',
-            'slug' => 'news',
             'content' => '<h2>Heading</h2><script>alert("xss")</script>',
-            'status' => PageStatus::Published,
         ]);
 
         $this->get('/pages')->assertOk()->assertSee('News');
@@ -318,8 +309,10 @@ class ShopTest extends TestCase
             ->assertDontSee('alert("xss")', false);
     }
 
-    public function test_contact_form_is_validated_and_throttled(): void
+    public function test_contact_form_is_validated_sent_and_throttled(): void
     {
+        Mail::fake();
+
         $data = [
             'name' => 'John',
             'email' => 'john@gmail.com',
@@ -334,5 +327,9 @@ class ShopTest extends TestCase
         }
 
         $this->post('/contact', $data)->assertStatus(429);
+
+        Mail::assertSent(ContactMessage::class, 4);
+        Mail::assertSent(ContactMessage::class, fn (ContactMessage $mail) => $mail->hasTo(config('shop.contact_email'))
+            && $mail->hasReplyTo('john@gmail.com'));
     }
 }

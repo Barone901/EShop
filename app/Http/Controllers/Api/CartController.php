@@ -6,18 +6,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\CartException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\AddCartItemRequest;
 use App\Http\Requests\Api\RemoveCartItemRequest;
 use App\Http\Requests\Api\UpdateCartItemRequest;
 use App\Models\Product;
 use App\Services\CartService;
-use Closure;
 use Illuminate\Http\JsonResponse;
 
 /**
  * API Controller pre pracu s nakupnym kosikom.
+ *
+ * Odpoved obsahuje data kosika (cart) aj HTML vyrenderovane z Blade komponentov (html) -
+ * vzhlad kosika je len v sablonach (View), JavaScript HTML iba vlozi do stranky.
+ * Chyby kosika (CartException) prevedie na JSON odpoved Laravel cez CartException::render().
  */
 class CartController extends Controller
 {
@@ -29,11 +31,13 @@ class CartController extends Controller
     ) {}
 
     /**
-     * Vrati aktualny obsah kosika ako JSON.
+     * Vrati aktualny obsah kosika ako JSON (data + HTML).
      */
     public function index(): JsonResponse
     {
-        return response()->json($this->cartService->getCart());
+        $cart = $this->cartService->getCart();
+
+        return response()->json([...$cart, 'html' => $this->renderCart($cart)]);
     }
 
     /**
@@ -43,10 +47,9 @@ class CartController extends Controller
     {
         $product = Product::findOrFail($request->integer('product_id'));
 
-        return $this->respond(
-            fn () => $this->cartService->addProduct($product, (int) ($request->validated('quantity') ?? 1)),
-            'Product has been added to cart.'
-        );
+        $this->cartService->addProduct($product, (int) ($request->validated('quantity') ?? 1));
+
+        return $this->cartResponse(__('Product has been added to cart.'));
     }
 
     /**
@@ -54,10 +57,9 @@ class CartController extends Controller
      */
     public function update(UpdateCartItemRequest $request): JsonResponse
     {
-        return $this->respond(
-            fn () => $this->cartService->updateQuantity($request->integer('product_id'), $request->integer('quantity')),
-            'Cart has been updated.'
-        );
+        $this->cartService->updateQuantity($request->integer('product_id'), $request->integer('quantity'));
+
+        return $this->cartResponse(__('Cart has been updated.'));
     }
 
     /**
@@ -65,10 +67,9 @@ class CartController extends Controller
      */
     public function remove(RemoveCartItemRequest $request): JsonResponse
     {
-        return $this->respond(
-            fn () => $this->cartService->removeProduct($request->integer('product_id')),
-            'Product has been removed from cart.'
-        );
+        $this->cartService->removeProduct($request->integer('product_id'));
+
+        return $this->cartResponse(__('Product has been removed from cart.'));
     }
 
     /**
@@ -76,30 +77,36 @@ class CartController extends Controller
      */
     public function clear(): JsonResponse
     {
-        return $this->respond(
-            fn () => $this->cartService->clear(),
-            'Cart has been cleared.'
-        );
+        $this->cartService->clear();
+
+        return $this->cartResponse(__('Cart has been cleared.'));
     }
 
     /**
-     * Vykona akciu nad kosikom a vrati jednotnu JSON odpoved (sprava + aktualny kosik).
+     * Jednotna odpoved po uspesnej akcii: sprava + aktualny kosik (data aj HTML).
      */
-    private function respond(Closure $action, string $successMessage): JsonResponse
+    private function cartResponse(string $message): JsonResponse
     {
-        try {
-            $action();
-        } catch (CartException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getCode());
-        }
+        $cart = $this->cartService->getCart();
 
         return response()->json([
             'success' => true,
-            'message' => $successMessage,
-            'cart' => $this->cartService->getCart(),
+            'message' => $message,
+            'cart' => $cart,
+            'html' => $this->renderCart($cart),
         ]);
+    }
+
+    /**
+     * Vyrenderuje casti stranky s kosikom (nahlad v hlavicke, stranka kosika) z Blade komponentov.
+     *
+     * @return array{dropdown: string, page: string}
+     */
+    private function renderCart(array $cart): array
+    {
+        return [
+            'dropdown' => view('components.shop.cart-dropdown', ['cart' => $cart])->render(),
+            'page' => view('components.shop.cart-page', ['cart' => $cart])->render(),
+        ];
     }
 }

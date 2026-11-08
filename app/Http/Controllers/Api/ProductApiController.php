@@ -1,6 +1,6 @@
 <?php
 
-// [AI] Upravene s pomocou AI (Claude).
+// [AI] Upravene s pomocou AI (Claude): odpoved obsahuje HTML z Blade komponentov namiesto API Resources.
 
 declare(strict_types=1);
 
@@ -8,14 +8,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ProductSearchRequest;
-use App\Http\Resources\ProductDetailResource;
-use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\JsonResponse;
 
 /**
  * API Controller pre vyhladavanie a zobrazenie produktov.
+ *
+ * Vzhlad vysledkov je len v Blade komponentoch (View); JSON prenasa vyrenderovane HTML,
+ * ktore JavaScript iba vlozi do stranky.
  */
 class ProductApiController extends Controller
 {
@@ -29,22 +30,27 @@ class ProductApiController extends Controller
     /**
      * Vyhlada produkty podla zadaneho vyrazu pre autocomplete.
      */
-    public function search(ProductSearchRequest $request): AnonymousResourceCollection
+    public function search(ProductSearchRequest $request): JsonResponse
     {
-        return ProductResource::collection(
-            $this->productService->search(trim((string) $request->validated('q')))
-        );
+        $products = $this->productService->search(trim((string) $request->validated('q')));
+
+        return response()->json([
+            'count' => $products->count(),
+            'html' => view('components.shop.search-results', ['products' => $products])->render(),
+        ]);
     }
 
     /**
-     * Vrati detail produktu pre AJAX modal.
+     * Vrati detail produktu pre AJAX modal (quick view).
      */
-    public function show(Product $product): ProductDetailResource
+    public function show(Product $product): JsonResponse
     {
         $product->load('category');
 
         abort_unless($product->isVisible(), 404);
 
-        return new ProductDetailResource($product);
+        return response()->json([
+            'html' => view('components.shop.quick-view', ['product' => $product])->render(),
+        ]);
     }
 }

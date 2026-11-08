@@ -2,47 +2,25 @@
  * Toast Module
  *
  * Zobrazuje notifikácie (success, error, info).
+ * Vzhľad je v Blade (layouts/partials/toasts, <template data-toast="...">) - modul šablónu
+ * naklonuje, doplní text cez textContent (bez HTML, bez rizika XSS) a animuje ju.
  *
  * [AI] Upravené s pomocou AI (Claude).
  */
-import { escapeHtml } from '../utils/escape-html';
-
-const TYPES = {
-    success: { bgColor: 'bg-ok-700', icon: '✓' },
-    error: { bgColor: 'bg-danger-700', icon: '✗' },
-    info: { bgColor: 'bg-ink-900', icon: 'ℹ' },
-};
 
 const ANIMATION_MS = 300;
 
 const Toast = {
-    container: null,
-
-    init() {
-        if (this.container) return;
-
-        this.container = document.createElement('div');
-        this.container.id = 'toast-container';
-        this.container.className = 'fixed bottom-4 left-4 right-4 z-[200] flex flex-col items-end gap-2 sm:left-auto';
-        document.body.appendChild(this.container);
-    },
-
     show(message, type = 'success', duration = 3000) {
-        this.init();
+        const container = document.getElementById('toast-container');
+        const template = document.querySelector(`template[data-toast="${type}"]`)
+            ?? document.querySelector('template[data-toast="info"]');
 
-        const { bgColor, icon } = TYPES[type] ?? TYPES.info;
-        const toast = document.createElement('div');
+        if (!container || !template) return;
 
-        toast.className = `${bgColor} text-white text-sm font-medium px-4 py-3 rounded-xs border-l-3 border-white/40 shadow-lg transform transition-all duration-300 translate-x-full opacity-0`;
-        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        toast.innerHTML = `
-            <div class="flex items-center gap-2">
-                <span aria-hidden="true">${icon}</span>
-                <span>${escapeHtml(message)}</span>
-            </div>
-        `;
-
-        this.container.appendChild(toast);
+        const toast = template.content.firstElementChild.cloneNode(true);
+        toast.querySelector('[data-toast-message]').textContent = message;
+        container.appendChild(toast);
 
         // Animácia zobrazenia
         requestAnimationFrame(() => {

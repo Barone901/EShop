@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Enums\PageStatus;
 use App\Enums\PaymentStatus;
+use App\Exceptions\OrderException;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Order;
@@ -29,21 +30,15 @@ class ShopIntegrityTest extends TestCase
 
     private function createProduct(array $attributes = [], bool $activeCategory = true): Product
     {
-        $category = Category::create([
-            'name' => 'Tools',
-            'slug' => 'tools-' . uniqid(),
-            'is_active' => $activeCategory,
-        ]);
-
-        return Product::create([
-            'name' => 'Hammer',
-            'slug' => 'hammer-' . uniqid(),
-            'description' => 'Steel hammer',
-            'price' => 10.50,
-            'stock' => 5,
-            'category_id' => $category->id,
-            ...$attributes,
-        ]);
+        return Product::factory()
+            ->for(Category::factory()->state(['is_active' => $activeCategory]))
+            ->create([
+                'name' => 'Hammer',
+                'description' => 'Steel hammer',
+                'price' => 10.50,
+                'stock' => 5,
+                ...$attributes,
+            ]);
     }
 
     private function checkoutData(): array
@@ -158,13 +153,36 @@ class ShopIntegrityTest extends TestCase
         $this->assertSame(5, $product->fresh()->stock);
     }
 
+    public function test_admin_advances_order_only_by_allowed_steps(): void
+    {
+        $order = Order::factory()->create();
+        $orders = app(OrderService::class);
+
+        // Krok sa neda preskocit (Pending -> Delivered)
+        try {
+            $orders->advanceStatus($order, OrderStatus::Delivered);
+            $this->fail('Expected OrderException.');
+        } catch (OrderException) {
+            $this->assertSame(OrderStatus::Pending, $order->fresh()->status);
+        }
+
+        $orders->advanceStatus($order, OrderStatus::Confirmed);
+        $orders->advanceStatus($order, OrderStatus::Shipped);
+        $orders->advanceStatus($order, OrderStatus::Delivered);
+
+        // Dobierka je pri doruceni zaplatena
+        $this->assertSame(OrderStatus::Delivered, $order->status);
+        $this->assertSame(PaymentStatus::Paid, $order->payment_status);
+        $this->assertSame([], $order->status->nextStatuses());
+    }
+
     public function test_products_of_inactive_category_are_hidden(): void
     {
         $product = $this->createProduct(['name' => 'Secret drill'], activeCategory: false);
 
         $this->get('/products')->assertOk()->assertDontSee('Secret drill');
         $this->get(route('product.show', $product))->assertNotFound();
-        $this->getJson('/api/products/search?q=secret')->assertOk()->assertExactJson([]);
+        $this->getJson('/api/products/search?q=secret')->assertOk()->assertJsonPath('count', 0);
         $this->getJson("/api/products/{$product->slug}")->assertNotFound();
         $this->postJson('/api/cart/add', ['product_id' => $product->id])->assertNotFound();
     }
@@ -174,21 +192,21 @@ class ShopIntegrityTest extends TestCase
         $this->createProduct(['name' => 'Hammer']);
 
         $this->get('/products?search=%25')->assertOk()->assertDontSee('Hammer');
-        $this->getJson('/api/products/search?q=_%25')->assertOk()->assertExactJson([]);
+        $this->getJson('/api/products/search?q=_%25')->assertOk()->assertJsonPath('count', 0);
     }
 
     public function test_page_slug_does_not_collide_with_trashed_page(): void
     {
-        Page::create(['title' => 'News', 'status' => PageStatus::Published])->delete();
+        Page::factory()->create(['title' => 'News'])->delete();
 
-        $page = Page::create(['title' => 'News', 'status' => PageStatus::Published]);
+        $page = Page::factory()->create(['title' => 'News']);
 
         $this->assertSame('news-1', $page->slug);
     }
 
     public function test_article_view_is_counted_once_per_session(): void
     {
-        $page = Page::create(['title' => 'News', 'status' => PageStatus::Published]);
+        $page = Page::factory()->create(['title' => 'News']);
 
         $this->get('/pages/news')->assertOk();
         $this->get('/pages/news')->assertOk();
@@ -198,8 +216,8 @@ class ShopIntegrityTest extends TestCase
 
     public function test_banner_does_not_link_to_unpublished_page(): void
     {
-        $page = Page::create(['title' => 'Draft', 'status' => PageStatus::Draft]);
-        $banner = Banner::create(['name' => 'Promo', 'image_path' => 'promo.jpg', 'page_id' => $page->id]);
+        $page = Page::factory()->draft()->create(['title' => 'Draft']);
+        $banner = Banner::factory()->for($page)->create();
 
         $this->assertNull($banner->link);
 
@@ -213,15 +231,7 @@ class ShopIntegrityTest extends TestCase
         $this->seed(RolesAndPermissionsSeeder::class);
         $admin = tap(User::factory()->create())->assignRole('admin');
 
-        $address = UserAddress::create([
-            'user_id' => User::factory()->create()->id,
-            'type' => 'shipping',
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'street' => 'Main Street 1',
-            'city' => 'Martin',
-            'postal_code' => '03601',
-        ]);
+        $address = UserAddress::factory()->create();
 
         $this->assertTrue($admin->can('viewAny', Order::class));
         $this->assertFalse($admin->can('create', Order::class));

@@ -33,7 +33,7 @@
 {{-- Preskocenie navigacie pre klavesnicu a citacky obrazovky --}}
 <a href="#main-content"
    class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:bg-brand-600 focus:px-4 focus:py-2 focus:font-display focus:font-semibold focus:uppercase focus:tracking-wider focus:text-white">
-    Skip to content
+    {{ __('Skip to content') }}
 </a>
 
 {{-- Header / navbar (spolocny pre vsetky stranky) --}}
@@ -85,6 +85,15 @@
 
 {{-- Footer (spolocny pre vsetky stranky) --}}
 @include('layouts.partials.footer')
+
+{{-- Modal rychleho nahladu a notifikacie (obsah dodava server, JS ich len zobrazuje) --}}
+@include('layouts.partials.quick-view-modal')
+@include('layouts.partials.toasts')
+
+{{-- Sablona chybovej hlasky pola pre form-validator.js (JS ju naklonuje a doplni text) --}}
+<template id="validation-error-template">
+    <p class="validation-error"></p>
+</template>
 
 {{-- Volitelne skripty na konci (napr. JS len pre konkretnu stranku) --}}
 {{ $scripts ?? '' }}
